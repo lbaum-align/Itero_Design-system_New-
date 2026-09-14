@@ -55,3 +55,13 @@ export type { CheckboxItemProps, CheckboxSelection } from './components/checkbox
 
 export { RadioButtonItem } from './components/radio-button-item';
 export type { RadioButtonItemProps } from './components/radio-button-item';
+
+// --- Components (Tier 3: Composed atoms) ---
+
+export { Button } from './components/button';
+export type {
+  ButtonProps,
+  ButtonType,
+  ButtonEmphasis,
+  ButtonSize,
+} from './components/button';

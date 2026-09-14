@@ -21,6 +21,9 @@
   --scanner-bg-destructive: var(--scanner-red-500);         /* #d43f58 */
   --scanner-bg-destructive-hover: var(--scanner-red-600);   /* #c42d49 */
   --scanner-bg-destructive-active: var(--scanner-red-700);  /* #b51f3f */
+  --scanner-bg-success: var(--scanner-green-500);           /* #00964e */
+  --scanner-bg-success-hover: var(--scanner-green-600);     /* #008744 */
+  --scanner-bg-success-active: var(--scanner-green-700);    /* #007a3d */
 
   /* -- Backgrounds state -- */
   --scanner-bg-hover: var(--scanner-gray-alpha-5);          /* rgba(0,0,0,0.04) */
@@ -151,6 +154,9 @@
   --scanner-bg-destructive: var(--scanner-red-500);         /* same */
   --scanner-bg-destructive-hover: var(--scanner-red-600);   /* same */
   --scanner-bg-destructive-active: var(--scanner-red-700);  /* same */
+  --scanner-bg-success: var(--scanner-green-500);           /* same */
+  --scanner-bg-success-hover: var(--scanner-green-600);     /* same */
+  --scanner-bg-success-active: var(--scanner-green-700);    /* same */
 
   /* -- Backgrounds state -- */
   --scanner-bg-hover: var(--scanner-white-alpha-5);         /* rgba(255,255,255,0.04) */
