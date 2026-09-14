@@ -9,7 +9,33 @@
 export { cn } from './utils';
 
 // Token types
-export type { SpacingToken, ColorToken, FontSizeToken } from './tokens/types';
+export type {
+  SpacingToken,
+  RadiusToken,
+  FontSizeToken,
+  LineHeightToken,
+  FontWeightToken,
+  FontFamilyToken,
+  BgColorToken,
+  TextColorToken,
+  BorderColorToken,
+  IconColorToken,
+  StatusToken,
+  ShadowToken,
+  TextStyle,
+  PrimitiveColor,
+} from './tokens/types';
 
-// Components will be exported here as they are built
-// Phase 3 will add exports for each component
+// --- Components (Tier 1: Leaf atoms) ---
+
+export { Spinner } from './components/spinner';
+export type { SpinnerProps, SpinnerSize } from './components/spinner';
+
+export { Toggle } from './components/toggle';
+export type { ToggleProps } from './components/toggle';
+
+export { Badge } from './components/badge';
+export type { BadgeProps, BadgeStatus, BadgeLayout } from './components/badge';
+
+export { Link } from './components/link';
+export type { LinkProps, LinkType, LinkSize } from './components/link';
