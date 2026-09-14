@@ -101,3 +101,46 @@ export type { BreadcrumbsProps, BreadcrumbItem } from './components/breadcrumbs'
 
 export { SplitButton } from './components/split-button';
 export type { SplitButtonProps } from './components/split-button';
+
+export { AvatarGroup } from './components/avatar-group';
+export type { AvatarGroupProps, AvatarGroupItem } from './components/avatar-group';
+
+// --- Components (Tier 5: Form inputs) ---
+
+export { TextInput } from './components/text-input';
+export type { TextInputProps, TextInputSize } from './components/text-input';
+
+export { TextArea } from './components/text-area';
+export type { TextAreaProps } from './components/text-area';
+
+export { PasswordInput } from './components/password-input';
+export type { PasswordInputProps } from './components/password-input';
+
+export { NumberInput } from './components/number-input';
+export type { NumberInputProps, NumberInputSize } from './components/number-input';
+
+export { DateInput } from './components/date-input';
+export type { DateInputProps, DateInputSize } from './components/date-input';
+
+// --- Components (Tier 6: Checkbox & Radio groups, Pagination) ---
+
+export { VerticalCheckboxGroup } from './components/vertical-checkbox-group';
+export type { VerticalCheckboxGroupProps } from './components/vertical-checkbox-group';
+
+export { HorizontalCheckboxGroup } from './components/horizontal-checkbox-group';
+export type { HorizontalCheckboxGroupProps } from './components/horizontal-checkbox-group';
+
+export { RadioButtonsVerticalGroup } from './components/radio-buttons-vertical-group';
+export type {
+  RadioButtonsVerticalGroupProps,
+  RadioOption,
+} from './components/radio-buttons-vertical-group';
+
+export { RadioButtonsHorizontalGroup } from './components/radio-buttons-horizontal-group';
+export type {
+  RadioButtonsHorizontalGroupProps,
+  RadioButtonOption,
+} from './components/radio-buttons-horizontal-group';
+
+export { Pagination } from './components/pagination';
+export type { PaginationProps, PaginationSize } from './components/pagination';

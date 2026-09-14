@@ -1,4 +1,4 @@
-export type PaginationItemSize = 'small' | 'medium';
+export type PaginationItemSize = 'small' | 'medium' | 'large' | 'x-large';
 
 export interface PaginationItemProps {
   /** Page number to display */

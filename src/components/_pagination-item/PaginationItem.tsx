@@ -15,6 +15,18 @@ const sizeStyles: Record<PaginationItemSize, string> = {
     'rounded-[var(--scanner-radius-md)]',
     'text-sm leading-[var(--scanner-leading-sm)]',
   ].join(' '),
+  large: [
+    'h-[44px] min-w-[44px]',
+    'p-[var(--scanner-spacing-4)]',
+    'rounded-[var(--scanner-radius-md)]',
+    'text-sm leading-[var(--scanner-leading-sm)]',
+  ].join(' '),
+  'x-large': [
+    'h-[60px] min-w-[60px]',
+    'p-[var(--scanner-spacing-4)]',
+    'rounded-[var(--scanner-radius-md)]',
+    'text-[16px] leading-[var(--scanner-leading-md)]',
+  ].join(' '),
 };
 
 /**
