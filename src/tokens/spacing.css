@@ -1,0 +1,29 @@
+/* ==========================================================================
+ * Scanner Design System — Spacing & Radius Tokens
+ * Source: Figma "03. Grid, spacing, layouts 2.0.0" + local Numbers collection
+ * ========================================================================== */
+
+:root {
+  /* ---- Spacing scale ---- */
+  --scanner-spacing-1: 2px;
+  --scanner-spacing-2: 4px;
+  --scanner-spacing-3: 8px;
+  --scanner-spacing-4: 12px;
+  --scanner-spacing-5: 16px;
+  --scanner-spacing-6: 20px;
+  --scanner-spacing-7: 24px;
+  --scanner-spacing-8: 32px;
+  --scanner-spacing-9: 40px;
+  --scanner-spacing-10: 48px;
+  --scanner-spacing-11: 64px;
+
+  /* ---- Border radius ---- */
+  --scanner-radius-none: 0px;
+  --scanner-radius-sm: 4px;
+  --scanner-radius-md: 8px;
+  --scanner-radius-lg: 12px;
+  --scanner-radius-xl: 16px;
+  --scanner-radius-2xl: 20px;
+  --scanner-radius-3xl: 24px;
+  --scanner-radius-full: 10000px;
+}

@@ -1,0 +1,125 @@
+/* ==========================================================================
+ * Scanner Design System — Primitive Color Tokens
+ * Source: Figma "01. Global colors 2.0.0" + local Primitives collection
+ * These are raw color values — never reference directly in components.
+ * Use semantic tokens (semantic.css) instead.
+ * ========================================================================== */
+
+:root {
+  /* ---- Neutral ---- */
+  --scanner-neutral-50: #ffffff;
+  --scanner-neutral-100: #f4f4f4;
+  --scanner-neutral-200: #e9e9e9;
+  --scanner-neutral-300: #d4d4d4;
+  --scanner-neutral-600: #262626;
+  --scanner-neutral-700: #1b1b1b;
+  --scanner-neutral-800: #121212;
+  --scanner-neutral-900: #000000;
+
+  /* ---- Blue ---- */
+  --scanner-blue-50: #e6f7ff;
+  --scanner-blue-100: #d1f1ff;
+  --scanner-blue-200: #8adaff;
+  --scanner-blue-300: #41c1f0;
+  --scanner-blue-400: #16a5d9;
+  --scanner-blue-500: #009ace;
+  --scanner-blue-600: #008ec2;
+  --scanner-blue-700: #0080b2;
+  --scanner-blue-800: #0072a3;
+  --scanner-blue-900: #005780;
+
+  /* ---- Purple ---- */
+  --scanner-purple-50: #f8f2ff;
+  --scanner-purple-100: #f3e6ff;
+  --scanner-purple-200: #e2cafa;
+  --scanner-purple-300: #cba7f2;
+  --scanner-purple-400: #ac76e3;
+  --scanner-purple-500: #6c37a1;
+  --scanner-purple-600: #5f2d91;
+  --scanner-purple-700: #431b69;
+  --scanner-purple-800: #351752;
+  --scanner-purple-900: #261238;
+
+  /* ---- Red ---- */
+  --scanner-red-50: #fff0f3;
+  --scanner-red-100: #ffe0e7;
+  --scanner-red-200: #ffb0c0;
+  --scanner-red-300: #fc8397;
+  --scanner-red-400: #ed5c75;
+  --scanner-red-500: #d43f58;
+  --scanner-red-600: #c42d49;
+  --scanner-red-700: #b51f3f;
+  --scanner-red-800: #a31035;
+  --scanner-red-900: #380912;
+
+  /* ---- Green ---- */
+  --scanner-green-50: #dcfce8;
+  --scanner-green-100: #c6f5d6;
+  --scanner-green-200: #9ae3b5;
+  --scanner-green-300: #6bc98d;
+  --scanner-green-400: #2eb066;
+  --scanner-green-500: #00964e;
+  --scanner-green-600: #008744;
+  --scanner-green-700: #007a3d;
+  --scanner-green-800: #006131;
+  --scanner-green-900: #002e18;
+
+  /* ---- Orange ---- */
+  --scanner-orange-50: #fff2ed;
+  --scanner-orange-100: #ffe5db;
+  --scanner-orange-300: #f69272;
+  --scanner-orange-500: #de5637;
+  --scanner-orange-700: #b53517;
+  --scanner-orange-900: #9e2813;
+
+  /* ---- Magenta ---- */
+  --scanner-magenta-50: #fff0f9;
+  --scanner-magenta-100: #ffe3f4;
+  --scanner-magenta-200: #fcc2e5;
+  --scanner-magenta-300: #fa96d2;
+  --scanner-magenta-500: #e03fa0;
+  --scanner-magenta-700: #a30564;
+  --scanner-magenta-900: #330d23;
+
+  /* ---- Transparent on white (black + alpha) ---- */
+  --scanner-gray-alpha-95: rgba(0, 0, 0, 0.89);
+  --scanner-gray-alpha-90: rgba(0, 0, 0, 0.85);
+  --scanner-gray-alpha-85: rgba(0, 0, 0, 0.81);
+  --scanner-gray-alpha-80: rgba(0, 0, 0, 0.77);
+  --scanner-gray-alpha-75: rgba(0, 0, 0, 0.72);
+  --scanner-gray-alpha-70: rgba(0, 0, 0, 0.68);
+  --scanner-gray-alpha-65: rgba(0, 0, 0, 0.63);
+  --scanner-gray-alpha-60: rgba(0, 0, 0, 0.59);
+  --scanner-gray-alpha-55: rgba(0, 0, 0, 0.54);
+  --scanner-gray-alpha-50: rgba(0, 0, 0, 0.50);
+  --scanner-gray-alpha-45: rgba(0, 0, 0, 0.44);
+  --scanner-gray-alpha-40: rgba(0, 0, 0, 0.40);
+  --scanner-gray-alpha-35: rgba(0, 0, 0, 0.34);
+  --scanner-gray-alpha-30: rgba(0, 0, 0, 0.28);
+  --scanner-gray-alpha-25: rgba(0, 0, 0, 0.23);
+  --scanner-gray-alpha-20: rgba(0, 0, 0, 0.17);
+  --scanner-gray-alpha-15: rgba(0, 0, 0, 0.13);
+  --scanner-gray-alpha-10: rgba(0, 0, 0, 0.09);
+  --scanner-gray-alpha-5: rgba(0, 0, 0, 0.04);
+
+  /* ---- Transparent on black (white + alpha) ---- */
+  --scanner-white-alpha-95: rgba(255, 255, 255, 0.95);
+  --scanner-white-alpha-90: rgba(255, 255, 255, 0.90);
+  --scanner-white-alpha-85: rgba(255, 255, 255, 0.87);
+  --scanner-white-alpha-80: rgba(255, 255, 255, 0.81);
+  --scanner-white-alpha-75: rgba(255, 255, 255, 0.76);
+  --scanner-white-alpha-70: rgba(255, 255, 255, 0.69);
+  --scanner-white-alpha-65: rgba(255, 255, 255, 0.63);
+  --scanner-white-alpha-60: rgba(255, 255, 255, 0.37);
+  --scanner-white-alpha-55: rgba(255, 255, 255, 0.57);
+  --scanner-white-alpha-50: rgba(255, 255, 255, 0.52);
+  --scanner-white-alpha-45: rgba(255, 255, 255, 0.47);
+  --scanner-white-alpha-40: rgba(255, 255, 255, 0.43);
+  --scanner-white-alpha-35: rgba(255, 255, 255, 0.32);
+  --scanner-white-alpha-30: rgba(255, 255, 255, 0.27);
+  --scanner-white-alpha-25: rgba(255, 255, 255, 0.22);
+  --scanner-white-alpha-20: rgba(255, 255, 255, 0.17);
+  --scanner-white-alpha-15: rgba(255, 255, 255, 0.13);
+  --scanner-white-alpha-10: rgba(255, 255, 255, 0.09);
+  --scanner-white-alpha-5: rgba(255, 255, 255, 0.04);
+}

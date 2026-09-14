@@ -1,18 +1,8 @@
-/* Scanner Design System — Token imports
- * Populated in Phase 1 from Figma foundation files */
+/* Scanner Design System — Token barrel
+ * Order matters: primitives first, then semantic (references primitives) */
 
-/* @import "./primitives.css"; */
-/* @import "./semantic.css"; */
-/* @import "./spacing.css"; */
-/* @import "./typography.css"; */
-/* @import "./effects.css"; */
-
-/* Placeholder tokens for scaffolding verification */
-:root {
-  --scanner-font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  --scanner-spacing-01: 2px;
-  --scanner-spacing-02: 4px;
-  --scanner-spacing-03: 8px;
-  --scanner-spacing-04: 12px;
-  --scanner-spacing-05: 16px;
-}
+@import "./primitives.css";
+@import "./spacing.css";
+@import "./typography.css";
+@import "./effects.css";
+@import "./semantic.css";

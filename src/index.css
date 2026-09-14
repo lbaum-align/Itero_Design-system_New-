@@ -4,13 +4,166 @@
 /*
  * Scanner Design System — Tailwind v4 theme mapping
  * CSS custom properties → Tailwind utilities
- * Populated in Phase 1 when real tokens are extracted from Figma
+ *
+ * Usage: `bg-bg-primary`, `text-text-secondary`, `border-border-default`, etc.
+ * Spacing: `p-spacing-3` (8px), `gap-spacing-5` (16px)
+ * Radius: `rounded-radius-md` (8px)
+ * Shadows: `shadow-depth-01`
+ * Typography: `font-sans`, `text-size-sm`, `leading-leading-sm`, `font-weight-medium`
  */
 @theme {
-  --font-family-sans: var(--scanner-font-family);
-  --spacing-1: var(--scanner-spacing-01);
-  --spacing-2: var(--scanner-spacing-02);
-  --spacing-3: var(--scanner-spacing-03);
-  --spacing-4: var(--scanner-spacing-04);
-  --spacing-5: var(--scanner-spacing-05);
+  /* ---- Font families ---- */
+  --font-sans: var(--scanner-font-sans);
+  --font-mono: var(--scanner-font-mono);
+
+  /* ---- Font sizes ---- */
+  --text-size-xs: var(--scanner-text-xs);
+  --text-size-sm: var(--scanner-text-sm);
+  --text-size-md: var(--scanner-text-md);
+  --text-size-lg: var(--scanner-text-lg);
+  --text-size-xl: var(--scanner-text-xl);
+  --text-size-2xl: var(--scanner-text-2xl);
+  --text-size-3xl: var(--scanner-text-3xl);
+  --text-size-4xl: var(--scanner-text-4xl);
+  --text-size-5xl: var(--scanner-text-5xl);
+  --text-size-6xl: var(--scanner-text-6xl);
+  --text-size-7xl: var(--scanner-text-7xl);
+
+  /* ---- Line heights ---- */
+  --leading-leading-xs: var(--scanner-leading-xs);
+  --leading-leading-sm: var(--scanner-leading-sm);
+  --leading-leading-md: var(--scanner-leading-md);
+  --leading-leading-lg: var(--scanner-leading-lg);
+  --leading-leading-xl: var(--scanner-leading-xl);
+  --leading-leading-2xl: var(--scanner-leading-2xl);
+  --leading-leading-3xl: var(--scanner-leading-3xl);
+  --leading-leading-4xl: var(--scanner-leading-4xl);
+  --leading-leading-5xl: var(--scanner-leading-5xl);
+  --leading-leading-6xl: var(--scanner-leading-6xl);
+  --leading-leading-7xl: var(--scanner-leading-7xl);
+
+  /* ---- Font weights ---- */
+  --font-weight-regular: var(--scanner-font-regular);
+  --font-weight-medium: var(--scanner-font-medium);
+  --font-weight-bold: var(--scanner-font-bold);
+
+  /* ---- Spacing ---- */
+  --spacing-1: var(--scanner-spacing-1);
+  --spacing-2: var(--scanner-spacing-2);
+  --spacing-3: var(--scanner-spacing-3);
+  --spacing-4: var(--scanner-spacing-4);
+  --spacing-5: var(--scanner-spacing-5);
+  --spacing-6: var(--scanner-spacing-6);
+  --spacing-7: var(--scanner-spacing-7);
+  --spacing-8: var(--scanner-spacing-8);
+  --spacing-9: var(--scanner-spacing-9);
+  --spacing-10: var(--scanner-spacing-10);
+  --spacing-11: var(--scanner-spacing-11);
+
+  /* ---- Border radius ---- */
+  --radius-none: var(--scanner-radius-none);
+  --radius-sm: var(--scanner-radius-sm);
+  --radius-md: var(--scanner-radius-md);
+  --radius-lg: var(--scanner-radius-lg);
+  --radius-xl: var(--scanner-radius-xl);
+  --radius-2xl: var(--scanner-radius-2xl);
+  --radius-3xl: var(--scanner-radius-3xl);
+  --radius-full: var(--scanner-radius-full);
+
+  /* ---- Shadows ---- */
+  --shadow-none: var(--scanner-shadow-none);
+  --shadow-depth-01: var(--scanner-shadow-depth-01);
+  --shadow-depth-02: var(--scanner-shadow-depth-02);
+  --shadow-depth-03: var(--scanner-shadow-depth-03);
+
+  /* ---- Background colors ---- */
+  --color-bg-primary: var(--scanner-bg-primary);
+  --color-bg-secondary: var(--scanner-bg-secondary);
+  --color-bg-tertiary: var(--scanner-bg-tertiary);
+  --color-bg-inverse: var(--scanner-bg-inverse);
+  --color-bg-brand: var(--scanner-bg-brand);
+  --color-bg-brand-hover: var(--scanner-bg-brand-hover);
+  --color-bg-brand-active: var(--scanner-bg-brand-active);
+  --color-bg-destructive: var(--scanner-bg-destructive);
+  --color-bg-destructive-hover: var(--scanner-bg-destructive-hover);
+  --color-bg-destructive-active: var(--scanner-bg-destructive-active);
+  --color-bg-hover: var(--scanner-bg-hover);
+  --color-bg-active: var(--scanner-bg-active);
+  --color-bg-selected: var(--scanner-bg-selected);
+  --color-bg-disabled: var(--scanner-bg-disabled);
+  --color-bg-overlay: var(--scanner-bg-overlay);
+  --color-bg-elevated: var(--scanner-bg-elevated);
+  --color-bg-on-color: var(--scanner-bg-on-color);
+  --color-bg-highlight-blue: var(--scanner-bg-highlight-blue);
+  --color-bg-highlight-green: var(--scanner-bg-highlight-green);
+  --color-bg-highlight-red: var(--scanner-bg-highlight-red);
+  --color-bg-highlight-orange: var(--scanner-bg-highlight-orange);
+  --color-bg-highlight-purple: var(--scanner-bg-highlight-purple);
+  --color-bg-highlight-magenta: var(--scanner-bg-highlight-magenta);
+
+  /* ---- Text colors ---- */
+  --color-text-primary: var(--scanner-text-primary);
+  --color-text-secondary: var(--scanner-text-secondary);
+  --color-text-tertiary: var(--scanner-text-tertiary);
+  --color-text-disabled: var(--scanner-text-disabled);
+  --color-text-inverse: var(--scanner-text-inverse);
+  --color-text-inverse-secondary: var(--scanner-text-inverse-secondary);
+  --color-text-inverse-tertiary: var(--scanner-text-inverse-tertiary);
+  --color-text-on-color: var(--scanner-text-on-color);
+  --color-text-on-color-secondary: var(--scanner-text-on-color-secondary);
+  --color-text-on-color-tertiary: var(--scanner-text-on-color-tertiary);
+  --color-text-link: var(--scanner-text-link);
+  --color-text-error: var(--scanner-text-error);
+  --color-text-success: var(--scanner-text-success);
+  --color-text-warning: var(--scanner-text-warning);
+
+  /* ---- Icon colors ---- */
+  --color-icon-primary: var(--scanner-icon-primary);
+  --color-icon-secondary: var(--scanner-icon-secondary);
+  --color-icon-tertiary: var(--scanner-icon-tertiary);
+  --color-icon-disabled: var(--scanner-icon-disabled);
+  --color-icon-inverse: var(--scanner-icon-inverse);
+  --color-icon-on-color: var(--scanner-icon-on-color);
+  --color-icon-link: var(--scanner-icon-link);
+  --color-icon-error: var(--scanner-icon-error);
+  --color-icon-success: var(--scanner-icon-success);
+  --color-icon-warning: var(--scanner-icon-warning);
+
+  /* ---- Border colors ---- */
+  --color-border-default: var(--scanner-border-default);
+  --color-border-subtle: var(--scanner-border-subtle);
+  --color-border-strong: var(--scanner-border-strong);
+  --color-border-inverse: var(--scanner-border-inverse);
+  --color-border-interactive: var(--scanner-border-interactive);
+  --color-border-error: var(--scanner-border-error);
+  --color-border-success: var(--scanner-border-success);
+  --color-border-warning: var(--scanner-border-warning);
+  --color-border-hover: var(--scanner-border-hover);
+  --color-border-active: var(--scanner-border-active);
+  --color-border-disabled: var(--scanner-border-disabled);
+  --color-border-focus: var(--scanner-border-focus);
+
+  /* ---- Action / focus / status ---- */
+  --color-action-primary: var(--scanner-action-primary);
+  --color-action-primary-hover: var(--scanner-action-primary-hover);
+  --color-action-primary-active: var(--scanner-action-primary-active);
+  --color-focus-ring: var(--scanner-focus-ring);
+  --color-focus-bg: var(--scanner-focus-bg);
+  --color-status-danger: var(--scanner-status-danger);
+  --color-status-danger-bg: var(--scanner-status-danger-bg);
+  --color-status-success: var(--scanner-status-success);
+  --color-status-success-bg: var(--scanner-status-success-bg);
+  --color-status-warning: var(--scanner-status-warning);
+  --color-status-warning-bg: var(--scanner-status-warning-bg);
+  --color-status-info: var(--scanner-status-info);
+  --color-status-info-bg: var(--scanner-status-info-bg);
+
+  /* ---- Primitive palette (for direct-color utilities where needed) ---- */
+  --color-blue-500: var(--scanner-blue-500);
+  --color-red-500: var(--scanner-red-500);
+  --color-green-500: var(--scanner-green-500);
+  --color-orange-500: var(--scanner-orange-500);
+  --color-purple-500: var(--scanner-purple-500);
+  --color-neutral-50: var(--scanner-neutral-50);
+  --color-neutral-900: var(--scanner-neutral-900);
 }
