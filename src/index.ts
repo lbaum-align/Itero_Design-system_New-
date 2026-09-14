@@ -65,3 +65,15 @@ export type {
   ButtonEmphasis,
   ButtonSize,
 } from './components/button';
+
+export { Avatar } from './components/avatar';
+export type { AvatarProps, AvatarSize } from './components/avatar';
+
+export { Tooltip } from './components/tooltip';
+export type { TooltipProps } from './components/tooltip';
+
+export { IconTriggerTooltip } from './components/icon-trigger-tooltip';
+export type { IconTriggerTooltipProps } from './components/icon-trigger-tooltip';
+
+export { TextTriggerTooltip } from './components/text-trigger-tooltip';
+export type { TextTriggerTooltipProps } from './components/text-trigger-tooltip';
