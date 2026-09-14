@@ -144,3 +144,27 @@ export type {
 
 export { Pagination } from './components/pagination';
 export type { PaginationProps, PaginationSize } from './components/pagination';
+
+// --- Components (Tier 8: Menu) ---
+
+export { Menu, MenuDivider } from './components/menu';
+export type { MenuProps, MenuDividerProps } from './components/menu';
+
+// --- Components (Tier 9: Advanced composites) ---
+
+export { ProgressBar } from './components/progress-bar';
+export type { ProgressBarProps, ProgressBarStatus } from './components/progress-bar';
+
+export { Stepper } from './components/stepper';
+export type {
+  StepperProps,
+  StepperOrientation,
+  StepItem,
+  StepState,
+} from './components/stepper';
+
+export { AccordionGroup } from './components/accordion-group';
+export type {
+  AccordionGroupProps,
+  AccordionGroupItem,
+} from './components/accordion-group';

@@ -166,4 +166,16 @@
   --color-purple-500: var(--scanner-purple-500);
   --color-neutral-50: var(--scanner-neutral-50);
   --color-neutral-900: var(--scanner-neutral-900);
+
+  /* ---- Animations ---- */
+  --animate-progress-indeterminate: progress-indeterminate 1.5s ease-in-out infinite;
+}
+
+@keyframes progress-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
 }
