@@ -1,0 +1,16 @@
+@import "tailwindcss";
+@import "./tokens/index.css";
+
+/*
+ * Scanner Design System — Tailwind v4 theme mapping
+ * CSS custom properties → Tailwind utilities
+ * Populated in Phase 1 when real tokens are extracted from Figma
+ */
+@theme {
+  --font-family-sans: var(--scanner-font-family);
+  --spacing-1: var(--scanner-spacing-01);
+  --spacing-2: var(--scanner-spacing-02);
+  --spacing-3: var(--scanner-spacing-03);
+  --spacing-4: var(--scanner-spacing-04);
+  --spacing-5: var(--scanner-spacing-05);
+}
