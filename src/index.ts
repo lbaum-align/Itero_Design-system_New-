@@ -39,3 +39,19 @@ export type { BadgeProps, BadgeStatus, BadgeLayout } from './components/badge';
 
 export { Link } from './components/link';
 export type { LinkProps, LinkType, LinkSize } from './components/link';
+
+// --- Icons ---
+
+export { Icon } from './icons';
+export type { IconProps, IconName, IconSize } from './icons';
+
+// --- Components (Tier 2: Simple atoms with icon deps) ---
+
+export { Tag } from './components/tag';
+export type { TagProps, TagSize } from './components/tag';
+
+export { CheckboxItem } from './components/checkbox-item';
+export type { CheckboxItemProps, CheckboxSelection } from './components/checkbox-item';
+
+export { RadioButtonItem } from './components/radio-button-item';
+export type { RadioButtonItemProps } from './components/radio-button-item';
