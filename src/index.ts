@@ -70,10 +70,34 @@ export { Avatar } from './components/avatar';
 export type { AvatarProps, AvatarSize } from './components/avatar';
 
 export { Tooltip } from './components/tooltip';
-export type { TooltipProps } from './components/tooltip';
+export type { TooltipProps, TooltipPosition } from './components/tooltip';
 
 export { IconTriggerTooltip } from './components/icon-trigger-tooltip';
 export type { IconTriggerTooltipProps } from './components/icon-trigger-tooltip';
 
 export { TextTriggerTooltip } from './components/text-trigger-tooltip';
-export type { TextTriggerTooltipProps } from './components/text-trigger-tooltip';
+export type {
+  TextTriggerTooltipProps,
+  TextTriggerTooltipPosition,
+} from './components/text-trigger-tooltip';
+
+// --- Components (Tier 4: Groups) ---
+
+export { ButtonGroup } from './components/button-group';
+export type {
+  ButtonGroupProps,
+  ButtonGroupOrientation,
+  ButtonGroupSize,
+} from './components/button-group';
+
+export { TagGroup } from './components/tag-group';
+export type { TagGroupProps, TagGroupSize } from './components/tag-group';
+
+export { TabGroup } from './components/tab-group';
+export type { TabGroupProps } from './components/tab-group';
+
+export { Breadcrumbs } from './components/breadcrumbs';
+export type { BreadcrumbsProps, BreadcrumbItem } from './components/breadcrumbs';
+
+export { SplitButton } from './components/split-button';
+export type { SplitButtonProps } from './components/split-button';
