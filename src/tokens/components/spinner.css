@@ -1,0 +1,10 @@
+/* Component tokens — Figma page "spinner" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* Spinner (node 25:1124) — outer box per Figma "Size" */
+  --scanner-spinner-size-mini: 20px;
+  --scanner-spinner-size-small: 24px;
+  --scanner-spinner-size-medium: 32px;
+  --scanner-spinner-size-large: 48px;
+  --scanner-spinner-size-xl: 80px;   /* "X Large" */
+  --scanner-spinner-size-2xl: 96px;  /* "2X Large" */
+}

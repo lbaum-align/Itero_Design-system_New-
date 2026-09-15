@@ -1,0 +1,16 @@
+/* Component tokens — Figma page "Button" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* 01 Button (node 36403:6395) */
+  --scanner-button-height-lg: 60px;
+  --scanner-button-height-md: 48px;
+  --scanner-button-height-sm: 36px;
+  --scanner-button-min-width: 72px;
+  --scanner-button-focus-offset: 4px;          /* Focus ring sits 4px outside the button */
+  --scanner-button-focus-width: 2px;
+}
+
+/* 02 Split button (node 36407:15124) */
+:root {
+  --scanner-split-button-gap: 1px;             /* Gap between the action and the dropdown trigger */
+  --scanner-split-button-icon-size-sm: 20px;   /* Small trigger chevron (Large/Medium use the Button's 24px) */
+}

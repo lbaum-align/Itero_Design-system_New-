@@ -1,0 +1,6 @@
+/* Component tokens — Figma page "progress-bar" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* Progress bar (node 25486:2635) */
+  --scanner-progress-bar-height: 8px;
+  --scanner-progress-bar-status-icon-size: 24px;
+}

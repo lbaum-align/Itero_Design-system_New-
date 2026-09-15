@@ -37,7 +37,11 @@ React component library built from Figma "06. Scanner core 1.0.0".
 | 03. Grid, spacing, layouts 2.0.0 | TBD | Spacing scale |
 | 04. Typography system (Scanner) | TBD | Font sizes, weights, line heights |
 | 05. Icons library 2.0.0 | TBD | Icon SVGs |
-| 06. Scanner core 1.0.0 | `92jGgELoruQBVB96FtLRDe` | Components (this file) |
+| 06. Scanner core 1.0.0 full | `TCdFM9Hy78GHyifCSlkedx` | Components + source of truth for token values (this file) |
+
+The old key `92jGgELoruQBVB96FtLRDe` is not accessible to the current Figma account. The file's page list only
+exposes "Cover", so component pages must be opened by node-id (e.g. Button page `15305:6719`).
+When a token value in code differs from this file's variables, correct the token to match this file.
 
 ## Figma Rules
 

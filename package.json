@@ -27,7 +27,7 @@
     "build:lib": "vite build --mode lib",
     "preview": "vite preview",
     "lint": "oxlint",
-    "typecheck": "tsc -b --noEmit",
+    "typecheck": "tsc -b --noEmit && tsc --noEmit -p tsconfig.stories.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "storybook": "storybook dev -p 6006",

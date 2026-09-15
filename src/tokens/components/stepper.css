@@ -1,0 +1,13 @@
+/* Component tokens — Figma page "stepper" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* _Step counter (node 34201:2238) / indicators — 24×24 icons */
+  --scanner-stepper-indicator-size: 24px;
+  /* "Progress line" — 1px, 36px long (vertical: 1×36 in a 24px-wide wrapper; horizontal: 36×1 in a 20px-tall wrapper) */
+  --scanner-stepper-line-width: 1px;
+  --scanner-stepper-line-length: 36px;
+  --scanner-stepper-line-wrapper-height: 20px;
+  /* Skeleton label placeholders (fixed sizes in Figma) */
+  --scanner-stepper-skeleton-height: 16px;
+  --scanner-stepper-skeleton-width-vertical: 44px;
+  --scanner-stepper-skeleton-width-horizontal: 78px;
+}

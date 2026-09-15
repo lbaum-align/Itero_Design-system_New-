@@ -1,0 +1,14 @@
+/* Component tokens — Figma page "menu" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* Menu (node 30413:43333) */
+  --scanner-menu-width: 180px;
+  --scanner-menu-min-width: 120px;
+  --scanner-menu-max-width: 288px;
+
+  /* _Menu items (node 30413:41882) — fixed item heights (row + optional divider, headline excluded) */
+  --scanner-menu-item-height-lg: 60px;
+  --scanner-menu-item-height-md: 58px;
+  --scanner-menu-item-height-sm: 52px;
+  --scanner-menu-item-icon-size: 20px;     /* "Checkmark empty" 20×20 and the "Space" indent frame */
+  --scanner-menu-divider-offset: 3px;      /* 1px line sits 3px from the top of the 8px divider frame */
+}

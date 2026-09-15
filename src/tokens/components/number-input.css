@@ -1,0 +1,17 @@
+/* Component tokens — Figma page "number-input" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* Number input (node 36634:12646) — field heights */
+  --scanner-number-input-height-xl: 60px;
+  --scanner-number-input-height-lg: 44px;
+  --scanner-number-input-height-md: 36px;
+  --scanner-number-input-height-sm: 28px;
+  /* Subtract / Add controls (ghost icon-only buttons) */
+  --scanner-number-input-control-size-xl: 32px;  /* 24px icon + 4px padding */
+  --scanner-number-input-control-size: 28px;     /* Large / Medium / Small: 20px icon + 4px padding */
+  --scanner-number-input-icon-size-xl: 24px;
+  --scanner-number-input-icon-size: 20px;
+  --scanner-number-input-divider-height: 16px;
+  /* Skeleton "Label box" / "Helper box" */
+  --scanner-number-input-skeleton-bar-width: 40px;
+  --scanner-number-input-skeleton-bar-height: 8px;
+}

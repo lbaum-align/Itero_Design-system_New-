@@ -1,0 +1,13 @@
+/* Component tokens — Figma page "toggle" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* Toggle (node 24292:6271) */
+  --scanner-toggle-track-width: 51.2px;
+  --scanner-toggle-track-height: 32px;
+  --scanner-toggle-handle-size: 28px;
+  /* "Border focus" rectangle: 54×36 around the 51.2×32 track */
+  --scanner-toggle-focus-inset-x: 1.4px;
+  --scanner-toggle-focus-inset-y: 2px;
+  /* Skeleton value placeholder */
+  --scanner-toggle-skeleton-value-width: 40px;
+  --scanner-toggle-skeleton-value-height: 12px;
+}

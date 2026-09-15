@@ -1,0 +1,7 @@
+/* Component tokens — Figma page "page-header" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* Page header (node 34197:1887) — bottom stroke: 1px border-subtle, inside, dash pattern [4, 4] */
+  --scanner-page-header-divider-width: 1px;
+  --scanner-page-header-divider-dash: 4px;
+  --scanner-page-header-divider-gap: 4px;
+}

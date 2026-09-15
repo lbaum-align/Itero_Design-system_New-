@@ -1,15 +1,13 @@
 /* ==========================================================================
  * Scanner Design System — Effect Tokens (Shadows)
- * Source: Figma "02. Color modes 2.0.0" subscribed styles
- *
- * Depth 01 is the primary elevation shadow. Exact values will be refined
- * once extracted from a component page in Figma that uses the shadow.
+ * Source: Figma "06. Scanner core 1.0.0 full" — effect style "Depth 01" (remote),
+ * used by Menu / Select menu: DROP_SHADOW x0 y2 blur 12 spread 0 #00000020.
+ * Depth 02/03 have no Figma source yet (placeholders, unused).
  * ========================================================================== */
 
 :root {
   /* ---- Elevation / depth ---- */
-  --scanner-shadow-depth-01: 0px 2px 4px -1px rgba(0, 0, 0, 0.10),
-                             0px 4px 8px -1px rgba(0, 0, 0, 0.08);
+  --scanner-shadow-depth-01: 0px 2px 12px 0px rgba(0, 0, 0, 0.125); /* Figma "Depth 01" */
 
   --scanner-shadow-depth-02: 0px 4px 8px -2px rgba(0, 0, 0, 0.10),
                              0px 8px 16px -2px rgba(0, 0, 0, 0.08);
@@ -21,9 +19,6 @@
 }
 
 [data-theme="dark"] {
-  --scanner-shadow-depth-01: 0px 2px 4px -1px rgba(0, 0, 0, 0.30),
-                             0px 4px 8px -1px rgba(0, 0, 0, 0.24);
-
   --scanner-shadow-depth-02: 0px 4px 8px -2px rgba(0, 0, 0, 0.30),
                              0px 8px 16px -2px rgba(0, 0, 0, 0.24);
 

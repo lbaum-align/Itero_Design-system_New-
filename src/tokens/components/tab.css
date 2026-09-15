@@ -1,0 +1,7 @@
+/* Component tokens — Figma page "tab" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* _Tab item (node 28:1602) */
+  --scanner-tab-item-height: 60px;
+  --scanner-tab-indicator-width: 2px;   /* Selected: 2px border-interactive bottom stroke (inside) */
+  --scanner-tab-focus-width: 1px;       /* Focused: 1px border-focus stroke outside the item */
+}

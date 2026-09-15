@@ -1,0 +1,25 @@
+/* Component tokens — Figma page "avatar" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* 01 Avatar (node 20920:34) — Size 28…80 */
+  --scanner-avatar-size-28: 28px;
+  --scanner-avatar-size-32: 32px;
+  --scanner-avatar-size-36: 36px;
+  --scanner-avatar-size-40: 40px;
+  --scanner-avatar-size-44: 44px;
+  --scanner-avatar-size-48: 48px;
+  --scanner-avatar-size-52: 52px;
+  --scanner-avatar-size-60: 60px;
+  --scanner-avatar-size-80: 80px;
+  --scanner-avatar-stroke-width: 1px;           /* Initials / Icon: border-highlight-gray stroke inside the circle */
+
+  /* _Status (node 20920:33) — dot sizes used by Avatar */
+  --scanner-avatar-status-size-xs: 6px;         /* Avatar 28, 32 */
+  --scanner-avatar-status-size-sm: 8px;         /* Avatar 36, 40 */
+  --scanner-avatar-status-size-md: 10px;        /* Avatar 44, 48, 52 */
+  --scanner-avatar-status-size-lg: 12px;        /* Avatar 60 (extrapolated from the 16px mask) */
+  --scanner-avatar-status-size-xl: 16px;        /* Avatar 80 (extrapolated) · standalone _Status */
+  --scanner-avatar-status-offset: 1px;          /* Dot inset from the avatar's bottom-right edge */
+
+  /* 02 Avatars group (node 24505:108025) */
+  --scanner-avatar-group-ring-width: 1px;       /* border-on-color-strong stroke outside each avatar */
+}

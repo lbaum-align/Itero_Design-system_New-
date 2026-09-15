@@ -1,0 +1,17 @@
+/* Component tokens — Figma page "pagination" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* _Pagination item (node 34178:41733) and Pagination prev/next buttons (node 34178:41697) — square box size */
+  --scanner-pagination-item-size-xl: 60px;
+  --scanner-pagination-item-size-lg: 44px;
+  --scanner-pagination-item-size-md: 36px;
+  --scanner-pagination-item-size-sm: 28px;
+  /* Prev/next caret icon: 24px at X-Large, 20px otherwise */
+  --scanner-pagination-icon-size-xl: 24px;
+  --scanner-pagination-icon-size: 20px;
+  /* "Over" (ellipsis) slot width: 48px at X-Large, hugs the 20px icon otherwise */
+  --scanner-pagination-ellipsis-width-xl: 48px;
+  --scanner-pagination-ellipsis-width: 20px;
+  /* Focus ring: 2px border-focus, 4px outside the item */
+  --scanner-pagination-focus-offset: 4px;
+  --scanner-pagination-focus-width: 2px;
+}

@@ -1,0 +1,8 @@
+/* Component tokens — Figma page "breadcrumbs" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* _Breadcrumb link (node 25889:49863) — State=Skeleton */
+  --scanner-breadcrumb-skeleton-min-width: 91px; /* Placeholder bar width in Figma (fallback when there is no label) */
+  --scanner-breadcrumb-skeleton-height: 12px;    /* Placeholder bar height */
+  --scanner-breadcrumb-skeleton-opacity: 0.9;
+  --scanner-breadcrumb-focus-width: 1px;         /* Focused: 1px border-focus stroke outside the label */
+}

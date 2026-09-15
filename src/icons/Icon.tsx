@@ -7,7 +7,8 @@ import type { IconProps } from './icon.types';
  * Icon — renders an SVG icon from the Scanner icon registry.
  *
  * Icons use `currentColor` for fills, inheriting from parent text/icon color.
- * The `size` prop controls the rendered pixel dimensions.
+ * The `size` prop controls the rendered pixel dimensions (the Figma 16/20/24/32 artboards are exact
+ * scales of one drawing, so one path set serves every size). `data-icon` carries the registry name.
  */
 export const Icon = forwardRef<SVGSVGElement, IconProps>(
   ({ name, size = 20, label, className, ...rest }, ref) => {
@@ -28,6 +29,7 @@ export const Icon = forwardRef<SVGSVGElement, IconProps>(
         width={size}
         height={size}
         fill="none"
+        data-icon={name}
         className={cn('shrink-0', className)}
         aria-hidden={label ? undefined : true}
         aria-label={label}

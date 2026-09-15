@@ -1,0 +1,7 @@
+/* Component tokens — Figma page "checkbox" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* 01 Checkbox item (node 1223:1396) */
+  --scanner-checkbox-indicator-size: 28px;
+  --scanner-checkbox-focus-width: 1.4px;              /* Focused: 1.4px border-focus stroke inside the indicator */
+  --scanner-checkbox-skeleton-value-width: 172px;     /* Skeleton "Value box" (208px item − 28px indicator − 8px gap) */
+}

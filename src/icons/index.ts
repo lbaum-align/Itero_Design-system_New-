@@ -1,2 +1,4 @@
 export { Icon } from './Icon';
-export type { IconProps, IconName, IconSize } from './icon.types';
+export { iconRegistry, iconNames, stepNumberIconName } from './registry';
+export type { IconEntry } from './registry';
+export type { IconProps, IconName, IconSize, IconStepNumber } from './icon.types';

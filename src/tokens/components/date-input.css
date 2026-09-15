@@ -1,0 +1,10 @@
+/* Component tokens — Figma page "date-input" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* Date input (node 25493:22854) — field heights (Large and Medium share 60px, Small is 52px) */
+  --scanner-date-input-height-lg: 60px;
+  --scanner-date-input-height-md: 60px;
+  --scanner-date-input-height-sm: 52px;
+  /* Skeleton "Label box" / "Helper box" */
+  --scanner-date-input-skeleton-bar-width: 40px;
+  --scanner-date-input-skeleton-bar-height: 8px;
+}

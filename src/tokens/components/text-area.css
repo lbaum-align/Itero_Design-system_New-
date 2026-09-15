@@ -1,0 +1,12 @@
+/* Component tokens — Figma page "text-area" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* Text area (node 6176:2286) */
+  --scanner-text-area-height: 108px;            /* Field default height */
+  --scanner-text-area-min-height: 52px;         /* 12px padding + one 28px line + 12px padding */
+  --scanner-text-area-resize-handle-size: 8px;
+  --scanner-text-area-resize-handle-inset: 3px; /* Handle sits 3px from the bottom-right corner */
+  /* Skeleton "Label box" / "Counter box" / "Helper box" */
+  --scanner-text-area-skeleton-bar-width: 40px;
+  --scanner-text-area-skeleton-counter-width: 28px;
+  --scanner-text-area-skeleton-bar-height: 8px;
+}

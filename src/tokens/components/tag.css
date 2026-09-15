@@ -1,0 +1,16 @@
+/* Component tokens — Figma page "tag" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* 01 Tag (node 22123:13334) */
+  --scanner-tag-min-width: 24px;
+  /* Skeleton placeholders have fixed sizes in Figma (no content) */
+  --scanner-tag-skeleton-width-lg: 113px;
+  --scanner-tag-skeleton-width-md: 105px;
+  --scanner-tag-skeleton-width-sm: 93px;
+  --scanner-tag-skeleton-width-xs: 81px;
+  --scanner-tag-height-lg: 48px;
+  --scanner-tag-height-md: 40px;
+  --scanner-tag-height-sm: 32px;
+  --scanner-tag-height-xs: 24px;
+  /* Close icon focus ring — not drawn in Figma; mirrors Button's 2px border-focus ring */
+  --scanner-tag-close-focus-width: 2px;
+}

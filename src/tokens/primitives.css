@@ -11,6 +11,8 @@
   --scanner-neutral-100: #f4f4f4;
   --scanner-neutral-200: #e9e9e9;
   --scanner-neutral-300: #d4d4d4;
+  --scanner-neutral-500: #3b3b3b;   /* Figma dark background-accent */
+  --scanner-neutral-550: #303030;   /* Figma background-inverse-hovered */
   --scanner-neutral-600: #262626;
   --scanner-neutral-700: #1b1b1b;
   --scanner-neutral-800: #121212;
@@ -20,6 +22,7 @@
   --scanner-blue-50: #e6f7ff;
   --scanner-blue-100: #d1f1ff;
   --scanner-blue-200: #8adaff;
+  --scanner-blue-250: #5fcefa;      /* Figma dark *-link-hovered */
   --scanner-blue-300: #41c1f0;
   --scanner-blue-400: #16a5d9;
   --scanner-blue-500: #009ace;
@@ -27,6 +30,8 @@
   --scanner-blue-700: #0080b2;
   --scanner-blue-800: #0072a3;
   --scanner-blue-900: #005780;
+  --scanner-blue-950: #00334d;      /* Figma dark border-highlight-blue */
+  --scanner-blue-975: #021e2e;      /* Figma dark background-highlight-blue */
 
   /* ---- Purple ---- */
   --scanner-purple-50: #f8f2ff;
@@ -43,6 +48,7 @@
   /* ---- Red ---- */
   --scanner-red-50: #fff0f3;
   --scanner-red-100: #ffe0e7;
+  --scanner-red-150: #ffc2ce;       /* Figma dark text-on-highlight-red */
   --scanner-red-200: #ffb0c0;
   --scanner-red-300: #fc8397;
   --scanner-red-400: #ed5c75;
@@ -50,6 +56,7 @@
   --scanner-red-600: #c42d49;
   --scanner-red-700: #b51f3f;
   --scanner-red-800: #a31035;
+  --scanner-red-850: #630920;       /* Figma dark border-highlight-red */
   --scanner-red-900: #380912;
 
   /* ---- Green ---- */
@@ -57,20 +64,27 @@
   --scanner-green-100: #c6f5d6;
   --scanner-green-200: #9ae3b5;
   --scanner-green-300: #6bc98d;
+  --scanner-green-350: #4dbd78;     /* Figma dark text/icon/border-success */
   --scanner-green-400: #2eb066;
   --scanner-green-500: #00964e;
   --scanner-green-600: #008744;
   --scanner-green-700: #007a3d;
   --scanner-green-800: #006131;
+  --scanner-green-850: #00381c;     /* Figma dark border-highlight-green */
   --scanner-green-900: #002e18;
+  --scanner-green-950: #002111;     /* Figma dark background-highlight-green */
 
   /* ---- Orange ---- */
   --scanner-orange-50: #fff2ed;
   --scanner-orange-100: #ffe5db;
+  --scanner-orange-200: #fcc6b1;    /* Figma dark text-on-highlight-orange */
   --scanner-orange-300: #f69272;
+  --scanner-orange-350: #f58d71;    /* Figma dark text/icon/border-warning */
   --scanner-orange-500: #de5637;
   --scanner-orange-700: #b53517;
   --scanner-orange-900: #9e2813;
+  --scanner-orange-950: #5e1509;    /* Figma dark border-highlight-orange */
+  --scanner-orange-975: #360f02;    /* Figma dark background-highlight-orange */
 
   /* ---- Magenta ---- */
   --scanner-magenta-50: #fff0f9;
@@ -79,6 +93,7 @@
   --scanner-magenta-300: #fa96d2;
   --scanner-magenta-500: #e03fa0;
   --scanner-magenta-700: #a30564;
+  --scanner-magenta-800: #5e0b3c;   /* Figma dark border-highlight-magenta */
   --scanner-magenta-900: #330d23;
 
   /* ---- Transparent on white (black + alpha) ---- */

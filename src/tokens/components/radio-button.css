@@ -1,0 +1,10 @@
+/* Component tokens — Figma page "radio-button" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* 01 Radio button item (node 1223:1419) */
+  --scanner-radio-indicator-box: 24px;          /* "Indicator" frame width (height follows the 28px value line) */
+  --scanner-radio-indicator-size: 23px;         /* Radio glyph (ring 1.64px, selected dot 13.1px) */
+  --scanner-radio-indicator-size-focused: 21px; /* Focused: glyph shrinks to 21px inside the focus ring */
+  --scanner-radio-focus-ring-size: 25px;        /* Focused: 1px border-focus ring, 1px gap around the 21px glyph */
+  --scanner-radio-focus-ring-width: 1px;
+  --scanner-radio-value-max-width: 320px;       /* "Value" text max width; longer values wrap */
+}

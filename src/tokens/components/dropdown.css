@@ -1,0 +1,11 @@
+/* Component tokens — Figma page "dropdown" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* Select menu (node 30409:27826) */
+  --scanner-select-menu-width: 180px;
+  --scanner-select-menu-min-width: 64px;
+
+  /* _Select menu Item (node 7149:1690) */
+  --scanner-select-menu-item-check-size-xl: 24px;  /* "Checkmark empty" 24×24 (X-Large) */
+  --scanner-select-menu-item-check-size: 20px;     /* "Checkmark empty" 20×20 (Large / Medium / Small) */
+  --scanner-select-menu-divider-offset: 3px;       /* 1px line sits 3px from the top of the 8px divider frame */
+}

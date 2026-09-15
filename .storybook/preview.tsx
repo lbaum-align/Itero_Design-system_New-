@@ -23,6 +23,9 @@ const preview: Preview = {
     (Story, context) => {
       const theme = context.globals.theme || 'light';
       document.documentElement.setAttribute('data-theme', theme);
+      /* Paint the canvas with the themed page background so dark stories aren't white-on-white */
+      document.body.style.background = 'var(--scanner-bg-primary)';
+      document.body.style.color = 'var(--scanner-text-primary)';
       return <Story />;
     },
   ],

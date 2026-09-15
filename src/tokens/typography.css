@@ -1,6 +1,7 @@
 /* ==========================================================================
  * Scanner Design System — Typography Tokens
- * Source: Figma "04. Typography system (Scanner)" + local text styles
+ * Source: Figma "06. Scanner core 1.0.0 full" → external/04-Typography-system-Scanner
+ * variables + the file's 27 local text styles
  * ========================================================================== */
 
 :root {
@@ -11,7 +12,9 @@
   /* ---- Font sizes ---- */
   --scanner-text-xs: 12px;     /* x-small */
   --scanner-text-sm: 14px;     /* small */
+  --scanner-text-base: 16px;   /* text styles *-01 (no Figma primitive) */
   --scanner-text-md: 17px;     /* medium */
+  --scanner-text-scanner-md: 18px; /* "Scanner mediun" — text styles *-02, Button label */
   --scanner-text-lg: 20px;     /* large */
   --scanner-text-xl: 24px;     /* x-large */
   --scanner-text-2xl: 28px;    /* 2x-large */
@@ -30,9 +33,10 @@
   --scanner-leading-2xl: 36px;
   --scanner-leading-3xl: 44px;
   --scanner-leading-4xl: 52px;
-  --scanner-leading-5xl: 64px;
-  --scanner-leading-6xl: 80px;
-  --scanner-leading-7xl: 112px;
+  --scanner-leading-40: 40px;  /* heading-05 (no Figma primitive) */
+  --scanner-leading-5xl: 60px;
+  --scanner-leading-6xl: 84px;
+  --scanner-leading-7xl: 116px;
 
   /* ---- Font weights ---- */
   --scanner-font-regular: 400;
@@ -47,224 +51,233 @@
 
 /* ==========================================================================
  * Composite text-style utilities
- * These match the 27 Figma text styles exactly.
- * Components should use these classes or reference the tokens above.
+ * Mirror this file's local Figma text styles (all Roboto; letter-spacing 0).
+ * CAUTION: components in Figma are bound to *remote* library styles whose values differ by
+ * library version under the same name (e.g. "$tp-body-01" is 14/20 in some components and
+ * 16/24 in others; "$tp-label-01" is 12/16 or 16/24). Always implement the size/line-height
+ * of the actual Figma text node (size + leading tokens), not the style name.
  * ========================================================================== */
 
+
 /* ---- Code ---- */
-.scanner-text-code-01 {
-  font-family: var(--scanner-font-mono);
-  font-size: var(--scanner-text-xs);
-  line-height: var(--scanner-leading-xs);
+.scanner-text-code-01 { /* Code/$tp-code-01 16/24 */
+  font-family: var(--scanner-font-sans);
+  font-size: var(--scanner-text-base);
+  line-height: var(--scanner-leading-md);
   font-weight: var(--scanner-font-regular);
 }
 
-.scanner-text-code-02 {
-  font-family: var(--scanner-font-mono);
-  font-size: var(--scanner-text-sm);
-  line-height: var(--scanner-leading-sm);
+.scanner-text-code-02 { /* Code/$tp-code-02 18/28 */
+  font-family: var(--scanner-font-sans);
+  font-size: var(--scanner-text-scanner-md);
+  line-height: var(--scanner-leading-lg);
   font-weight: var(--scanner-font-regular);
 }
+
 
 /* ---- Label ---- */
-.scanner-text-label-01 {
+.scanner-text-label-01 { /* Label/$tp-label-01 16/24 */
   font-family: var(--scanner-font-sans);
-  font-size: var(--scanner-text-xs);
-  line-height: var(--scanner-leading-xs);
-  font-weight: var(--scanner-font-medium);
-}
-
-.scanner-text-label-02 {
-  font-family: var(--scanner-font-sans);
-  font-size: var(--scanner-text-sm);
-  line-height: var(--scanner-leading-sm);
-  font-weight: var(--scanner-font-medium);
-}
-
-.scanner-text-label-03 {
-  font-family: var(--scanner-font-sans);
-  font-size: var(--scanner-text-md);
-  line-height: var(--scanner-leading-md);
-  font-weight: var(--scanner-font-medium);
-}
-
-/* ---- Body ---- */
-.scanner-text-body-01 {
-  font-family: var(--scanner-font-sans);
-  font-size: var(--scanner-text-xs);
-  line-height: var(--scanner-leading-xs);
-  font-weight: var(--scanner-font-regular);
-}
-
-.scanner-text-body-02 {
-  font-family: var(--scanner-font-sans);
-  font-size: var(--scanner-text-sm);
-  line-height: var(--scanner-leading-sm);
-  font-weight: var(--scanner-font-regular);
-}
-
-.scanner-text-body-03 {
-  font-family: var(--scanner-font-sans);
-  font-size: var(--scanner-text-md);
+  font-size: var(--scanner-text-base);
   line-height: var(--scanner-leading-md);
   font-weight: var(--scanner-font-regular);
 }
 
-.scanner-text-body-04 {
+.scanner-text-label-02 { /* Label/$tp-label-02 18/28 */
   font-family: var(--scanner-font-sans);
-  font-size: var(--scanner-text-lg);
+  font-size: var(--scanner-text-scanner-md);
   line-height: var(--scanner-leading-lg);
   font-weight: var(--scanner-font-regular);
 }
 
-/* ---- Link ---- */
-.scanner-text-link-01 {
-  font-family: var(--scanner-font-sans);
-  font-size: var(--scanner-text-xs);
-  line-height: var(--scanner-leading-xs);
-  font-weight: var(--scanner-font-medium);
-  text-decoration: underline;
-}
-
-.scanner-text-link-02 {
-  font-family: var(--scanner-font-sans);
-  font-size: var(--scanner-text-sm);
-  line-height: var(--scanner-leading-sm);
-  font-weight: var(--scanner-font-medium);
-  text-decoration: underline;
-}
-
-/* ---- Heading ---- */
-.scanner-text-heading-01 {
-  font-family: var(--scanner-font-sans);
-  font-size: var(--scanner-text-sm);
-  line-height: var(--scanner-leading-sm);
-  font-weight: var(--scanner-font-medium);
-}
-
-.scanner-text-heading-02 {
-  font-family: var(--scanner-font-sans);
-  font-size: var(--scanner-text-md);
-  line-height: var(--scanner-leading-md);
-  font-weight: var(--scanner-font-medium);
-}
-
-.scanner-text-heading-03 {
-  font-family: var(--scanner-font-sans);
-  font-size: var(--scanner-text-lg);
-  line-height: var(--scanner-leading-lg);
-  font-weight: var(--scanner-font-medium);
-}
-
-.scanner-text-heading-04 {
+.scanner-text-label-03 { /* Label/$tp-label-03 24/36 */
   font-family: var(--scanner-font-sans);
   font-size: var(--scanner-text-xl);
+  line-height: var(--scanner-leading-2xl);
+  font-weight: var(--scanner-font-regular);
+}
+
+
+/* ---- Body ---- */
+.scanner-text-body-01 { /* Body/$tp-body-01 16/24 */
+  font-family: var(--scanner-font-sans);
+  font-size: var(--scanner-text-base);
+  line-height: var(--scanner-leading-md);
+  font-weight: var(--scanner-font-regular);
+}
+
+.scanner-text-body-02 { /* Body/$tp-body-02 18/28 */
+  font-family: var(--scanner-font-sans);
+  font-size: var(--scanner-text-scanner-md);
+  line-height: var(--scanner-leading-lg);
+  font-weight: var(--scanner-font-regular);
+}
+
+.scanner-text-body-03 { /* Body/$tp-body-03 20/32 */
+  font-family: var(--scanner-font-sans);
+  font-size: var(--scanner-text-lg);
+  line-height: var(--scanner-leading-xl);
+  font-weight: var(--scanner-font-regular);
+}
+
+.scanner-text-body-04 { /* Body/$tp-body-04 24/36 */
+  font-family: var(--scanner-font-sans);
+  font-size: var(--scanner-text-xl);
+  line-height: var(--scanner-leading-2xl);
+  font-weight: var(--scanner-font-regular);
+}
+
+
+/* ---- Link ---- */
+.scanner-text-link-01 { /* Link/$tp-link-01 16/24 */
+  font-family: var(--scanner-font-sans);
+  font-size: var(--scanner-text-base);
+  line-height: var(--scanner-leading-md);
+  font-weight: var(--scanner-font-regular);
+}
+
+.scanner-text-link-02 { /* Link/$tp-link-02 18/28 */
+  font-family: var(--scanner-font-sans);
+  font-size: var(--scanner-text-scanner-md);
+  line-height: var(--scanner-leading-lg);
+  font-weight: var(--scanner-font-regular);
+}
+
+
+/* ---- Heading ---- */
+.scanner-text-heading-01 { /* $tp-headling-01 16/24 */
+  font-family: var(--scanner-font-sans);
+  font-size: var(--scanner-text-base);
+  line-height: var(--scanner-leading-md);
+  font-weight: var(--scanner-font-medium);
+}
+
+.scanner-text-heading-02 { /* $tp-headling-02 18/28 */
+  font-family: var(--scanner-font-sans);
+  font-size: var(--scanner-text-scanner-md);
+  line-height: var(--scanner-leading-lg);
+  font-weight: var(--scanner-font-medium);
+}
+
+.scanner-text-heading-03 { /* $tp-headling-03 20/32 */
+  font-family: var(--scanner-font-sans);
+  font-size: var(--scanner-text-lg);
   line-height: var(--scanner-leading-xl);
   font-weight: var(--scanner-font-medium);
 }
 
-.scanner-text-heading-05 {
+.scanner-text-heading-04 { /* $tp-headling-04 24/36 */
   font-family: var(--scanner-font-sans);
-  font-size: var(--scanner-text-2xl);
+  font-size: var(--scanner-text-xl);
   line-height: var(--scanner-leading-2xl);
   font-weight: var(--scanner-font-medium);
 }
 
-.scanner-text-heading-06 {
+.scanner-text-heading-05 { /* $tp-headling-05 28/40 */
+  font-family: var(--scanner-font-sans);
+  font-size: var(--scanner-text-2xl);
+  line-height: var(--scanner-leading-40);
+  font-weight: var(--scanner-font-medium);
+}
+
+.scanner-text-heading-06 { /* $tp-headling-06 36/44 */
   font-family: var(--scanner-font-sans);
   font-size: var(--scanner-text-3xl);
   line-height: var(--scanner-leading-3xl);
   font-weight: var(--scanner-font-medium);
 }
 
+
 /* ---- Display regular ---- */
-.scanner-text-display-regular-01 {
+.scanner-text-display-regular-01 { /* $tp-display-01-regular 36/44 */
   font-family: var(--scanner-font-sans);
   font-size: var(--scanner-text-3xl);
   line-height: var(--scanner-leading-3xl);
   font-weight: var(--scanner-font-regular);
 }
 
-.scanner-text-display-regular-02 {
+.scanner-text-display-regular-02 { /* $tp-display-02-regular 44/52 */
   font-family: var(--scanner-font-sans);
   font-size: var(--scanner-text-4xl);
   line-height: var(--scanner-leading-4xl);
   font-weight: var(--scanner-font-regular);
 }
 
-.scanner-text-display-regular-03 {
+.scanner-text-display-regular-03 { /* $tp-display-03-regular 52/60 */
   font-family: var(--scanner-font-sans);
   font-size: var(--scanner-text-5xl);
   line-height: var(--scanner-leading-5xl);
   font-weight: var(--scanner-font-regular);
 }
 
-.scanner-text-display-regular-04 {
+.scanner-text-display-regular-04 { /* $tp-display-04-regular 72/84 */
   font-family: var(--scanner-font-sans);
   font-size: var(--scanner-text-6xl);
   line-height: var(--scanner-leading-6xl);
   font-weight: var(--scanner-font-regular);
 }
 
-.scanner-text-display-regular-05 {
+.scanner-text-display-regular-05 { /* $tp-display-05-regular 96/116 */
   font-family: var(--scanner-font-sans);
   font-size: var(--scanner-text-7xl);
   line-height: var(--scanner-leading-7xl);
   font-weight: var(--scanner-font-regular);
 }
 
-/* ---- Display bold ---- */
-.scanner-text-display-bold-01 {
+
+/* ---- Display bold (Figma "Display bold" styles are Roboto Medium) ---- */
+.scanner-text-display-bold-01 { /* $tp-display-01-bold 36/44 */
   font-family: var(--scanner-font-sans);
   font-size: var(--scanner-text-3xl);
   line-height: var(--scanner-leading-3xl);
-  font-weight: var(--scanner-font-bold);
+  font-weight: var(--scanner-font-medium);
 }
 
-.scanner-text-display-bold-02 {
+.scanner-text-display-bold-02 { /* $tp-display-01-medium 44/52 */
   font-family: var(--scanner-font-sans);
   font-size: var(--scanner-text-4xl);
   line-height: var(--scanner-leading-4xl);
-  font-weight: var(--scanner-font-bold);
+  font-weight: var(--scanner-font-medium);
 }
 
-.scanner-text-display-bold-03 {
+.scanner-text-display-bold-03 { /* $tp-display-02-medium 52/60 */
   font-family: var(--scanner-font-sans);
   font-size: var(--scanner-text-5xl);
   line-height: var(--scanner-leading-5xl);
-  font-weight: var(--scanner-font-bold);
+  font-weight: var(--scanner-font-medium);
 }
 
-.scanner-text-display-bold-04 {
+.scanner-text-display-bold-04 { /* $tp-display-03-medium 72/84 */
   font-family: var(--scanner-font-sans);
   font-size: var(--scanner-text-6xl);
   line-height: var(--scanner-leading-6xl);
-  font-weight: var(--scanner-font-bold);
+  font-weight: var(--scanner-font-medium);
 }
 
-/* ---- Display medium ---- */
-.scanner-text-display-medium-01 {
+
+/* ---- Display medium (aliases of Display bold) ---- */
+.scanner-text-display-medium-01 { /* 36/44 */
   font-family: var(--scanner-font-sans);
   font-size: var(--scanner-text-3xl);
   line-height: var(--scanner-leading-3xl);
   font-weight: var(--scanner-font-medium);
 }
 
-.scanner-text-display-medium-02 {
+.scanner-text-display-medium-02 { /* 44/52 */
   font-family: var(--scanner-font-sans);
   font-size: var(--scanner-text-4xl);
   line-height: var(--scanner-leading-4xl);
   font-weight: var(--scanner-font-medium);
 }
 
-.scanner-text-display-medium-03 {
+.scanner-text-display-medium-03 { /* 52/60 */
   font-family: var(--scanner-font-sans);
   font-size: var(--scanner-text-5xl);
   line-height: var(--scanner-leading-5xl);
   font-weight: var(--scanner-font-medium);
 }
 
-.scanner-text-display-medium-04 {
+.scanner-text-display-medium-04 { /* 72/84 */
   font-family: var(--scanner-font-sans);
   font-size: var(--scanner-text-6xl);
   line-height: var(--scanner-leading-6xl);

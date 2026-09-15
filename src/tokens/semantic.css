@@ -1,44 +1,57 @@
 /* ==========================================================================
  * Scanner Design System — Semantic Color Tokens
- * Source: Figma "02. Color modes 2.0.0" + local Semantic collection
- * These are the tokens components should reference.
- * Light mode is default; dark mode via [data-theme="dark"].
+ * Source: Figma "06. Scanner core 1.0.0 full" → variable collection
+ * "Tokens - Self-contained" → external/02-Color-modes-2-0-0, modes
+ * "Align light" (default) and "Align dark" ([data-theme="dark"]).
+ * Comments give the Figma variable name. See docs/figma/colors.md.
  * ========================================================================== */
 
 /* ---- Light mode (default) ---- */
 :root,
 [data-theme="light"] {
   /* -- Backgrounds main -- */
-  --scanner-bg-primary: var(--scanner-neutral-50);          /* #ffffff */
-  --scanner-bg-secondary: var(--scanner-neutral-100);       /* #f4f4f4 */
-  --scanner-bg-tertiary: var(--scanner-neutral-200);        /* #e9e9e9 */
-  --scanner-bg-inverse: var(--scanner-neutral-600);         /* #262626 */
+  --scanner-bg-primary: var(--scanner-neutral-50);          /* background-layer-01  #ffffff */
+  --scanner-bg-secondary: var(--scanner-neutral-100);       /* background-layer-02  #f4f4f4 */
+  --scanner-bg-tertiary: var(--scanner-neutral-200);        /* background-accent    #e9e9e9 */
+  --scanner-bg-layer-01: var(--scanner-bg-primary);         /* background-layer-01 */
+  --scanner-bg-layer-02: var(--scanner-bg-secondary);       /* background-layer-02 */
+  --scanner-bg-accent: var(--scanner-bg-tertiary);          /* background-accent */
+  --scanner-bg-page: var(--scanner-neutral-100);            /* page-background      #f4f4f4 */
+  --scanner-bg-inverse: var(--scanner-neutral-600);         /* background-inverse   #262626 */
+  --scanner-bg-inverse-hover: var(--scanner-neutral-550);   /* background-inverse-hovered #303030 */
 
   /* -- Backgrounds interactive -- */
-  --scanner-bg-brand: var(--scanner-blue-500);              /* #009ace */
-  --scanner-bg-brand-hover: var(--scanner-blue-600);        /* #008ec2 */
-  --scanner-bg-brand-active: var(--scanner-blue-700);       /* #0080b2 */
-  --scanner-bg-destructive: var(--scanner-red-500);         /* #d43f58 */
-  --scanner-bg-destructive-hover: var(--scanner-red-600);   /* #c42d49 */
-  --scanner-bg-destructive-active: var(--scanner-red-700);  /* #b51f3f */
-  --scanner-bg-success: var(--scanner-green-500);           /* #00964e */
-  --scanner-bg-success-hover: var(--scanner-green-600);     /* #008744 */
-  --scanner-bg-success-active: var(--scanner-green-700);    /* #007a3d */
+  --scanner-bg-brand: var(--scanner-blue-500);              /* background-brand #009ace */
+  --scanner-bg-brand-hover: var(--scanner-blue-600);        /* background-brand-hovered #008ec2 */
+  --scanner-bg-brand-active: var(--scanner-blue-700);       /* background-brand-pressed #0080b2 */
+  --scanner-bg-destructive: var(--scanner-red-500);         /* background-destructive #d43f58 */
+  --scanner-bg-destructive-hover: var(--scanner-red-600);   /* background-destructive-hovered #c42d49 */
+  --scanner-bg-destructive-active: var(--scanner-red-700);  /* background-destructive-pressed #b51f3f */
+  --scanner-bg-success: var(--scanner-green-500);           /* background-success #00964e */
+  --scanner-bg-success-hover: var(--scanner-green-600);     /* background-success-hovered #008744 */
+  --scanner-bg-success-active: var(--scanner-green-700);    /* background-success-pressed #007a3d */
 
   /* -- Backgrounds state -- */
-  --scanner-bg-hover: var(--scanner-gray-alpha-5);          /* rgba(0,0,0,0.04) */
-  --scanner-bg-active: var(--scanner-gray-alpha-20);        /* rgba(0,0,0,0.17) */
-  --scanner-bg-selected: var(--scanner-blue-50);            /* #e6f7ff */
-  --scanner-bg-disabled: var(--scanner-gray-alpha-5);       /* rgba(0,0,0,0.04) */
+  --scanner-bg-hover: var(--scanner-gray-alpha-5);          /* background-layer-hovered #0000000b */
+  --scanner-bg-active: var(--scanner-gray-alpha-10);        /* layer-pressed #00000016 */
+  --scanner-bg-selected: var(--scanner-blue-50);            /* legacy — prefer bg-layer-selected / bg-highlight-blue */
+  --scanner-bg-layer-selected: var(--scanner-gray-alpha-5);         /* background-layer-selected #0000000b */
+  --scanner-bg-layer-selected-hover: var(--scanner-gray-alpha-10);  /* background-layer-selected-hovered #00000016 */
+  --scanner-bg-layer-selected-active: var(--scanner-gray-alpha-15); /* background-layer-selected-pressed #00000020 */
+  --scanner-bg-accent-hover: var(--scanner-gray-alpha-15);  /* background-accent-hovered #00000020 */
+  --scanner-bg-accent-active: var(--scanner-gray-alpha-20); /* background-accent-pressed #0000002d */
+  --scanner-bg-disabled: var(--scanner-gray-alpha-5);       /* background-brand/destructive/success-disabled #0000000b */
+  --scanner-bg-on-color-disabled: var(--scanner-gray-alpha-5); /* background-on-color-disabled #0000000b */
 
   /* -- Backgrounds overlay -- */
-  --scanner-bg-overlay: rgba(0, 0, 0, 0.50);
-  --scanner-bg-elevated: var(--scanner-neutral-50);         /* #ffffff */
+  --scanner-bg-overlay: var(--scanner-gray-alpha-65);       /* background-overlay #000000a1 */
+  --scanner-bg-elevated: var(--scanner-neutral-50);         /* background-elevated #ffffff */
 
   /* -- Backgrounds on-color -- */
-  --scanner-bg-on-color: var(--scanner-neutral-50);         /* #ffffff */
+  --scanner-bg-on-color: var(--scanner-neutral-50);         /* background-on-color #ffffff */
 
   /* -- Backgrounds highlight -- */
+  --scanner-bg-highlight-gray: var(--scanner-gray-alpha-5); /* background-highlight-gray #0000000b */
   --scanner-bg-highlight-blue: var(--scanner-blue-50);      /* #e6f7ff */
   --scanner-bg-highlight-green: var(--scanner-green-50);    /* #dcfce8 */
   --scanner-bg-highlight-red: var(--scanner-red-50);        /* #fff0f3 */
@@ -47,71 +60,104 @@
   --scanner-bg-highlight-magenta: var(--scanner-magenta-50); /* #fff0f9 */
 
   /* -- Text main -- */
-  --scanner-text-primary: var(--scanner-gray-alpha-65);     /* rgba(0,0,0,0.63) */
-  --scanner-text-secondary: var(--scanner-gray-alpha-45);   /* rgba(0,0,0,0.44) */
-  --scanner-text-tertiary: var(--scanner-gray-alpha-25);    /* rgba(0,0,0,0.23) */
-  --scanner-text-disabled: var(--scanner-gray-alpha-10);    /* rgba(0,0,0,0.09) */
+  --scanner-text-primary: var(--scanner-neutral-800);       /* text-primary #121212 */
+  --scanner-text-secondary: var(--scanner-gray-alpha-65);   /* text-secondary #000000a1 */
+  --scanner-text-tertiary: var(--scanner-gray-alpha-45);    /* text-tertiary #00000071 */
+  --scanner-text-disabled: var(--scanner-gray-alpha-25);    /* text-disabled #0000003a */
 
   /* -- Text inverse -- */
-  --scanner-text-inverse: var(--scanner-neutral-50);        /* #ffffff */
-  --scanner-text-inverse-secondary: var(--scanner-white-alpha-65); /* rgba(255,255,255,0.63) */
-  --scanner-text-inverse-tertiary: var(--scanner-white-alpha-45);  /* rgba(255,255,255,0.47) */
+  --scanner-text-inverse: var(--scanner-neutral-50);        /* text-inverse-primary #ffffff */
+  --scanner-text-inverse-secondary: var(--scanner-white-alpha-65); /* #ffffffa1 */
+  --scanner-text-inverse-tertiary: var(--scanner-white-alpha-45);  /* #ffffff78 */
+  --scanner-text-inverse-disabled: var(--scanner-white-alpha-25);  /* #ffffff39 */
 
   /* -- Text on-color -- */
-  --scanner-text-on-color: var(--scanner-neutral-50);       /* #ffffff */
-  --scanner-text-on-color-secondary: var(--scanner-white-alpha-65);
-  --scanner-text-on-color-tertiary: var(--scanner-white-alpha-45);
+  --scanner-text-on-color: var(--scanner-neutral-50);       /* text-on-color-primary #ffffff */
+  --scanner-text-on-color-secondary: var(--scanner-white-alpha-65); /* #ffffffa1 */
+  --scanner-text-on-color-tertiary: var(--scanner-white-alpha-45);  /* #ffffff78 */
+  --scanner-text-on-color-disabled: var(--scanner-white-alpha-25);  /* #ffffff39 */
 
   /* -- Text interactive -- */
-  --scanner-text-link: var(--scanner-blue-500);             /* #009ace */
-  --scanner-text-error: var(--scanner-red-500);             /* #d43f58 */
-  --scanner-text-success: var(--scanner-green-500);         /* #00964e */
-  --scanner-text-warning: var(--scanner-orange-500);        /* #de5637 */
+  --scanner-text-link: var(--scanner-blue-500);             /* text-link #009ace */
+  --scanner-text-link-hover: var(--scanner-blue-600);       /* text-link-hovered #008ec2 */
+  --scanner-text-error: var(--scanner-red-500);             /* text-error #d43f58 */
+  --scanner-text-success: var(--scanner-green-500);         /* text-success #00964e */
+  --scanner-text-warning: var(--scanner-orange-500);        /* text-warning #de5637 */
+
+  /* -- Text on highlight -- */
+  --scanner-text-on-highlight-blue: var(--scanner-blue-900);       /* #005780 */
+  --scanner-text-on-highlight-green: var(--scanner-green-800);     /* #006131 */
+  --scanner-text-on-highlight-red: var(--scanner-red-800);         /* #a31035 */
+  --scanner-text-on-highlight-orange: var(--scanner-orange-900);   /* #9e2813 */
+  --scanner-text-on-highlight-purple: var(--scanner-purple-500);   /* #6c37a1 */
+  --scanner-text-on-highlight-magenta: var(--scanner-magenta-700); /* #a30564 */
 
   /* -- Icons main -- */
-  --scanner-icon-primary: var(--scanner-neutral-800);       /* #121212 */
-  --scanner-icon-secondary: var(--scanner-gray-alpha-65);   /* rgba(0,0,0,0.63) */
-  --scanner-icon-tertiary: var(--scanner-gray-alpha-45);    /* rgba(0,0,0,0.44) */
-  --scanner-icon-disabled: var(--scanner-gray-alpha-25);    /* rgba(0,0,0,0.23) */
+  --scanner-icon-primary: var(--scanner-neutral-800);       /* icon-primary #121212 */
+  --scanner-icon-secondary: var(--scanner-gray-alpha-65);   /* icon-secondary #000000a1 */
+  --scanner-icon-tertiary: var(--scanner-gray-alpha-45);    /* icon-tertiary #00000071 */
+  --scanner-icon-disabled: var(--scanner-gray-alpha-25);    /* icon-disabled #0000003a */
 
   /* -- Icons inverse -- */
-  --scanner-icon-inverse: var(--scanner-neutral-50);        /* #ffffff */
+  --scanner-icon-inverse: var(--scanner-neutral-50);        /* icon-inverse-primary #ffffff */
   --scanner-icon-inverse-secondary: var(--scanner-white-alpha-65);
   --scanner-icon-inverse-tertiary: var(--scanner-white-alpha-45);
+  --scanner-icon-inverse-disabled: var(--scanner-white-alpha-25);
 
   /* -- Icons on-color -- */
-  --scanner-icon-on-color: var(--scanner-neutral-50);       /* #ffffff */
+  --scanner-icon-on-color: var(--scanner-neutral-50);       /* icon-on-color-primary #ffffff */
+  --scanner-icon-on-color-secondary: var(--scanner-white-alpha-65);
+  --scanner-icon-on-color-tertiary: var(--scanner-white-alpha-45);
+  --scanner-icon-on-color-disabled: var(--scanner-white-alpha-25);
 
   /* -- Icons interactive -- */
   --scanner-icon-link: var(--scanner-blue-500);
+  --scanner-icon-link-hover: var(--scanner-blue-600);       /* icon-link-hovered */
   --scanner-icon-error: var(--scanner-red-500);
   --scanner-icon-success: var(--scanner-green-500);
   --scanner-icon-warning: var(--scanner-orange-500);
 
+  /* -- Icons on highlight -- */
+  --scanner-icon-on-highlight-blue: var(--scanner-blue-900);
+  --scanner-icon-on-highlight-green: var(--scanner-green-800);
+  --scanner-icon-on-highlight-red: var(--scanner-red-800);
+  --scanner-icon-on-highlight-orange: var(--scanner-orange-900);
+  --scanner-icon-on-highlight-purple: var(--scanner-purple-500);
+  --scanner-icon-on-highlight-magenta: var(--scanner-magenta-700);
+
   /* -- Borders main -- */
-  --scanner-border-default: var(--scanner-gray-alpha-25);   /* rgba(0,0,0,0.23) */
-  --scanner-border-subtle: var(--scanner-gray-alpha-10);    /* rgba(0,0,0,0.09) */
-  --scanner-border-strong: var(--scanner-neutral-900);      /* #000000 */
-  --scanner-border-inverse: var(--scanner-neutral-50);      /* #ffffff */
+  --scanner-border-default: var(--scanner-gray-alpha-25);   /* border-accent #0000003a */
+  --scanner-border-subtle: var(--scanner-gray-alpha-10);    /* border-subtle #00000016 */
+  --scanner-border-strong: var(--scanner-neutral-800);      /* border-strong #121212 */
+  --scanner-border-inverse: var(--scanner-neutral-50);      /* border-inversed-strong #ffffff */
+  --scanner-border-inverse-subtle: var(--scanner-white-alpha-10);  /* border-inversed-subtle #ffffff16 */
+  --scanner-border-inverse-accent: var(--scanner-white-alpha-25);  /* border-inversed-accent #ffffff39 */
 
   /* -- Borders interactive -- */
-  --scanner-border-interactive: var(--scanner-blue-500);    /* #009ace */
+  --scanner-border-interactive: var(--scanner-blue-500);    /* border-interactive #009ace */
+  --scanner-border-interactive-hover: var(--scanner-blue-600); /* border-interactive-hovered #008ec2 */
   --scanner-border-error: var(--scanner-red-500);
   --scanner-border-success: var(--scanner-green-500);
   --scanner-border-warning: var(--scanner-orange-500);
 
   /* -- Borders state -- */
-  --scanner-border-hover: var(--scanner-gray-alpha-35);     /* rgba(0,0,0,0.34) */
-  --scanner-border-active: var(--scanner-gray-alpha-50);    /* rgba(0,0,0,0.50) */
-  --scanner-border-disabled: var(--scanner-gray-alpha-10);  /* rgba(0,0,0,0.09) */
-  --scanner-border-focus: var(--scanner-blue-500);          /* #009ace */
+  --scanner-border-hover: var(--scanner-gray-alpha-35);     /* border-accent-hovered #00000057 */
+  --scanner-border-active: var(--scanner-gray-alpha-50);    /* border-accent-pressed #0000007e */
+  --scanner-border-subtle-hover: var(--scanner-gray-alpha-15);  /* border-subtle-hovered #00000020 */
+  --scanner-border-subtle-active: var(--scanner-gray-alpha-20); /* border-subtle-pressed #0000002d */
+  --scanner-border-disabled: var(--scanner-gray-alpha-10);  /* border-disabled #00000016 */
+  --scanner-border-focus: var(--scanner-blue-500);          /* border-focus #009ace */
+  --scanner-border-on-color-focus: var(--scanner-neutral-50);  /* border-on-color-focus #ffffff */
+  --scanner-border-inverse-focus: var(--scanner-blue-300);  /* border-inversed-focus #41c1f0 */
 
   /* -- Borders on-color -- */
-  --scanner-border-on-color-subtle: var(--scanner-white-alpha-10);
-  --scanner-border-on-color-accent: var(--scanner-white-alpha-25);
-  --scanner-border-on-color-strong: var(--scanner-white-alpha-65);
+  --scanner-border-on-color-subtle: var(--scanner-white-alpha-10);  /* #ffffff16 */
+  --scanner-border-on-color-accent: var(--scanner-white-alpha-25);  /* #ffffff39 */
+  --scanner-border-on-color-strong: var(--scanner-neutral-50);      /* #ffffff */
+  --scanner-border-on-color-disabled: var(--scanner-white-alpha-10);
 
   /* -- Borders highlight -- */
+  --scanner-border-highlight-gray: var(--scanner-gray-alpha-5);     /* border-hightlight-gray #0000000b */
   --scanner-border-highlight-blue: var(--scanner-blue-100);
   --scanner-border-highlight-green: var(--scanner-green-100);
   --scanner-border-highlight-red: var(--scanner-red-100);
@@ -125,18 +171,18 @@
   --scanner-action-primary-active: var(--scanner-blue-700);
 
   /* -- Focus -- */
-  --scanner-focus-ring: var(--scanner-blue-500);
+  --scanner-focus-ring: var(--scanner-border-focus);
   --scanner-focus-bg: var(--scanner-purple-50);
 
   /* -- Status -- */
-  --scanner-status-danger: var(--scanner-red-500);
-  --scanner-status-danger-bg: var(--scanner-red-50);
-  --scanner-status-success: var(--scanner-green-500);
-  --scanner-status-success-bg: var(--scanner-green-50);
-  --scanner-status-warning: var(--scanner-orange-500);
-  --scanner-status-warning-bg: var(--scanner-orange-50);
-  --scanner-status-info: var(--scanner-blue-500);
-  --scanner-status-info-bg: var(--scanner-blue-50);
+  --scanner-status-danger: var(--scanner-text-error);
+  --scanner-status-danger-bg: var(--scanner-bg-highlight-red);
+  --scanner-status-success: var(--scanner-text-success);
+  --scanner-status-success-bg: var(--scanner-bg-highlight-green);
+  --scanner-status-warning: var(--scanner-text-warning);
+  --scanner-status-warning-bg: var(--scanner-bg-highlight-orange);
+  --scanner-status-info: var(--scanner-text-link);
+  --scanner-status-info-bg: var(--scanner-bg-highlight-blue);
 }
 
 /* ---- Dark mode ---- */
@@ -144,130 +190,143 @@
   /* -- Backgrounds main -- */
   --scanner-bg-primary: var(--scanner-neutral-700);         /* #1b1b1b */
   --scanner-bg-secondary: var(--scanner-neutral-600);       /* #262626 */
-  --scanner-bg-tertiary: #333333;
+  --scanner-bg-tertiary: var(--scanner-neutral-500);        /* #3b3b3b */
+  --scanner-bg-page: var(--scanner-neutral-800);            /* #121212 */
   --scanner-bg-inverse: var(--scanner-neutral-50);          /* #ffffff */
+  --scanner-bg-inverse-hover: var(--scanner-neutral-100);   /* #f4f4f4 */
 
-  /* -- Backgrounds interactive -- */
-  --scanner-bg-brand: var(--scanner-blue-500);              /* same */
-  --scanner-bg-brand-hover: var(--scanner-blue-600);        /* same */
-  --scanner-bg-brand-active: var(--scanner-blue-700);       /* same */
-  --scanner-bg-destructive: var(--scanner-red-500);         /* same */
-  --scanner-bg-destructive-hover: var(--scanner-red-600);   /* same */
-  --scanner-bg-destructive-active: var(--scanner-red-700);  /* same */
-  --scanner-bg-success: var(--scanner-green-500);           /* same */
-  --scanner-bg-success-hover: var(--scanner-green-600);     /* same */
-  --scanner-bg-success-active: var(--scanner-green-700);    /* same */
+  /* -- Backgrounds interactive: identical to light -- */
 
   /* -- Backgrounds state -- */
-  --scanner-bg-hover: var(--scanner-white-alpha-5);         /* rgba(255,255,255,0.04) */
-  --scanner-bg-active: var(--scanner-white-alpha-25);       /* rgba(255,255,255,0.22) */
-  --scanner-bg-selected: var(--scanner-blue-900);           /* #005780 */
-  --scanner-bg-disabled: var(--scanner-white-alpha-5);      /* rgba(255,255,255,0.04) */
+  --scanner-bg-hover: var(--scanner-white-alpha-5);         /* #ffffff0a */
+  --scanner-bg-active: var(--scanner-white-alpha-10);       /* #ffffff16 */
+  --scanner-bg-selected: var(--scanner-blue-900);           /* legacy */
+  --scanner-bg-layer-selected: var(--scanner-white-alpha-5);
+  --scanner-bg-layer-selected-hover: var(--scanner-white-alpha-10);
+  --scanner-bg-layer-selected-active: var(--scanner-white-alpha-15);
+  --scanner-bg-accent-hover: var(--scanner-white-alpha-20); /* #ffffff2c */
+  --scanner-bg-accent-active: var(--scanner-white-alpha-25); /* #ffffff39 */
+  --scanner-bg-disabled: var(--scanner-white-alpha-5);      /* #ffffff0a */
+  --scanner-bg-on-color-disabled: var(--scanner-white-alpha-5);
 
   /* -- Backgrounds overlay -- */
-  --scanner-bg-overlay: rgba(0, 0, 0, 0.65);
+  --scanner-bg-overlay: var(--scanner-gray-alpha-65);       /* #000000a1 */
   --scanner-bg-elevated: var(--scanner-neutral-600);        /* #262626 */
 
-  /* -- Backgrounds on-color -- */
-  --scanner-bg-on-color: var(--scanner-neutral-50);         /* #ffffff */
-
-  /* -- Backgrounds highlight (dark: use deeper shades) -- */
-  --scanner-bg-highlight-blue: var(--scanner-blue-900);     /* #005780 */
-  --scanner-bg-highlight-green: var(--scanner-green-900);   /* #002e18 */
+  /* -- Backgrounds highlight -- */
+  --scanner-bg-highlight-gray: var(--scanner-white-alpha-5);
+  --scanner-bg-highlight-blue: var(--scanner-blue-975);     /* #021e2e */
+  --scanner-bg-highlight-green: var(--scanner-green-950);   /* #002111 */
   --scanner-bg-highlight-red: var(--scanner-red-900);       /* #380912 */
-  --scanner-bg-highlight-orange: var(--scanner-orange-900); /* #9e2813 */
+  --scanner-bg-highlight-orange: var(--scanner-orange-975); /* #360f02 */
   --scanner-bg-highlight-purple: var(--scanner-purple-900); /* #261238 */
   --scanner-bg-highlight-magenta: var(--scanner-magenta-900); /* #330d23 */
 
   /* -- Text main -- */
-  --scanner-text-primary: var(--scanner-white-alpha-65);    /* rgba(255,255,255,0.63) */
-  --scanner-text-secondary: var(--scanner-white-alpha-45);  /* rgba(255,255,255,0.47) */
-  --scanner-text-tertiary: var(--scanner-white-alpha-25);   /* rgba(255,255,255,0.22) */
-  --scanner-text-disabled: var(--scanner-white-alpha-10);   /* rgba(255,255,255,0.09) */
+  --scanner-text-primary: var(--scanner-neutral-50);        /* #ffffff */
+  --scanner-text-secondary: var(--scanner-white-alpha-65);  /* #ffffffa1 */
+  --scanner-text-tertiary: var(--scanner-white-alpha-45);   /* #ffffff78 */
+  --scanner-text-disabled: var(--scanner-white-alpha-25);   /* #ffffff39 */
 
   /* -- Text inverse -- */
   --scanner-text-inverse: var(--scanner-neutral-800);       /* #121212 */
   --scanner-text-inverse-secondary: var(--scanner-gray-alpha-65);
   --scanner-text-inverse-tertiary: var(--scanner-gray-alpha-45);
+  --scanner-text-inverse-disabled: var(--scanner-gray-alpha-25);
 
-  /* -- Text on-color -- */
-  --scanner-text-on-color: var(--scanner-neutral-50);       /* still white */
-  --scanner-text-on-color-secondary: var(--scanner-white-alpha-65);
-  --scanner-text-on-color-tertiary: var(--scanner-white-alpha-45);
+  /* -- Text on-color: identical to light -- */
 
-  /* -- Text interactive (dark: lighter shades for contrast) -- */
+  /* -- Text interactive -- */
   --scanner-text-link: var(--scanner-blue-300);             /* #41c1f0 */
+  --scanner-text-link-hover: var(--scanner-blue-250);       /* #5fcefa */
   --scanner-text-error: var(--scanner-red-300);             /* #fc8397 */
-  --scanner-text-success: var(--scanner-green-300);         /* #6bc98d */
-  --scanner-text-warning: var(--scanner-orange-300);        /* #f69272 */
+  --scanner-text-success: var(--scanner-green-350);         /* #4dbd78 */
+  --scanner-text-warning: var(--scanner-orange-350);        /* #f58d71 */
+
+  /* -- Text on highlight -- */
+  --scanner-text-on-highlight-blue: var(--scanner-blue-200);       /* #8adaff */
+  --scanner-text-on-highlight-green: var(--scanner-green-200);     /* #9ae3b5 */
+  --scanner-text-on-highlight-red: var(--scanner-red-150);         /* #ffc2ce */
+  --scanner-text-on-highlight-orange: var(--scanner-orange-200);   /* #fcc6b1 */
+  --scanner-text-on-highlight-purple: var(--scanner-purple-200);   /* #e2cafa */
+  --scanner-text-on-highlight-magenta: var(--scanner-magenta-200); /* #fcc2e5 */
 
   /* -- Icons main -- */
-  --scanner-icon-primary: var(--scanner-neutral-50);        /* #ffffff */
+  --scanner-icon-primary: var(--scanner-neutral-50);
   --scanner-icon-secondary: var(--scanner-white-alpha-65);
   --scanner-icon-tertiary: var(--scanner-white-alpha-45);
   --scanner-icon-disabled: var(--scanner-white-alpha-25);
 
   /* -- Icons inverse -- */
-  --scanner-icon-inverse: var(--scanner-neutral-800);       /* #121212 */
+  --scanner-icon-inverse: var(--scanner-neutral-800);
   --scanner-icon-inverse-secondary: var(--scanner-gray-alpha-65);
   --scanner-icon-inverse-tertiary: var(--scanner-gray-alpha-45);
-
-  /* -- Icons on-color -- */
-  --scanner-icon-on-color: var(--scanner-neutral-50);       /* still white */
+  --scanner-icon-inverse-disabled: var(--scanner-gray-alpha-25);
 
   /* -- Icons interactive -- */
   --scanner-icon-link: var(--scanner-blue-300);
+  --scanner-icon-link-hover: var(--scanner-blue-250);
   --scanner-icon-error: var(--scanner-red-300);
-  --scanner-icon-success: var(--scanner-green-300);
-  --scanner-icon-warning: var(--scanner-orange-300);
+  --scanner-icon-success: var(--scanner-green-350);
+  --scanner-icon-warning: var(--scanner-orange-350);
+
+  /* -- Icons on highlight -- */
+  --scanner-icon-on-highlight-blue: var(--scanner-blue-200);
+  --scanner-icon-on-highlight-green: var(--scanner-green-200);
+  --scanner-icon-on-highlight-red: var(--scanner-red-150);
+  --scanner-icon-on-highlight-orange: var(--scanner-orange-200);
+  --scanner-icon-on-highlight-purple: var(--scanner-purple-200);
+  --scanner-icon-on-highlight-magenta: var(--scanner-magenta-200);
 
   /* -- Borders main -- */
-  --scanner-border-default: var(--scanner-white-alpha-25);  /* rgba(255,255,255,0.22) */
-  --scanner-border-subtle: var(--scanner-white-alpha-10);   /* rgba(255,255,255,0.09) */
+  --scanner-border-default: var(--scanner-white-alpha-25);  /* #ffffff39 */
+  --scanner-border-subtle: var(--scanner-white-alpha-10);   /* #ffffff16 */
   --scanner-border-strong: var(--scanner-neutral-50);       /* #ffffff */
   --scanner-border-inverse: var(--scanner-neutral-800);     /* #121212 */
+  --scanner-border-inverse-subtle: var(--scanner-gray-alpha-10);
+  --scanner-border-inverse-accent: var(--scanner-gray-alpha-25);
 
   /* -- Borders interactive -- */
   --scanner-border-interactive: var(--scanner-blue-300);
+  --scanner-border-interactive-hover: var(--scanner-blue-250);
   --scanner-border-error: var(--scanner-red-300);
-  --scanner-border-success: var(--scanner-green-300);
-  --scanner-border-warning: var(--scanner-orange-300);
+  --scanner-border-success: var(--scanner-green-350);
+  --scanner-border-warning: var(--scanner-orange-350);
 
   /* -- Borders state -- */
-  --scanner-border-hover: var(--scanner-white-alpha-35);    /* rgba(255,255,255,0.32) */
-  --scanner-border-active: var(--scanner-white-alpha-50);   /* rgba(255,255,255,0.52) */
-  --scanner-border-disabled: var(--scanner-white-alpha-10); /* rgba(255,255,255,0.09) */
-  --scanner-border-focus: var(--scanner-blue-300);
+  --scanner-border-hover: var(--scanner-white-alpha-35);    /* #ffffff52 */
+  --scanner-border-active: var(--scanner-white-alpha-50);   /* #ffffff86 */
+  --scanner-border-subtle-hover: var(--scanner-white-alpha-15);  /* #ffffff20 */
+  --scanner-border-subtle-active: var(--scanner-white-alpha-20); /* #ffffff2c */
+  --scanner-border-disabled: var(--scanner-white-alpha-10); /* #ffffff16 */
+  --scanner-border-focus: var(--scanner-blue-300);          /* #41c1f0 */
+  --scanner-border-inverse-focus: var(--scanner-blue-500);  /* #009ace */
 
-  /* -- Borders on-color -- */
-  --scanner-border-on-color-subtle: var(--scanner-white-alpha-10);
-  --scanner-border-on-color-accent: var(--scanner-white-alpha-25);
-  --scanner-border-on-color-strong: var(--scanner-white-alpha-65);
+  /* -- Borders on-color: identical to light -- */
 
-  /* -- Borders highlight (dark: use deeper shades) -- */
-  --scanner-border-highlight-blue: var(--scanner-blue-900);
-  --scanner-border-highlight-green: var(--scanner-green-800);
-  --scanner-border-highlight-red: var(--scanner-red-800);
-  --scanner-border-highlight-orange: var(--scanner-orange-700);
-  --scanner-border-highlight-purple: var(--scanner-purple-700);
-  --scanner-border-highlight-magenta: var(--scanner-magenta-700);
-
-  /* -- Action -- */
-  --scanner-action-primary: var(--scanner-blue-500);
-  --scanner-action-primary-hover: var(--scanner-blue-600);
-  --scanner-action-primary-active: var(--scanner-blue-700);
+  /* -- Borders highlight -- */
+  --scanner-border-highlight-gray: var(--scanner-white-alpha-5);
+  --scanner-border-highlight-blue: var(--scanner-blue-950);       /* #00334d */
+  --scanner-border-highlight-green: var(--scanner-green-850);     /* #00381c */
+  --scanner-border-highlight-red: var(--scanner-red-850);         /* #630920 */
+  --scanner-border-highlight-orange: var(--scanner-orange-950);   /* #5e1509 */
+  --scanner-border-highlight-purple: var(--scanner-purple-700);   /* #431b69 */
+  --scanner-border-highlight-magenta: var(--scanner-magenta-800); /* #5e0b3c */
 
   /* -- Focus -- */
-  --scanner-focus-ring: var(--scanner-blue-300);
+  --scanner-focus-ring: var(--scanner-border-focus);
   --scanner-focus-bg: var(--scanner-purple-900);
 
-  /* -- Status -- */
-  --scanner-status-danger: var(--scanner-red-300);
-  --scanner-status-danger-bg: var(--scanner-red-900);
-  --scanner-status-success: var(--scanner-green-300);
-  --scanner-status-success-bg: var(--scanner-green-900);
-  --scanner-status-warning: var(--scanner-orange-300);
-  --scanner-status-warning-bg: var(--scanner-orange-900);
-  --scanner-status-info: var(--scanner-blue-300);
-  --scanner-status-info-bg: var(--scanner-blue-900);
+  /* -- Aliases: re-declared so nested [data-theme="dark"] scopes resolve to dark values -- */
+  --scanner-bg-layer-01: var(--scanner-bg-primary);
+  --scanner-bg-layer-02: var(--scanner-bg-secondary);
+  --scanner-bg-accent: var(--scanner-bg-tertiary);
+  --scanner-status-danger: var(--scanner-text-error);
+  --scanner-status-danger-bg: var(--scanner-bg-highlight-red);
+  --scanner-status-success: var(--scanner-text-success);
+  --scanner-status-success-bg: var(--scanner-bg-highlight-green);
+  --scanner-status-warning: var(--scanner-text-warning);
+  --scanner-status-warning-bg: var(--scanner-bg-highlight-orange);
+  --scanner-status-info: var(--scanner-text-link);
+  --scanner-status-info-bg: var(--scanner-bg-highlight-blue);
 }

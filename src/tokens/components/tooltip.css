@@ -1,0 +1,19 @@
+/* Component tokens — Figma page "tooltip" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* _Tooltip container (node 24150:41017) */
+  --scanner-tooltip-min-width: 44px;
+  --scanner-tooltip-max-width: 320px;
+  --scanner-tooltip-text-min-width: 28px;
+
+  /* 01 Tooltip (node 34026:193415) — "Carret" is an 8×4 triangle inside a 32px frame with 12px side padding */
+  --scanner-tooltip-caret-width: 8px;
+  --scanner-tooltip-caret-height: 4px;
+  --scanner-tooltip-caret-inset: 12px;
+  /* Start/End alignment: the bubble edge sits 16px before the trigger centre, so the caret (centre 16px) points at it */
+  --scanner-tooltip-anchor-offset: 16px;
+
+  /* 02 Icon trigger tooltip (node 33957:20415) — "Help outline" 16×16 */
+  --scanner-tooltip-trigger-icon-size: 16px;
+  /* Trigger focus stroke — no Focused variant in Figma; mirrors Link's 1px border-focus stroke 2px outside */
+  --scanner-tooltip-trigger-focus-offset: 2px;
+}

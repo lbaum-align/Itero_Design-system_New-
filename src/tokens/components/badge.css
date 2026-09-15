@@ -1,0 +1,9 @@
+/* Component tokens — Figma page "badge" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
+:root {
+  /* Badge (node 12855:13246) */
+  --scanner-badge-min-width: 24px;
+  --scanner-badge-icon-size: 28px;          /* "Icon- Size / Small" variable, Scanner mode */
+  /* State=Loading placeholder (fixed size in Figma) */
+  --scanner-badge-skeleton-width: 67px;
+  --scanner-badge-skeleton-height: 32px;
+}
