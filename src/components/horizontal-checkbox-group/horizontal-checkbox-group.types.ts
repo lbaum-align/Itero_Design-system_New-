@@ -1,22 +1,22 @@
-import type { ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 
-export interface HorizontalCheckboxGroupProps {
-  /** Group label text */
+export interface HorizontalCheckboxGroupProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+  /** Figma "Label text" */
   label?: string;
-  /** Show or hide the label (default: true) */
+  /** Figma "Show label" (default `true`) */
   showLabel?: boolean;
-  /** Mark the group as required — renders an asterisk next to the label */
+  /** Figma "Required" — shows a red asterisk after the label */
   required?: boolean;
-  /** Tooltip content shown via the explainer icon beside the label */
+  /** Figma "Show explainer" — explainer text shown in an IconTriggerTooltip next to the label */
   tooltipContent?: string;
-  /** Helper text displayed below the checkbox items */
+  /** Helper text below the items (not in Figma) */
   helperText?: string;
-  /** Error state — `true` for visual styling only, or a string to display as error message */
+  /** Error state (not in Figma) — `true` for styling only, or a string to show as the error message */
   error?: boolean | string;
-  /** Disables all checkbox items in the group */
+  /** Disables every CheckboxItem in the group */
   disabled?: boolean;
-  /** CheckboxItem elements rendered horizontally */
+  /** Renders the label and every CheckboxItem as skeletons */
+  skeleton?: boolean;
+  /** CheckboxItem elements, laid out in a row with a 16px gap */
   children: ReactNode;
-  /** Additional CSS class names on the outer wrapper */
-  className?: string;
 }

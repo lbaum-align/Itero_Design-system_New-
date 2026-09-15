@@ -1,27 +1,100 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, fn, userEvent, within } from 'storybook/test';
 import { SelectMenuItem } from './SelectMenuItem';
-import type { SelectMenuItemSize } from './select-menu-item.types';
+import type { SelectMenuItemProps, SelectMenuItemSize } from './select-menu-item.types';
+
+/*
+ * Figma: "06. Scanner core 1.0.0 full" → _Select menu Item (node 7149:1690, page "Dropdown").
+ * Size × Type (Single) × Selected × State = 32 variants (rendered in `FigmaMatrix`),
+ * plus Show divider / Show headline / Show subtext.
+ */
+
+const SIZES: SelectMenuItemSize[] = ['x-large', 'large', 'medium', 'small'];
+const STATES = ['enabled', 'hovered', 'focused', 'disabled'] as const;
+type State = (typeof STATES)[number];
+
+const sizeLabel: Record<SelectMenuItemSize, string> = { 'x-large': 'X-Large', large: 'Large', medium: 'Medium', small: 'Small' };
+const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+function variantProps(
+  size: SelectMenuItemSize,
+  selected: boolean,
+  state: State,
+  extra: Partial<SelectMenuItemProps> = {},
+): SelectMenuItemProps {
+  return {
+    size,
+    selected,
+    optionText: 'Option',
+    disabled: state === 'disabled',
+    'data-state': state === 'hovered' || state === 'focused' ? state : undefined,
+    ...extra,
+  };
+}
+
+/* ── Layout helpers (story-only) ── */
+
+const ITEM_WIDTH = 288; // Figma variant width
+const table: React.CSSProperties = { borderCollapse: 'collapse', width: 'max-content' };
+const cell: React.CSSProperties = { padding: 8, verticalAlign: 'top' };
+const headCell: React.CSSProperties = {
+  ...cell,
+  font: '500 12px/16px var(--scanner-font-sans)',
+  color: 'var(--scanner-text-secondary)',
+  textAlign: 'left',
+  whiteSpace: 'nowrap',
+};
+const itemBox: React.CSSProperties = { width: ITEM_WIDTH, background: 'var(--scanner-bg-elevated)' };
+const sectionTitle: React.CSSProperties = {
+  font: '500 16px/24px var(--scanner-font-sans)',
+  color: 'var(--scanner-text-primary)',
+  margin: '24px 0 8px',
+};
+
+/** Options must live in a listbox for valid ARIA. */
+const Box = (props: SelectMenuItemProps) => (
+  <div role="listbox" aria-label="Options" style={itemBox}>
+    <SelectMenuItem {...props} />
+  </div>
+);
+
+/* ------------------------------------------------------------------ */
 
 const meta: Meta<typeof SelectMenuItem> = {
-  title: 'Private/SelectMenuItem',
+  title: 'Private/_SelectMenuItem',
   component: SelectMenuItem,
-  argTypes: {
-    size: {
-      control: 'select',
-      options: ['small', 'medium', 'large', 'x-large'] satisfies SelectMenuItemSize[],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'One option of a SelectMenu (Dropdown / Combobox list). Selected shows a trailing checkmark. ' +
+          'Long option text truncates with an ellipsis (Figma: avoid multiple lines).',
+      },
     },
-    selected: { control: 'boolean' },
+  },
+  argTypes: {
+    size: { name: 'Size', control: 'inline-radio', options: SIZES },
+    selected: { name: 'Selected', control: 'boolean' },
     disabled: { control: 'boolean' },
-    showHeadline: { control: 'boolean' },
-    showSubtext: { control: 'boolean' },
-    showDivider: { control: 'boolean' },
-    optionText: { control: 'text' },
-    headlineText: { control: 'text' },
-    subheadText: { control: 'text' },
+    'data-state': { name: 'Forced state', control: 'inline-radio', options: [undefined, 'hovered', 'focused'] },
+    optionText: { name: 'Option text', control: 'text' },
+    showHeadline: { name: 'Show headline', control: 'boolean' },
+    headlineText: { name: 'Headline text', control: 'text' },
+    showSubtext: { name: 'Show subtext', control: 'boolean' },
+    subheadText: { name: 'Subhead text', control: 'text' },
+    showDivider: { name: 'Show divider', control: 'boolean' },
+  },
+  args: {
+    size: 'x-large',
+    selected: false,
+    optionText: 'Option',
+    headlineText: 'Headline',
+    subheadText: 'Subhead',
+    onClick: fn(),
   },
   decorators: [
     (Story) => (
-      <div style={{ width: 288 }}>
+      <div style={{ padding: 16 }}>
         <Story />
       </div>
     ),
@@ -33,229 +106,172 @@ type Story = StoryObj<typeof SelectMenuItem>;
 
 /* ── Default ── */
 
-export const Default: Story = {
-  args: {
-    optionText: 'Option',
-    size: 'x-large',
-  },
-};
+export const Default: Story = { render: (args) => <Box {...args} /> };
 
-/* ── Selected ── */
+/* ── Per size ── */
 
-export const Selected: Story = {
-  args: {
-    optionText: 'Selected option',
-    selected: true,
-    size: 'large',
-  },
-};
+export const XLarge: Story = { name: 'Size: X-Large', render: (args) => <Box {...args} size="x-large" /> };
+export const Large: Story = { name: 'Size: Large', render: (args) => <Box {...args} size="large" /> };
+export const Medium: Story = { name: 'Size: Medium', render: (args) => <Box {...args} size="medium" /> };
+export const Small: Story = { name: 'Size: Small', render: (args) => <Box {...args} size="small" /> };
 
-/* ── With Checkmark (Selected, X-Large) ── */
+/* ── Selected / booleans ── */
 
-export const WithCheckmark: Story = {
-  args: {
-    optionText: 'Option with checkmark',
-    selected: true,
-    size: 'x-large',
-  },
-};
+export const Selected: Story = { name: 'Selected: True', render: (args) => <Box {...args} selected /> };
+export const WithHeadline: Story = { name: 'Show headline', render: (args) => <Box {...args} showHeadline /> };
+export const WithSubtext: Story = { name: 'Show subtext', render: (args) => <Box {...args} showSubtext /> };
+export const WithDivider: Story = { name: 'Show divider', render: (args) => <Box {...args} showDivider /> };
 
-/* ── Disabled ── */
-
-export const Disabled: Story = {
-  args: {
-    optionText: 'Disabled option',
-    disabled: true,
-    size: 'large',
-  },
-};
-
-/* ── Disabled + Selected ── */
-
-export const DisabledSelected: Story = {
-  args: {
-    optionText: 'Disabled selected',
-    disabled: true,
-    selected: true,
-    size: 'large',
-  },
-};
-
-/* ── Hovered (via data-state) ── */
-
-export const Hovered: Story = {
-  args: {
-    optionText: 'Hovered option',
-    size: 'large',
-    'data-state': 'hovered',
-  } as Record<string, unknown>,
-};
-
-/* ── Focused (via data-state) ── */
-
-export const Focused: Story = {
-  args: {
-    optionText: 'Focused option',
-    size: 'large',
-    'data-state': 'focused',
-  } as Record<string, unknown>,
-};
-
-/* ── With Headline ── */
-
-export const WithHeadline: Story = {
-  args: {
-    optionText: 'Option',
-    headlineText: 'Group headline',
-    showHeadline: true,
-    size: 'x-large',
-  },
-};
-
-/* ── With Subtext ── */
-
-export const WithSubtext: Story = {
-  args: {
-    optionText: 'Option',
-    subheadText: 'Supporting description',
-    showSubtext: true,
-    size: 'large',
-  },
-};
-
-/* ── With Divider ── */
-
-export const WithDivider: Story = {
-  args: {
-    optionText: 'Option with divider',
-    showDivider: true,
-    size: 'large',
-  },
-};
-
-/* ── Full featured ── */
-
-export const FullFeatured: Story = {
-  args: {
-    optionText: 'Full option',
-    headlineText: 'Section headline',
-    subheadText: 'Helpful subtext',
-    showHeadline: true,
-    showSubtext: true,
-    showDivider: true,
-    selected: true,
-    size: 'x-large',
-  },
-};
-
-/* ── All Sizes ── */
-
-const sizes: SelectMenuItemSize[] = ['small', 'medium', 'large', 'x-large'];
+/* ── All sizes ── */
 
 export const AllSizes: Story = {
-  render: () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {sizes.map((s) => (
-        <div key={s}>
-          <div style={{ marginBottom: 4, fontSize: 11, fontWeight: 600, color: '#666' }}>
-            {s}
-          </div>
-          <SelectMenuItem optionText={`Option (${s})`} size={s} />
-        </div>
-      ))}
-    </div>
+  render: (args) => (
+    <table style={table}>
+      <tbody>
+        {SIZES.map((s) => (
+          <tr key={s}>
+            <th style={headCell}>{sizeLabel[s]}</th>
+            <td style={cell}>
+              <Box {...args} size={s} />
+            </td>
+            <td style={cell}>
+              <Box {...args} size={s} selected showSubtext />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   ),
 };
 
-/* ── All Sizes — Selected ── */
-
-export const AllSizesSelected: Story = {
-  render: () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {sizes.map((s) => (
-        <div key={s}>
-          <div style={{ marginBottom: 4, fontSize: 11, fontWeight: 600, color: '#666' }}>
-            {s} — selected
-          </div>
-          <SelectMenuItem optionText={`Option (${s})`} size={s} selected />
-        </div>
-      ))}
-    </div>
-  ),
-};
-
-/* ── All States (matrix) ── */
-
-type StateLabel = 'enabled' | 'hovered' | 'focused' | 'disabled';
-const states: StateLabel[] = ['enabled', 'hovered', 'focused', 'disabled'];
+/* ── All states — selected rows × state columns (size from controls) ── */
 
 export const AllStates: Story = {
+  render: ({ size = 'x-large' }) => (
+    <table style={table}>
+      <thead>
+        <tr>
+          <th style={headCell} />
+          {STATES.map((st) => (
+            <th key={st} style={headCell}>{label(st)}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {[false, true].map((sel) => (
+          <tr key={String(sel)}>
+            <th style={headCell}>{`Selected=${sel ? 'True' : 'False'}`}</th>
+            {STATES.map((st) => (
+              <td key={st} style={cell}>
+                <Box {...variantProps(size, sel, st)} />
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  ),
+};
+
+export const Hovered: Story = { render: (args) => <Box {...args} data-state="hovered" /> };
+export const Focused: Story = { render: (args) => <Box {...args} data-state="focused" /> };
+export const Disabled: Story = { render: (args) => <Box {...args} disabled selected showSubtext /> };
+
+/* ── Figma matrix: all 32 variants, laid out like the component set ── */
+
+export const FigmaMatrix: Story = {
+  name: 'Figma matrix (all 32 variants)',
+  parameters: { layout: 'fullscreen' },
   render: () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-      {/* Unselected rows */}
-      <div>
-        <div style={{ marginBottom: 8, fontSize: 13, fontWeight: 700 }}>Unselected</div>
-        <div style={{ display: 'grid', gridTemplateColumns: `100px repeat(${states.length}, 288px)`, gap: 8, alignItems: 'start' }}>
-          {/* Header row */}
-          <div />
-          {states.map((st) => (
-            <div key={st} style={{ fontSize: 11, fontWeight: 600, color: '#666', textTransform: 'capitalize' }}>
-              {st}
-            </div>
-          ))}
-
-          {/* Size rows */}
-          {sizes.map((s) => (
-            <>
-              <div key={`label-${s}`} style={{ fontSize: 11, fontWeight: 600, color: '#666', paddingTop: 4 }}>
-                {s}
-              </div>
-              {states.map((st) => (
-                <SelectMenuItem
-                  key={`${s}-${st}`}
-                  optionText="Option"
-                  size={s}
-                  disabled={st === 'disabled'}
-                  data-state={st === 'enabled' ? undefined : st}
-                />
+    <div style={{ padding: 24 }}>
+      {SIZES.map((s) => (
+        <section key={s}>
+          <h3 style={sectionTitle}>{`Size=${sizeLabel[s]}, Type=Single`}</h3>
+          <table style={table}>
+            <thead>
+              <tr>
+                <th style={headCell} />
+                {STATES.map((st) => (
+                  <th key={st} style={headCell}>{`State=${label(st)}`}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {[false, true].map((sel) => (
+                <tr key={String(sel)}>
+                  <th style={headCell}>{`Selected=${sel ? 'True' : 'False'}`}</th>
+                  {STATES.map((st) => (
+                    <td key={st} style={cell}>
+                      <Box {...variantProps(s, sel, st)} />
+                    </td>
+                  ))}
+                </tr>
               ))}
-            </>
-          ))}
-        </div>
-      </div>
+            </tbody>
+          </table>
+        </section>
+      ))}
 
-      {/* Selected rows */}
-      <div>
-        <div style={{ marginBottom: 8, fontSize: 13, fontWeight: 700 }}>Selected</div>
-        <div style={{ display: 'grid', gridTemplateColumns: `100px repeat(${states.length}, 288px)`, gap: 8, alignItems: 'start' }}>
-          {/* Header row */}
-          <div />
-          {states.map((st) => (
-            <div key={st} style={{ fontSize: 11, fontWeight: 600, color: '#666', textTransform: 'capitalize' }}>
-              {st}
-            </div>
-          ))}
-
-          {/* Size rows */}
-          {sizes.map((s) => (
-            <>
-              <div key={`label-sel-${s}`} style={{ fontSize: 11, fontWeight: 600, color: '#666', paddingTop: 4 }}>
-                {s}
-              </div>
-              {states.map((st) => (
-                <SelectMenuItem
-                  key={`sel-${s}-${st}`}
-                  optionText="Option"
-                  size={s}
-                  selected
-                  disabled={st === 'disabled'}
-                  data-state={st === 'enabled' ? undefined : st}
-                />
+      <h3 style={sectionTitle}>Boolean properties (per size)</h3>
+      <table style={table}>
+        <thead>
+          <tr>
+            <th style={headCell} />
+            {SIZES.map((s) => (
+              <th key={s} style={headCell}>{`Size=${sizeLabel[s]}`}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {(
+            [
+              ['Show headline', { showHeadline: true }],
+              ['Show subtext', { showSubtext: true }],
+              ['Show subtext + Selected', { showSubtext: true, selected: true }],
+              ['Show divider', { showDivider: true }],
+            ] as Array<[string, Partial<SelectMenuItemProps>]>
+          ).map(([name, extra]) => (
+            <tr key={name}>
+              <th style={headCell}>{name}</th>
+              {SIZES.map((s) => (
+                <td key={s} style={cell}>
+                  <Box {...variantProps(s, false, 'enabled', extra)} />
+                </td>
               ))}
-            </>
+            </tr>
           ))}
-        </div>
-      </div>
+        </tbody>
+      </table>
     </div>
   ),
+};
+
+export const LongOptionTruncates: Story = {
+  render: (args) => <Box {...args} selected optionText="Invisalign Outcome Simulator Pro with full-arch progress assessment" />,
+};
+
+/* ------------------------------------------------------------------ */
+/*  Interaction tests                                                 */
+/* ------------------------------------------------------------------ */
+
+export const ClickCallsOnClick: Story = {
+  tags: ['test'],
+  render: (args) => <Box {...args} />,
+  play: async ({ args, canvasElement }) => {
+    const option = within(canvasElement).getByRole('option', { name: 'Option' });
+    await expect(option).toHaveAttribute('aria-selected', 'false');
+    await userEvent.click(option);
+    await expect(args.onClick).toHaveBeenCalledTimes(1);
+  },
+};
+
+export const DisabledIgnoresClick: Story = {
+  tags: ['test'],
+  render: (args) => <Box {...args} disabled />,
+  play: async ({ args, canvasElement }) => {
+    const option = within(canvasElement).getByRole('option', { name: 'Option' });
+    await expect(option).toHaveAttribute('aria-disabled', 'true');
+    await userEvent.click(option, { pointerEventsCheck: 0 });
+    await expect(args.onClick).not.toHaveBeenCalled();
+  },
 };

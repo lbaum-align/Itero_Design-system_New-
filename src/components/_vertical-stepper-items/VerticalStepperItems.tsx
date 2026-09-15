@@ -1,96 +1,50 @@
 import { forwardRef } from 'react';
 import { cn } from '../../utils/cn';
-import { Icon } from '../../icons';
-import { StepCounter } from '../_step-counter';
+import { StepIndicator, StepLabel } from '../_step-counter';
 import type { VerticalStepperItemsProps } from './vertical-stepper-items.types';
 
+/*
+ * Source: Figma "06. Scanner core 1.0.0 full" → _Vertical stepper items (node 34201:2271)
+ * State: Not started, In progress, Completed, Error, Skeleton.
+ * Column, gap 8: "Line wrapper" (24px wide, 36px tall, 1px border-subtle line centred under the indicator)
+ * + "Content" row (gap 8): 24px indicator + Body 02 step name.
+ */
+
 /**
- * _VerticalStepperItems — a single step in a vertical stepper layout.
+ * _VerticalStepperItems — private: one step of a vertical Stepper.
  *
- * PRIVATE sub-component. Not exported from the package barrel.
- *
- * Renders: optional connecting line + step indicator + label.
- *
- * Maps to Figma component "_Vertical stepper items" with variants:
- *   State: "Not started" | "In progress" | "Completed" | "Error" | "Skeleton"
+ * @example
+ * <VerticalStepperItems state="completed" step={2} label="Address" />
  */
 export const VerticalStepperItems = forwardRef<HTMLDivElement, VerticalStepperItemsProps>(
-  (
-    {
-      state = 'not-started',
-      label = 'Step name',
-      step = 1,
-      showLine = true,
-      className,
-      ...rest
-    },
-    ref,
-  ) => {
-    const isInProgress = state === 'in-progress';
-    const isCompleted = state === 'completed';
-    const isError = state === 'error';
-    const isSkeleton = state === 'skeleton';
+  ({ state = 'not-started', label = 'Step name', step = 1, showLine = true, statusLabel, className, ...rest }, ref) => (
+    <div
+      ref={ref}
+      data-state={state}
+      className={cn('flex min-w-0 flex-col items-start gap-[var(--scanner-spacing-3)]', className)}
+      {...rest}
+    >
+      {showLine && (
+        <span
+          aria-hidden="true"
+          data-line=""
+          className="flex h-[var(--scanner-stepper-line-length)] w-[var(--scanner-stepper-indicator-size)] shrink-0 justify-center"
+        >
+          <span className="h-full w-[var(--scanner-stepper-line-width)] bg-[var(--scanner-border-subtle)]" />
+        </span>
+      )}
 
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          'flex flex-col items-start gap-[var(--scanner-spacing-3)]',
-          className,
-        )}
-        {...rest}
-      >
-        {/* Connecting line */}
-        {showLine && (
-          <div className="flex h-[36px] items-center justify-center self-stretch px-[11.5px]">
-            <div className="h-full w-px border-l border-solid border-[var(--scanner-border-subtle)]" />
-          </div>
-        )}
-
-        {/* Content row: indicator + label */}
-        <div className="flex items-center gap-[var(--scanner-spacing-3)]">
-          {/* Indicator */}
-          {(state === 'not-started' || isInProgress || isSkeleton) && (
-            <StepCounter
-              state={isInProgress ? 'in-progress' : 'not-started'}
-              step={step}
-            />
-          )}
-          {isCompleted && (
-            <span className="inline-flex size-[24px] shrink-0 items-center justify-center text-[color:var(--scanner-icon-success)]">
-              <Icon name="checkmark" size={24} />
-            </span>
-          )}
-          {isError && (
-            <span className="inline-flex size-[24px] shrink-0 items-center justify-center text-[color:var(--scanner-icon-error)]">
-              <Icon name="error" size={24} />
-            </span>
-          )}
-
-          {/* Label or skeleton placeholder */}
-          {isSkeleton ? (
-            <div
-              className="h-[16px] w-[44px] rounded-[var(--scanner-radius-sm)] bg-[var(--scanner-bg-hover)]"
-              aria-hidden="true"
-            />
-          ) : (
-            <span
-              className={cn(
-                'truncate font-[family-name:var(--scanner-font-sans)]',
-                'text-[length:18px] leading-[var(--scanner-leading-lg)]',
-                'font-[number:var(--scanner-font-regular)]',
-                isInProgress
-                  ? 'text-[color:var(--scanner-text-primary)]'
-                  : 'text-[color:var(--scanner-text-secondary)]',
-              )}
-            >
-              {label}
-            </span>
-          )}
-        </div>
+      <div className="flex min-w-0 max-w-full items-center gap-[var(--scanner-spacing-3)]">
+        <StepIndicator state={state} step={step} />
+        <StepLabel
+          state={state}
+          label={label}
+          statusLabel={statusLabel}
+          skeletonClassName="w-[var(--scanner-stepper-skeleton-width-vertical)]"
+        />
       </div>
-    );
-  },
+    </div>
+  ),
 );
 
 VerticalStepperItems.displayName = 'VerticalStepperItems';

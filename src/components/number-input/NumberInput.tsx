@@ -1,106 +1,114 @@
-import { forwardRef, useCallback, useId, useRef, useState } from 'react';
+import { forwardRef, useId, useImperativeHandle, useRef, useState } from 'react';
+import type { ChangeEvent, FocusEvent, KeyboardEvent, MouseEvent } from 'react';
 import { cn } from '../../utils/cn';
+import { Button } from '../button';
+import { FieldHeader, FieldMessage } from '../text-input/field-parts';
+import {
+  fieldBackground,
+  fieldRoot,
+  fieldStroke,
+  placeholderText,
+  skeletonFill,
+  typeBody02,
+  typeLabel01,
+  typeSm,
+  typeXs,
+  valueText,
+} from '../text-input/field-styles';
 import { Icon } from '../../icons';
-import { IconTriggerTooltip } from '../icon-trigger-tooltip';
 import type { NumberInputProps, NumberInputSize } from './number-input.types';
 
-/* ------------------------------------------------------------------ */
-/*  Size config                                                       */
-/* ------------------------------------------------------------------ */
+/*
+ * Source: Figma "06. Scanner core 1.0.0 full" → Number input (node 36634:12646, page 15305:6746)
+ * 2 Layer sets × 5 States (Enabled, Focused, Disabled, Error, Skeleton) × 4 Sizes = 40 variants.
+ *
+ * Anatomy: Label (+ Explainer) · Field (value + Subtract | divider | Add ghost buttons) · Helper / Error.
+ * The label/helper/error parts and field styling are shared with TextInput / TextArea / PasswordInput.
+ */
 
-type SizeConfig = {
-  /** Field height class */
-  height: string;
-  /** Padding-left */
-  pl: string;
-  /** Padding-right */
-  pr: string;
-  /** Padding-y */
-  py: string;
-  /** Font-size for the input value */
-  fontSize: string;
-  /** Line-height for the input value */
-  lineHeight: string;
-  /** Font-size for label / helper / error text */
-  labelFontSize: string;
-  /** Line-height for label / helper / error text */
-  labelLineHeight: string;
-};
-
-const sizeConfig: Record<NumberInputSize, SizeConfig> = {
-  small: {
-    height: 'h-[28px]',
-    pl: 'pl-[var(--scanner-spacing-3)]',           // 8px
-    pr: '',                                         // no explicit pr (buttons flush)
-    py: 'py-[var(--scanner-spacing-2)]',            // 4px
-    fontSize: 'text-[length:var(--scanner-text-sm)]',       // 14px
-    lineHeight: 'leading-[var(--scanner-leading-sm)]',      // 20px
-    labelFontSize: 'text-[length:var(--scanner-text-xs)]',  // 12px
-    labelLineHeight: 'leading-[var(--scanner-leading-xs)]', // 16px
-  },
-  medium: {
-    height: 'h-[36px]',
-    pl: 'pl-[var(--scanner-spacing-4)]',            // 12px
-    pr: 'pr-[var(--scanner-spacing-2)]',            // 4px
-    py: 'py-[var(--scanner-spacing-2)]',            // 4px
-    fontSize: 'text-[length:var(--scanner-text-sm)]',
-    lineHeight: 'leading-[var(--scanner-leading-sm)]',
-    labelFontSize: 'text-[length:var(--scanner-text-xs)]',
-    labelLineHeight: 'leading-[var(--scanner-leading-xs)]',
+const sizeConfig: Record<
+  NumberInputSize,
+  { label: string; field: string; input: string; control: string; icon: string; skeleton: string }
+> = {
+  'x-large': {
+    label: typeLabel01, // 16/24 (label, helper, error)
+    field:
+      'h-[var(--scanner-number-input-height-xl)] py-[var(--scanner-spacing-5)] pl-[var(--scanner-spacing-5)] pr-[var(--scanner-spacing-3)]', // 60 · 16 / 8 / 16 / 16
+    input: typeBody02, // 18/28
+    control: 'size-[var(--scanner-number-input-control-size-xl)]', // 32
+    icon: 'size-[var(--scanner-number-input-icon-size-xl)]', // 24
+    skeleton: 'h-[var(--scanner-number-input-height-xl)]',
   },
   large: {
-    height: 'h-[44px]',
-    pl: 'pl-[var(--scanner-spacing-5)]',            // 16px
-    pr: 'pr-[var(--scanner-spacing-3)]',            // 8px
-    py: 'py-[var(--scanner-spacing-3)]',            // 8px
-    fontSize: 'text-[length:var(--scanner-text-sm)]',
-    lineHeight: 'leading-[var(--scanner-leading-sm)]',
-    labelFontSize: 'text-[length:var(--scanner-text-xs)]',
-    labelLineHeight: 'leading-[var(--scanner-leading-xs)]',
+    label: typeXs, // 12/16
+    field:
+      'h-[var(--scanner-number-input-height-lg)] py-[var(--scanner-spacing-3)] pl-[var(--scanner-spacing-5)] pr-[var(--scanner-spacing-3)]', // 44 · 8 / 8 / 8 / 16
+    input: typeSm, // 14/20
+    control: 'size-[var(--scanner-number-input-control-size)]', // 28
+    icon: 'size-[var(--scanner-number-input-icon-size)]', // 20
+    skeleton: 'h-[var(--scanner-number-input-height-lg)]',
   },
-  'x-large': {
-    height: 'min-h-[44px] max-h-[60px]',
-    pl: 'pl-[var(--scanner-spacing-5)]',            // 16px
-    pr: 'pr-[var(--scanner-spacing-3)]',            // 8px
-    py: 'py-[var(--scanner-spacing-5)]',            // 16px
-    // X-Large uses 18px / 28px — no exact token match; see deviation notes
-    fontSize: 'text-[18px]',
-    lineHeight: 'leading-[var(--scanner-leading-lg)]',      // 28px
-    // X-Large label/helper uses 16px / 24px
-    labelFontSize: 'text-[16px]',
-    labelLineHeight: 'leading-[var(--scanner-leading-md)]', // 24px
+  medium: {
+    label: typeXs,
+    field:
+      'h-[var(--scanner-number-input-height-md)] py-[var(--scanner-spacing-2)] pl-[var(--scanner-spacing-4)] pr-[var(--scanner-spacing-2)]', // 36 · 4 / 4 / 4 / 12
+    input: typeSm,
+    control: 'size-[var(--scanner-number-input-control-size)]',
+    icon: 'size-[var(--scanner-number-input-icon-size)]',
+    skeleton: 'h-[var(--scanner-number-input-height-md)]',
+  },
+  small: {
+    label: typeXs,
+    field:
+      'h-[var(--scanner-number-input-height-sm)] py-[var(--scanner-spacing-2)] pl-[var(--scanner-spacing-3)] pr-0', // 28 · 4 / 0 / 4 / 8
+    input: typeSm,
+    control: 'size-[var(--scanner-number-input-control-size)]',
+    icon: 'size-[var(--scanner-number-input-icon-size)]',
+    skeleton: 'h-[var(--scanner-number-input-height-sm)]',
   },
 };
 
-/* ------------------------------------------------------------------ */
-/*  Helpers                                                           */
-/* ------------------------------------------------------------------ */
+/** Squeezes the ghost Button to the Figma control box: fixed square, no padding / min sizes, block icon. */
+const controlReset = 'min-h-0 min-w-0 p-0 [&_svg]:mx-auto [&_svg]:block';
 
-function clampValue(val: number, min?: number, max?: number): number {
-  let clamped = val;
-  if (min !== undefined && clamped < min) clamped = min;
-  if (max !== undefined && clamped > max) clamped = max;
-  return clamped;
-}
+const skeletonBar =
+  'h-[var(--scanner-number-input-skeleton-bar-height)] w-[var(--scanner-number-input-skeleton-bar-width)]';
 
-/* ------------------------------------------------------------------ */
-/*  Component                                                         */
-/* ------------------------------------------------------------------ */
+/** Characters accepted while typing: optional minus, digits, one decimal point. */
+const PARTIAL_NUMBER = /^-?\d*\.?\d*$/;
+
+const decimals = (n: number) => {
+  if (!Number.isFinite(n)) return 0;
+  const s = String(n);
+  const i = s.indexOf('.');
+  return i === -1 ? 0 : s.length - i - 1;
+};
+
+const parse = (raw: string): number | undefined => {
+  const trimmed = raw.trim();
+  if (trimmed === '' || trimmed === '-' || trimmed === '.' || trimmed === '-.') return undefined;
+  const n = Number(trimmed);
+  return Number.isFinite(n) ? n : undefined;
+};
 
 /**
- * Scanner NumberInput — a numeric input field with optional stepper buttons.
+ * Scanner NumberInput — numeric entry with Subtract / Add controls.
  *
- * Supports 4 sizes (small / medium / large / x-large), 2 layer sets,
- * label, helper text, error state, skeleton, and explainer tooltip.
+ * Figma props → React: Size → `size`, Layer set → `layer`, State → `:focus-within` (forceable via
+ * `data-state="focused"`) / `disabled` / `error` / `skeleton`, Show label/helper → `label` / `helperText`,
+ * Show controls → `showControls`, Show explainer → `showExplainer` + `explainerText`, Number value → `value`.
+ *
+ * Keyboard (`role="spinbutton"`): Tab focuses the field; ArrowUp/ArrowDown step by `step`, PageUp/PageDown by
+ * 10 × `step`, Home/End jump to `min`/`max`; Enter commits typed text. The controls are not in the tab order.
  *
  * @example
- * <NumberInput label="Quantity" min={0} max={100} step={1} />
- * <NumberInput value={42} onChange={(v) => setValue(v)} error errorText="Out of range" />
+ * <NumberInput label="Quantity" min={0} max={100} />
+ * <NumberInput value={qty} onChange={setQty} error errorText="Out of range" />
  */
 export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
   (
     {
-      value: controlledValue,
+      value,
       defaultValue,
       onChange,
       min,
@@ -110,402 +118,257 @@ export const NumberInput = forwardRef<HTMLInputElement, NumberInputProps>(
       layer = 1,
       label,
       helperText,
-      errorText = 'Error text message',
+      errorText,
       error = false,
       disabled = false,
+      readOnly = false,
       skeleton = false,
       showControls = true,
       showExplainer = false,
-      explainerText = '',
+      explainerText,
+      decrementLabel = 'Decrement',
+      incrementLabel = 'Increment',
       className,
-      id: idProp,
-      'aria-describedby': ariaDescribedByProp,
-      ...rest
+      id: externalId,
+      onBlur,
+      onKeyDown,
+      'aria-describedby': ariaDescribedBy,
+      'data-state': dataState,
+      ...inputProps
     },
     ref,
   ) => {
-    /* ── IDs ── */
-    const autoId = useId();
-    const inputId = idProp ?? `number-input-${autoId}`;
+    const generatedId = useId();
+    const inputId = externalId ?? `number-input-${generatedId}`;
     const helperId = `${inputId}-helper`;
     const errorId = `${inputId}-error`;
-
-    /* ── Uncontrolled internal state ── */
-    const isControlled = controlledValue !== undefined;
-    const [internalValue, setInternalValue] = useState<number>(
-      defaultValue ?? 0,
-    );
-    const currentValue = isControlled ? controlledValue : internalValue;
+    const cfg = sizeConfig[size];
 
     const inputRef = useRef<HTMLInputElement>(null);
+    useImperativeHandle(ref, () => inputRef.current as HTMLInputElement, []);
 
-    /* ── Value update ── */
-    const updateValue = useCallback(
-      (next: number) => {
-        const clamped = clampValue(next, min, max);
-        if (!isControlled) {
-          setInternalValue(clamped);
-        }
-        onChange?.(clamped);
-      },
-      [isControlled, min, max, onChange],
-    );
+    const isControlled = value !== undefined;
+    const [internalValue, setInternalValue] = useState<number>(defaultValue ?? 0);
+    const currentValue = isControlled ? value : internalValue;
+    /** Text being typed; `null` when the field shows the committed value. */
+    const [draft, setDraft] = useState<string | null>(null);
 
-    const handleIncrement = useCallback(() => {
-      if (disabled) return;
-      updateValue(currentValue + step);
-    }, [disabled, currentValue, step, updateValue]);
+    const clamp = (n: number) => Math.min(max ?? Infinity, Math.max(min ?? -Infinity, n));
+    const inRange = (n: number) => (min === undefined || n >= min) && (max === undefined || n <= max);
 
-    const handleDecrement = useCallback(() => {
-      if (disabled) return;
-      updateValue(currentValue - step);
-    }, [disabled, currentValue, step, updateValue]);
+    const commit = (next: number) => {
+      const clamped = clamp(next);
+      if (!isControlled) setInternalValue(clamped);
+      if (clamped !== currentValue) onChange?.(clamped);
+    };
 
-    /* ── Input change (direct typing) ── */
-    const handleInputChange = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-        const raw = e.target.value;
-        // Allow empty string while typing, minus sign, or numeric values
-        if (raw === '' || raw === '-') return;
-        const parsed = Number(raw);
-        if (!Number.isNaN(parsed)) {
-          updateValue(parsed);
-        }
-      },
-      [updateValue],
-    );
+    const interactive = !disabled && !readOnly;
 
-    /* ── Input blur → clamp ── */
-    const handleBlur = useCallback(
-      (e: React.FocusEvent<HTMLInputElement>) => {
-        const raw = e.target.value;
-        const parsed = Number(raw);
-        if (raw === '' || Number.isNaN(parsed)) {
-          updateValue(defaultValue ?? min ?? 0);
-        } else {
-          updateValue(parsed);
-        }
-        rest.onBlur?.(e);
-      },
-      [updateValue, defaultValue, min, rest],
-    );
+    const stepBy = (multiplier: number) => {
+      if (!interactive) return;
+      const typed = draft !== null ? parse(draft) : undefined;
+      const base = typed ?? currentValue;
+      const precision = Math.max(decimals(step), decimals(base));
+      setDraft(null);
+      commit(Number((base + step * multiplier).toFixed(precision)));
+    };
 
-    /* ── Keyboard navigation ── */
-    const handleKeyDown = useCallback(
-      (e: React.KeyboardEvent<HTMLInputElement>) => {
-        switch (e.key) {
-          case 'ArrowUp':
+    const commitDraft = () => {
+      if (draft === null) return;
+      const typed = parse(draft);
+      setDraft(null);
+      if (typed !== undefined) commit(typed); // empty / invalid text reverts to the last value
+    };
+
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value;
+      if (!PARTIAL_NUMBER.test(raw.trim())) return;
+      setDraft(raw);
+      const typed = parse(raw);
+      if (typed !== undefined && inRange(typed)) commit(typed);
+    };
+
+    const handleBlur = (e: FocusEvent<HTMLInputElement>) => {
+      commitDraft();
+      onBlur?.(e);
+    };
+
+    const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+      onKeyDown?.(e);
+      if (e.defaultPrevented || !interactive) return;
+      switch (e.key) {
+        case 'ArrowUp':
+          e.preventDefault();
+          stepBy(1);
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          stepBy(-1);
+          break;
+        case 'PageUp':
+          e.preventDefault();
+          stepBy(10);
+          break;
+        case 'PageDown':
+          e.preventDefault();
+          stepBy(-10);
+          break;
+        case 'Home':
+          if (min !== undefined) {
             e.preventDefault();
-            handleIncrement();
-            break;
-          case 'ArrowDown':
+            setDraft(null);
+            commit(min);
+          }
+          break;
+        case 'End':
+          if (max !== undefined) {
             e.preventDefault();
-            handleDecrement();
-            break;
-          case 'Home':
-            if (min !== undefined) {
-              e.preventDefault();
-              updateValue(min);
-            }
-            break;
-          case 'End':
-            if (max !== undefined) {
-              e.preventDefault();
-              updateValue(max);
-            }
-            break;
-        }
-        rest.onKeyDown?.(e);
-      },
-      [handleIncrement, handleDecrement, updateValue, min, max, rest],
-    );
+            setDraft(null);
+            commit(max);
+          }
+          break;
+        case 'Enter':
+          commitDraft();
+          break;
+      }
+    };
 
-    /* ── Config ── */
-    const cfg = sizeConfig[size];
-    const layerBg =
-      layer === 2
-        ? 'bg-[var(--scanner-bg-secondary)]'
-        : 'bg-[var(--scanner-bg-primary)]';
+    /** Pressing the field container (not a control) focuses the input — Figma interaction docs. */
+    const focusFromContainer = (e: MouseEvent<HTMLDivElement>) => {
+      if (e.target === e.currentTarget && inputRef.current && !disabled) {
+        e.preventDefault();
+        inputRef.current.focus();
+      }
+    };
 
-    /* ── aria-describedby ── */
-    const describedBy = [
-      ariaDescribedByProp,
-      error ? errorId : undefined,
-      helperText && !error ? helperId : undefined,
-    ]
-      .filter(Boolean)
-      .join(' ') || undefined;
-
-    const atMin = min !== undefined && currentValue <= min;
-    const atMax = max !== undefined && currentValue >= max;
-
-    /* ================================================================= */
-    /*  Skeleton                                                         */
-    /* ================================================================= */
+    /** Keep focus in the input when a control is pressed with the mouse. */
+    const keepFocus = (e: MouseEvent<HTMLButtonElement>) => e.preventDefault();
 
     if (skeleton) {
+      /* Figma skeleton: label box · field box · helper box */
       return (
-        <div
-          className={cn(
-            'flex w-full flex-col items-start',
-            className,
-          )}
-          data-layer={layer}
-          aria-hidden="true"
-        >
-          {/* Label skeleton */}
-          {label !== undefined && (
-            <div className="flex w-full items-start gap-[var(--scanner-spacing-2)] pb-[var(--scanner-spacing-3)]">
-              <div className="h-[8px] w-[40px] bg-[var(--scanner-bg-disabled)]" />
+        <div aria-hidden="true" data-skeleton="" data-layer={layer} className={cn(fieldRoot, className)}>
+          {label && (
+            <div className="flex w-full items-start pb-[var(--scanner-spacing-3)]">
+              <div className={cn(skeletonBar, skeletonFill)} />
             </div>
           )}
-
-          {/* Field skeleton */}
-          <div
-            className={cn(
-              'w-full shrink-0 rounded-[var(--scanner-radius-md)] bg-[var(--scanner-bg-disabled)]',
-              cfg.height,
-            )}
-          />
-
-          {/* Helper skeleton */}
-          <div className="flex w-full items-start pt-[var(--scanner-spacing-3)]">
-            <div className="h-[8px] w-[40px] bg-[var(--scanner-bg-disabled)]" />
-          </div>
+          <div className={cn('w-full rounded-[var(--scanner-radius-md)]', cfg.skeleton, skeletonFill)} />
+          {(helperText || (error && errorText)) && (
+            <div className="flex w-full items-start pt-[var(--scanner-spacing-3)]">
+              <div className={cn(skeletonBar, skeletonFill)} />
+            </div>
+          )}
         </div>
       );
     }
 
-    /* ================================================================= */
-    /*  Rendered component                                               */
-    /* ================================================================= */
+    const showError = error && !!errorText;
+    const showHelper = !showError && !!helperText;
+    const describedBy =
+      [ariaDescribedBy, showError && errorId, showHelper && helperId].filter(Boolean).join(' ') || undefined;
 
-    const showLabel = label !== undefined;
-    const showHelper = helperText && !error && !disabled;
-    const showError = error && !disabled;
-    const showDisabledHelper = disabled && helperText;
+    const atMin = min !== undefined && currentValue <= min;
+    const atMax = max !== undefined && currentValue >= max;
 
     return (
-      <div
-        className={cn('flex w-full flex-col items-start', className)}
-        data-layer={layer}
-      >
-        {/* ── Label ── */}
-        {showLabel && (
-          <div className="flex w-full items-center gap-[var(--scanner-spacing-2)] pb-[var(--scanner-spacing-3)]">
-            <label
-              htmlFor={inputId}
-              className={cn(
-                'shrink-0 whitespace-nowrap',
-                'font-[family-name:var(--scanner-font-sans)]',
-                'font-[var(--scanner-font-regular)]',
-                cfg.labelFontSize,
-                cfg.labelLineHeight,
-                disabled
-                  ? 'text-[var(--scanner-text-disabled)]'
-                  : 'text-[var(--scanner-text-secondary)]',
-              )}
-            >
-              {label}
-            </label>
-            {showExplainer && explainerText && (
-              <IconTriggerTooltip
-                content={explainerText}
-                iconName="help"
-                position="bottom"
-              />
-            )}
-          </div>
-        )}
+      <div data-layer={layer} className={cn(fieldRoot, className)}>
+        <FieldHeader
+          htmlFor={inputId}
+          label={label}
+          explainer={showExplainer ? explainerText : undefined}
+          disabled={disabled}
+          labelClassName={cfg.label}
+        />
 
-        {/* ── Field ── */}
         <div
+          data-part="field"
+          data-state={dataState}
+          onMouseDown={focusFromContainer}
           className={cn(
-            'flex w-full items-center overflow-clip',
-            'rounded-[var(--scanner-radius-md)]',
-            'gap-[var(--scanner-spacing-3)]',
-            cfg.height,
-            cfg.pl,
-            cfg.pr,
-            cfg.py,
-            layerBg,
-            /* Border — always present (transparent default prevents layout shift) */
-            'border border-solid',
-            error && !disabled
-              ? 'border-[var(--scanner-border-error)]'
-              : 'border-transparent',
-            /* Focus-within border */
-            !error &&
-              !disabled &&
-              'focus-within:border-[var(--scanner-border-focus)]',
+            'flex w-full items-center gap-[var(--scanner-spacing-3)] overflow-clip rounded-[var(--scanner-radius-md)]',
+            'transition-shadow duration-150',
+            cfg.field,
+            fieldBackground[layer],
+            fieldStroke({ error, disabled }),
+            disabled ? 'cursor-not-allowed' : 'cursor-text',
           )}
         >
-          {/* Input */}
           <input
-            ref={(node) => {
-              // Merge forwarded ref + local ref
-              (inputRef as React.MutableRefObject<HTMLInputElement | null>).current = node;
-              if (typeof ref === 'function') ref(node);
-              else if (ref) (ref as React.MutableRefObject<HTMLInputElement | null>).current = node;
-            }}
+            ref={inputRef}
             id={inputId}
             type="text"
-            inputMode="numeric"
             role="spinbutton"
+            inputMode="decimal"
+            autoComplete="off"
+            value={draft ?? String(currentValue)}
+            disabled={disabled}
+            readOnly={readOnly}
             aria-valuenow={currentValue}
             aria-valuemin={min}
             aria-valuemax={max}
             aria-invalid={error || undefined}
+            aria-disabled={disabled || undefined}
             aria-describedby={describedBy}
-            disabled={disabled}
-            value={String(currentValue)}
-            onChange={handleInputChange}
+            onChange={handleChange}
             onBlur={handleBlur}
             onKeyDown={handleKeyDown}
             className={cn(
-              'min-w-0 flex-1 bg-transparent outline-none',
-              'overflow-hidden text-ellipsis whitespace-nowrap',
-              'font-[family-name:var(--scanner-font-sans)]',
-              'font-[var(--scanner-font-regular)]',
-              cfg.fontSize,
-              cfg.lineHeight,
-              disabled
-                ? 'text-[var(--scanner-text-disabled)] cursor-not-allowed'
-                : 'text-[var(--scanner-text-primary)]',
-              'placeholder:text-[var(--scanner-text-tertiary)]',
+              'm-0 min-w-0 flex-1 border-none bg-transparent p-0 outline-none',
+              'text-ellipsis',
+              cfg.input,
+              valueText(disabled),
+              placeholderText(disabled),
+              disabled && 'cursor-not-allowed',
             )}
-            {...rest}
+            {...inputProps}
           />
 
-          {/* Stepper buttons */}
           {showControls && (
-            <div className="flex shrink-0 items-center gap-[var(--scanner-spacing-2)]">
-              {/* Decrement */}
-              <button
-                type="button"
+            <div data-part="controls" className="flex shrink-0 items-center gap-[var(--scanner-spacing-2)]">
+              <Button
+                emphasis="ghost"
+                size="small"
                 tabIndex={-1}
-                disabled={disabled || atMin}
-                aria-label="Decrement"
-                onClick={handleDecrement}
-                className={cn(
-                  'inline-flex shrink-0 items-center justify-center',
-                  'rounded-[var(--scanner-radius-sm)]',
-                  'p-[var(--scanner-spacing-2)]',
-                  'transition-colors duration-150',
-                  disabled || atMin
-                    ? 'cursor-not-allowed text-[var(--scanner-icon-disabled)]'
-                    : [
-                        'cursor-pointer',
-                        'text-[var(--scanner-icon-secondary)]',
-                        'hover:bg-[var(--scanner-bg-hover)]',
-                        'active:bg-[var(--scanner-bg-active)]',
-                      ],
-                  'focus-visible:outline-2 focus-visible:outline-offset-2',
-                  'focus-visible:outline-[var(--scanner-focus-ring)]',
-                )}
+                aria-label={decrementLabel}
+                aria-controls={inputId}
+                disabled={!interactive || atMin}
+                onMouseDown={keepFocus}
+                onClick={() => stepBy(-1)}
+                className={cn(controlReset, cfg.control)}
               >
-                <Icon name="minus" size={20} />
-              </button>
-
-              {/* Divider */}
-              <div
-                className="h-[16px] w-px shrink-0 bg-[var(--scanner-border-subtle)]"
+                <Icon name="subtract-empty" size={24} className={cfg.icon} />
+              </Button>
+              <span
                 aria-hidden="true"
+                className="h-[var(--scanner-number-input-divider-height)] w-px shrink-0 bg-[var(--scanner-border-subtle)]"
               />
-
-              {/* Increment */}
-              <button
-                type="button"
+              <Button
+                emphasis="ghost"
+                size="small"
                 tabIndex={-1}
-                disabled={disabled || atMax}
-                aria-label="Increment"
-                onClick={handleIncrement}
-                className={cn(
-                  'inline-flex shrink-0 items-center justify-center',
-                  'rounded-[var(--scanner-radius-sm)]',
-                  'p-[var(--scanner-spacing-2)]',
-                  'transition-colors duration-150',
-                  disabled || atMax
-                    ? 'cursor-not-allowed text-[var(--scanner-icon-disabled)]'
-                    : [
-                        'cursor-pointer',
-                        'text-[var(--scanner-icon-secondary)]',
-                        'hover:bg-[var(--scanner-bg-hover)]',
-                        'active:bg-[var(--scanner-bg-active)]',
-                      ],
-                  'focus-visible:outline-2 focus-visible:outline-offset-2',
-                  'focus-visible:outline-[var(--scanner-focus-ring)]',
-                )}
+                aria-label={incrementLabel}
+                aria-controls={inputId}
+                disabled={!interactive || atMax}
+                onMouseDown={keepFocus}
+                onClick={() => stepBy(1)}
+                className={cn(controlReset, cfg.control)}
               >
-                <Icon name="add" size={20} />
-              </button>
+                <Icon name="add-empty" size={24} className={cfg.icon} />
+              </Button>
             </div>
           )}
         </div>
 
-        {/* ── Helper text ── */}
-        {showHelper && (
-          <div
-            id={helperId}
-            className={cn(
-              'flex w-full items-center pt-[var(--scanner-spacing-3)]',
-            )}
-          >
-            <p
-              className={cn(
-                'min-w-0 flex-1',
-                'font-[family-name:var(--scanner-font-sans)]',
-                'font-[var(--scanner-font-regular)]',
-                cfg.labelFontSize,
-                cfg.labelLineHeight,
-                'text-[var(--scanner-text-secondary)]',
-              )}
-            >
-              {helperText}
-            </p>
-          </div>
-        )}
-
-        {/* ── Disabled helper text ── */}
-        {showDisabledHelper && (
-          <div
-            id={helperId}
-            className="flex w-full items-center pt-[var(--scanner-spacing-3)]"
-          >
-            <p
-              className={cn(
-                'min-w-0 flex-1',
-                'font-[family-name:var(--scanner-font-sans)]',
-                'font-[var(--scanner-font-regular)]',
-                cfg.labelFontSize,
-                cfg.labelLineHeight,
-                'text-[var(--scanner-text-disabled)]',
-              )}
-            >
-              {helperText}
-            </p>
-          </div>
-        )}
-
-        {/* ── Error text ── */}
         {showError && (
-          <div
-            id={errorId}
-            className="flex w-full items-start pt-[var(--scanner-spacing-3)]"
-          >
-            <p
-              className={cn(
-                'min-w-0 flex-1',
-                'font-[family-name:var(--scanner-font-sans)]',
-                'font-[var(--scanner-font-regular)]',
-                cfg.labelFontSize,
-                cfg.labelLineHeight,
-                'text-[var(--scanner-text-error)]',
-              )}
-            >
-              {errorText}
-            </p>
-          </div>
+          <FieldMessage id={errorId} tone="error" className={cfg.label}>
+            {errorText}
+          </FieldMessage>
+        )}
+        {showHelper && (
+          <FieldMessage id={helperId} tone="helper" disabled={disabled} className={cfg.label}>
+            {helperText}
+          </FieldMessage>
         )}
       </div>
     );

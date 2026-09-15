@@ -1,239 +1,173 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, within } from 'storybook/test';
 import { AvatarGroup } from './AvatarGroup';
 import type { AvatarGroupItem } from './avatar-group.types';
-import type { AvatarSize } from '../avatar/avatar.types';
+import type { AvatarPixelSize } from '../avatar/avatar.types';
 
-/* ------------------------------------------------------------------ */
-/*  Sample data                                                       */
-/* ------------------------------------------------------------------ */
+/*
+ * Figma: "06. Scanner core 1.0.0 full" → 02 Avatars group (node 24505:108025)
+ * Size: 28, 32, 36, 40, 44, 48, 52 — Figma shows 4 image avatars + a "+4" counter at every size.
+ */
+
+const photo = (id: string) => `https://images.unsplash.com/${id}?w=160&h=160&fit=crop&crop=face`;
 
 const SAMPLE_AVATARS: AvatarGroupItem[] = [
-  {
-    src: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=160&h=160&fit=crop&crop=face',
-    alt: 'Alex Chen',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=160&h=160&fit=crop&crop=face',
-    alt: 'Sarah Miller',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=160&h=160&fit=crop&crop=face',
-    alt: 'James Wilson',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=160&h=160&fit=crop&crop=face',
-    alt: 'Emily Davis',
-  },
-  {
-    src: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&crop=face',
-    alt: 'Michael Brown',
-  },
-  {
-    initials: 'KL',
-    alt: 'Katie Lee',
-  },
-  {
-    initials: 'RJ',
-    alt: 'Robert Johnson',
-  },
-  {
-    alt: 'Unknown User',
-  },
+  { src: photo('photo-1472099645785-5658abf4ff4e'), alt: 'Alex Chen' },
+  { src: photo('photo-1494790108377-be9c29b29330'), alt: 'Sarah Miller' },
+  { src: photo('photo-1507003211169-0a1dd7228f2d'), alt: 'James Wilson' },
+  { src: photo('photo-1438761681033-6461ffad8d80'), alt: 'Emily Davis' },
+  { src: photo('photo-1500648767791-00dcc994a43e'), alt: 'Michael Brown' },
+  { name: 'Katie Lee', alt: 'Katie Lee' },
+  { name: 'Robert Johnson', alt: 'Robert Johnson' },
+  { alt: 'Unknown user' },
 ];
 
-const ALL_SIZES: AvatarSize[] = [
-  'extra-small',
-  'small',
-  'medium',
-  'large',
-  'extra-large',
-  '2xl',
-  '3xl',
-  '4xl',
-];
+const FIGMA_SIZES: AvatarPixelSize[] = [28, 32, 36, 40, 44, 48, 52];
 
-/* ------------------------------------------------------------------ */
-/*  Meta                                                              */
-/* ------------------------------------------------------------------ */
+const table: React.CSSProperties = { borderCollapse: 'collapse', width: 'max-content' };
+const cell: React.CSSProperties = { padding: 12, verticalAlign: 'middle' };
+const headCell: React.CSSProperties = {
+  ...cell,
+  font: '500 12px/16px var(--scanner-font-sans)',
+  color: 'var(--scanner-text-secondary)',
+  textAlign: 'left',
+  whiteSpace: 'nowrap',
+};
 
 const meta: Meta<typeof AvatarGroup> = {
   title: 'Components/AvatarGroup',
   component: AvatarGroup,
-  argTypes: {
-    size: {
-      control: 'select',
-      options: ALL_SIZES,
-    },
-    max: {
-      control: { type: 'number', min: 1, max: 10 },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Overlapping avatars, each separated by a 1px white (border-on-color-strong) ring, ending with a "+N" counter ' +
+          'for avatars beyond `max`. Not interactive.',
+      },
     },
   },
+  argTypes: {
+    size: { name: 'Size', control: 'select', options: [...FIGMA_SIZES, 60, 80] },
+    max: { control: { type: 'number', min: 0, max: 10 } },
+  },
+  args: { avatars: SAMPLE_AVATARS, max: 4, size: 40 },
+  decorators: [
+    (Story) => (
+      <div style={{ padding: 16 }}>
+        <Story />
+      </div>
+    ),
+  ],
 };
 export default meta;
 
 type Story = StoryObj<typeof AvatarGroup>;
 
-/* ------------------------------------------------------------------ */
-/*  Default                                                           */
-/* ------------------------------------------------------------------ */
+/* ── Default (Figma: 4 avatars + "+4") ── */
 
-export const Default: Story = {
-  args: {
-    avatars: SAMPLE_AVATARS,
-    max: 4,
-    size: 'medium',
-  },
+export const Default: Story = {};
+
+/* ── Per size (Figma "Size") ── */
+
+export const Size28: Story = { name: 'Size: 28', args: { size: 28 } };
+export const Size32: Story = { name: 'Size: 32', args: { size: 32 } };
+export const Size36: Story = { name: 'Size: 36', args: { size: 36 } };
+export const Size40: Story = { name: 'Size: 40', args: { size: 40 } };
+export const Size44: Story = { name: 'Size: 44', args: { size: 44 } };
+export const Size48: Story = { name: 'Size: 48', args: { size: 48 } };
+export const Size52: Story = { name: 'Size: 52', args: { size: 52 } };
+
+/* ── All sizes / Figma matrix (7 variants) ── */
+
+export const AllSizes: Story = {
+  render: () => (
+    <table style={table}>
+      <tbody>
+        {FIGMA_SIZES.map((s) => (
+          <tr key={s}>
+            <th style={headCell}>{`Size=${s}`}</th>
+            <td style={cell}>
+              <AvatarGroup avatars={SAMPLE_AVATARS} max={4} size={s} />
+            </td>
+          </tr>
+        ))}
+        {([60, 80] as const).map((s) => (
+          <tr key={s}>
+            <th style={headCell}>{`${s} (extrapolated, not in Figma)`}</th>
+            <td style={cell}>
+              <AvatarGroup avatars={SAMPLE_AVATARS} max={4} size={s} />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  ),
 };
 
-/* ------------------------------------------------------------------ */
-/*  No Overflow                                                       */
-/* ------------------------------------------------------------------ */
-
-export const NoOverflow: Story = {
-  name: 'No Overflow (avatars <= max)',
-  args: {
-    avatars: SAMPLE_AVATARS.slice(0, 3),
-    max: 4,
-    size: 'medium',
-  },
+export const FigmaMatrix: Story = {
+  name: 'Figma matrix (all 7 variants)',
+  render: () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {FIGMA_SIZES.map((s) => (
+        <AvatarGroup key={s} avatars={SAMPLE_AVATARS.slice(0, 8)} max={4} size={s} />
+      ))}
+    </div>
+  ),
 };
 
-/* ------------------------------------------------------------------ */
-/*  With Overflow                                                     */
-/* ------------------------------------------------------------------ */
-
-export const WithOverflow: Story = {
-  name: 'With Overflow (+N indicator)',
-  args: {
-    avatars: SAMPLE_AVATARS,
-    max: 4,
-    size: 'large',
-  },
+/** No distinct interactive states exist in Figma; the group shows overflow vs. no overflow. */
+export const AllStates: Story = {
+  render: () => (
+    <table style={table}>
+      <tbody>
+        <tr>
+          <th style={headCell}>No overflow</th>
+          <td style={cell}><AvatarGroup avatars={SAMPLE_AVATARS.slice(0, 3)} size={40} /></td>
+        </tr>
+        <tr>
+          <th style={headCell}>Overflow (+N)</th>
+          <td style={cell}><AvatarGroup avatars={SAMPLE_AVATARS} size={40} /></td>
+        </tr>
+        <tr>
+          <th style={headCell}>Mixed variants</th>
+          <td style={cell}><AvatarGroup avatars={SAMPLE_AVATARS.slice(4)} size={40} /></td>
+        </tr>
+        <tr>
+          <th style={headCell}>On coloured background</th>
+          <td style={{ ...cell, background: 'var(--scanner-bg-brand)' }}>
+            <AvatarGroup avatars={SAMPLE_AVATARS} size={40} />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  ),
 };
 
-/* ------------------------------------------------------------------ */
-/*  Large Overflow Count                                              */
-/* ------------------------------------------------------------------ */
+/* ── Edge cases ── */
 
 export const LargeOverflowCount: Story = {
-  name: 'Large Overflow Count (+N > 9)',
   args: {
     avatars: [
       ...SAMPLE_AVATARS,
-      ...Array.from({ length: 12 }, (_, i) => ({
-        initials: `U${i}`,
-        alt: `User ${i + 9}`,
-      })),
+      ...Array.from({ length: 120 }, (_, i) => ({ name: `User ${i}`, alt: `User ${i + 9}` })),
     ],
     max: 3,
-    size: 'large',
+    size: 28,
   },
 };
 
-/* ------------------------------------------------------------------ */
-/*  Mixed Avatar Types                                                */
-/* ------------------------------------------------------------------ */
-
-export const MixedTypes: Story = {
-  name: 'Mixed Types (image, initials, icon)',
-  args: {
-    avatars: [
-      { src: SAMPLE_AVATARS[0].src, alt: 'Photo avatar' },
-      { initials: 'AB', alt: 'Initials avatar' },
-      { alt: 'Icon fallback avatar' },
-      { src: SAMPLE_AVATARS[1].src, alt: 'Another photo' },
-      { initials: 'XY', alt: 'More initials' },
-    ],
-    max: 4,
-    size: 'large',
-  },
-};
+export const SingleAvatar: Story = { args: { avatars: SAMPLE_AVATARS.slice(0, 1) } };
 
 /* ------------------------------------------------------------------ */
-/*  All Sizes                                                         */
+/*  Interaction tests                                                 */
 /* ------------------------------------------------------------------ */
 
-export const AllSizes: Story = {
-  name: 'All Sizes',
-  render: () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'flex-start' }}>
-      {ALL_SIZES.map((size) => (
-        <div key={size} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span
-            style={{
-              width: '100px',
-              fontFamily: 'var(--scanner-font-sans)',
-              fontSize: 'var(--scanner-text-xs)',
-              color: 'var(--scanner-text-secondary)',
-            }}
-          >
-            {size}
-          </span>
-          <AvatarGroup avatars={SAMPLE_AVATARS} max={4} size={size} />
-        </div>
-      ))}
-    </div>
-  ),
-};
-
-/* ------------------------------------------------------------------ */
-/*  Figma Sizes (matching Figma variant options)                      */
-/* ------------------------------------------------------------------ */
-
-const FIGMA_SIZES: AvatarSize[] = [
-  'extra-small',
-  'small',
-  'medium',
-  'large',
-  'extra-large',
-  '2xl',
-];
-
-export const FigmaSizes: Story = {
-  name: 'Figma Variant Sizes (28–48)',
-  render: () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', alignItems: 'flex-start' }}>
-      {FIGMA_SIZES.map((size) => (
-        <div key={size} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span
-            style={{
-              width: '100px',
-              fontFamily: 'var(--scanner-font-sans)',
-              fontSize: 'var(--scanner-text-xs)',
-              color: 'var(--scanner-text-secondary)',
-            }}
-          >
-            {size}
-          </span>
-          <AvatarGroup avatars={SAMPLE_AVATARS} max={4} size={size} />
-        </div>
-      ))}
-    </div>
-  ),
-};
-
-/* ------------------------------------------------------------------ */
-/*  Single Avatar                                                     */
-/* ------------------------------------------------------------------ */
-
-export const SingleAvatar: Story = {
-  name: 'Single Avatar (no overflow)',
-  args: {
-    avatars: [SAMPLE_AVATARS[0]],
-    max: 4,
-    size: 'large',
-  },
-};
-
-/* ------------------------------------------------------------------ */
-/*  Max = 1 With Many Avatars                                         */
-/* ------------------------------------------------------------------ */
-
-export const MaxOne: Story = {
-  name: 'Max 1 with overflow',
-  args: {
-    avatars: SAMPLE_AVATARS,
-    max: 1,
-    size: 'large',
+export const OverflowIsAnnounced: Story = {
+  tags: ['test'],
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByRole('group', { name: 'Group of 8 avatars' })).toBeInTheDocument();
+    await expect(canvas.getByRole('img', { name: '4 more' })).toHaveTextContent('+4');
+    await expect(canvas.getByRole('img', { name: 'Alex Chen' })).toBeInTheDocument();
   },
 };

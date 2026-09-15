@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, fn, userEvent, within } from 'storybook/test';
 import { RadioButtonsVerticalGroup } from './RadioButtonsVerticalGroup';
-import type { RadioOption } from './radio-buttons-vertical-group.types';
+import type { RadioButtonsVerticalGroupProps, RadioOption } from './radio-buttons-vertical-group.types';
 
-const sampleItems: RadioOption[] = [
-  { label: 'Radio button value', value: 'option-1' },
-  { label: 'Radio button value', value: 'option-2' },
-  { label: 'Radio button value', value: 'option-3' },
-  { label: 'Radio button value', value: 'option-4' },
-  { label: 'Radio button value', value: 'option-5' },
-];
+/*
+ * Figma: "06. Scanner core 1.0.0 full" → 02 Radio buttons vertical group/Default (node 25:1188)
+ * Component properties: Show label · Label text value · Show explainer · Required — every
+ * combination is rendered in `FigmaMatrix`. Items use 01 Radio button item.
+ */
+
+const figmaItems: RadioOption[] = [1, 2, 3, 4, 5].map((n) => ({ label: 'Radio button value', value: `option-${n}` }));
 
 const realItems: RadioOption[] = [
   { label: 'Email', value: 'email' },
@@ -18,228 +19,275 @@ const realItems: RadioOption[] = [
   { label: 'Mail', value: 'mail' },
 ];
 
+const table: React.CSSProperties = { borderCollapse: 'collapse', width: 'max-content' };
+const cell: React.CSSProperties = { padding: 16, verticalAlign: 'top' };
+const headCell: React.CSSProperties = {
+  ...cell,
+  font: '500 12px/16px var(--scanner-font-sans)',
+  color: 'var(--scanner-text-secondary)',
+  textAlign: 'left',
+  whiteSpace: 'nowrap',
+};
+
+/** Stateful wrapper so stories behave like a real form field. */
+const Controlled = (props: RadioButtonsVerticalGroupProps) => {
+  const [value, setValue] = useState(props.value ?? '');
+  return (
+    <RadioButtonsVerticalGroup
+      {...props}
+      value={value}
+      onChange={(v) => {
+        setValue(v);
+        props.onChange?.(v);
+      }}
+    />
+  );
+};
+
 const meta: Meta<typeof RadioButtonsVerticalGroup> = {
   title: 'Components/RadioButtonsVerticalGroup',
   component: RadioButtonsVerticalGroup,
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'A labelled group of mutually exclusive options stacked vertically (60px rows, 8px apart). ' +
+          'Keyboard: Tab / Shift+Tab move into and out of the group (focus lands on the selected radio), ' +
+          'arrow keys move the selection between enabled radios and wrap, Space selects the focused radio.',
+      },
+    },
+  },
   argTypes: {
-    label: { control: 'text' },
-    showLabel: { control: 'boolean' },
-    tooltipContent: { control: 'text' },
-    required: { control: 'boolean' },
+    showLabel: { name: 'Show label', control: 'boolean' },
+    label: { name: 'Label text value', control: 'text' },
+    tooltipContent: { name: 'Show explainer (tooltip text)', control: 'text' },
+    tooltipPosition: { control: 'inline-radio', options: ['top', 'bottom', 'left', 'right'] },
+    required: { name: 'Required', control: 'boolean' },
     helperText: { control: 'text' },
     error: { control: 'boolean' },
     disabled: { control: 'boolean' },
     skeleton: { control: 'boolean' },
     value: { control: 'text' },
   },
+  args: {
+    label: 'Label',
+    showLabel: true,
+    required: false,
+    items: figmaItems,
+    value: 'option-1',
+    onChange: fn(),
+  },
+  render: (args) => <Controlled {...args} />,
+  decorators: [
+    (Story) => (
+      <div style={{ padding: 16 }}>
+        <Story />
+      </div>
+    ),
+  ],
 };
 export default meta;
 
 type Story = StoryObj<typeof RadioButtonsVerticalGroup>;
 
-/* ------------------------------------------------------------------ */
-/* Default — with Controls for every prop                               */
-/* ------------------------------------------------------------------ */
-export const Default: Story = {
+/* ── Default (Figma default: label shown, first item selected) ── */
+
+export const Default: Story = {};
+
+/* ── Component properties ── */
+
+export const WithoutLabel: Story = { name: 'Show label: False', args: { showLabel: false } };
+export const WithExplainer: Story = {
+  name: 'Show explainer: True',
+  args: { tooltipContent: 'Additional information about this choice' },
+};
+export const Required: Story = { name: 'Required: True', args: { required: true } };
+
+/* ── States ── */
+
+export const NothingSelected: Story = { args: { value: '' } };
+export const Disabled: Story = { args: { disabled: true, value: 'option-2' } };
+export const PartiallyDisabled: Story = {
   args: {
-    label: 'Label',
-    showLabel: true,
-    name: 'default-group',
-    items: sampleItems,
-  },
-  render: function Render(args) {
-    const [selected, setSelected] = useState(args.value ?? '');
-    return (
-      <RadioButtonsVerticalGroup
-        {...args}
-        value={selected}
-        onChange={setSelected}
-      />
-    );
+    items: [
+      { label: 'Available', value: 'a' },
+      { label: 'Unavailable', value: 'b', disabled: true },
+      { label: 'Available', value: 'c' },
+    ],
+    value: 'a',
   },
 };
-
-/* ------------------------------------------------------------------ */
-/* With label and helper text                                            */
-/* ------------------------------------------------------------------ */
-export const WithLabelAndHelperText: Story = {
-  render: function Render() {
-    const [selected, setSelected] = useState('email');
-    return (
-      <RadioButtonsVerticalGroup
-        label="Preferred contact method"
-        name="contact-method"
-        helperText="Select how you would like us to reach you."
-        value={selected}
-        onChange={setSelected}
-        items={realItems}
-      />
-    );
-  },
+export const ErrorWithHelperText: Story = {
+  args: { required: true, error: true, value: '', helperText: 'Please select an option.' },
 };
+export const Skeleton: Story = { args: { skeleton: true } };
 
-/* ------------------------------------------------------------------ */
-/* With preselected value                                                */
-/* ------------------------------------------------------------------ */
-export const WithPreselectedValue: Story = {
-  render: function Render() {
-    const [selected, setSelected] = useState('option-1');
-    return (
-      <RadioButtonsVerticalGroup
-        label="Label"
-        name="preselected-group"
-        value={selected}
-        onChange={setSelected}
-        items={sampleItems}
-      />
-    );
-  },
-};
-
-/* ------------------------------------------------------------------ */
-/* Error state                                                           */
-/* ------------------------------------------------------------------ */
-export const ErrorState: Story = {
-  render: function Render() {
-    const [selected, setSelected] = useState('');
-    return (
-      <RadioButtonsVerticalGroup
-        label="Label"
-        name="error-group"
-        error
-        required
-        helperText="Please select an option."
-        value={selected}
-        onChange={setSelected}
-        items={sampleItems}
-      />
-    );
-  },
-};
-
-/* ------------------------------------------------------------------ */
-/* Disabled group                                                        */
-/* ------------------------------------------------------------------ */
-export const DisabledGroup: Story = {
-  render: function Render() {
-    return (
-      <RadioButtonsVerticalGroup
-        label="Label"
-        name="disabled-group"
-        disabled
-        value="option-2"
-        items={sampleItems}
-      />
-    );
-  },
-};
-
-/* ------------------------------------------------------------------ */
-/* All states side by side                                               */
-/* ------------------------------------------------------------------ */
 export const AllStates: Story = {
-  render: function Render() {
-    const [v1, setV1] = useState('');
-    const [v2, setV2] = useState('option-1');
+  render: () => {
+    const items = figmaItems.slice(0, 3);
+    const states: [string, Partial<RadioButtonsVerticalGroupProps>][] = [
+      ['Enabled', { value: 'option-1' }],
+      ['Nothing selected', { value: '' }],
+      ['Disabled', { disabled: true, value: 'option-1' }],
+      ['Error', { error: true, required: true, value: '', helperText: 'Please select an option.' }],
+      ['Skeleton', { skeleton: true, value: 'option-1' }],
+    ];
     return (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '32px' }}>
-        {/* Default */}
-        <div>
-          <p style={{ marginBottom: 8, fontWeight: 500, fontSize: 12, color: '#888' }}>Default</p>
-          <RadioButtonsVerticalGroup
-            label="Label"
-            name="all-default"
-            value={v1}
-            onChange={setV1}
-            items={sampleItems.slice(0, 3)}
-          />
-        </div>
+      <table style={table}>
+        <thead>
+          <tr>
+            {states.map(([title]) => (
+              <th key={title} style={headCell}>{title}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            {states.map(([title, props]) => (
+              <td key={title} style={cell}>
+                <Controlled label="Label" items={items} {...props} />
+              </td>
+            ))}
+          </tr>
+        </tbody>
+      </table>
+    );
+  },
+};
 
-        {/* Preselected */}
-        <div>
-          <p style={{ marginBottom: 8, fontWeight: 500, fontSize: 12, color: '#888' }}>Preselected</p>
-          <RadioButtonsVerticalGroup
-            label="Label"
-            name="all-preselected"
-            value={v2}
-            onChange={setV2}
-            items={sampleItems.slice(0, 3)}
-          />
-        </div>
+/* ── Figma matrix: Show label × Show explainer × Required ── */
 
-        {/* Required + Explainer */}
-        <div>
-          <p style={{ marginBottom: 8, fontWeight: 500, fontSize: 12, color: '#888' }}>Required + Explainer</p>
-          <RadioButtonsVerticalGroup
-            label="Label"
-            name="all-required"
-            required
-            tooltipContent="Additional information"
-            value="option-1"
-            items={sampleItems.slice(0, 3)}
-          />
-        </div>
-
-        {/* Error */}
-        <div>
-          <p style={{ marginBottom: 8, fontWeight: 500, fontSize: 12, color: '#888' }}>Error</p>
-          <RadioButtonsVerticalGroup
-            label="Label"
-            name="all-error"
-            error
-            required
-            helperText="Please select an option."
-            items={sampleItems.slice(0, 3)}
-          />
-        </div>
-
-        {/* Disabled */}
-        <div>
-          <p style={{ marginBottom: 8, fontWeight: 500, fontSize: 12, color: '#888' }}>Disabled</p>
-          <RadioButtonsVerticalGroup
-            label="Label"
-            name="all-disabled"
-            disabled
-            value="option-2"
-            items={sampleItems.slice(0, 3)}
-          />
-        </div>
-
-        {/* No label */}
-        <div>
-          <p style={{ marginBottom: 8, fontWeight: 500, fontSize: 12, color: '#888' }}>No label</p>
-          <RadioButtonsVerticalGroup
-            label="Label"
-            showLabel={false}
-            name="all-no-label"
-            value="option-1"
-            items={sampleItems.slice(0, 3)}
-          />
-        </div>
-
-        {/* With helper text */}
-        <div>
-          <p style={{ marginBottom: 8, fontWeight: 500, fontSize: 12, color: '#888' }}>Helper text</p>
-          <RadioButtonsVerticalGroup
-            label="Label"
-            name="all-helper"
-            helperText="Choose one option."
-            value="option-1"
-            items={sampleItems.slice(0, 3)}
-          />
-        </div>
-
-        {/* Skeleton */}
-        <div>
-          <p style={{ marginBottom: 8, fontWeight: 500, fontSize: 12, color: '#888' }}>Skeleton</p>
-          <RadioButtonsVerticalGroup
-            label="Label"
-            name="all-skeleton"
-            skeleton
-            items={sampleItems.slice(0, 3)}
-          />
-        </div>
+export const FigmaMatrix: Story = {
+  name: 'Figma matrix (all property combinations)',
+  parameters: { layout: 'fullscreen' },
+  render: () => {
+    const bools = [true, false];
+    return (
+      <div style={{ padding: 24 }}>
+        <table style={table}>
+          <thead>
+            <tr>
+              <th style={headCell} />
+              {bools.flatMap((explainer) =>
+                bools.map((required) => (
+                  <th key={`${explainer}-${required}`} style={headCell}>
+                    {`Show explainer=${explainer ? 'True' : 'False'} · Required=${required ? 'True' : 'False'}`}
+                  </th>
+                )),
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {bools.map((showLabel) => (
+              <tr key={String(showLabel)}>
+                <th style={headCell}>{`Show label=${showLabel ? 'True' : 'False'}`}</th>
+                {bools.flatMap((explainer) =>
+                  bools.map((required) => (
+                    <td key={`${explainer}-${required}`} style={cell}>
+                      <Controlled
+                        label="Label"
+                        showLabel={showLabel}
+                        tooltipContent={explainer ? 'Explainer text' : undefined}
+                        required={required}
+                        items={figmaItems}
+                        value="option-1"
+                      />
+                    </td>
+                  )),
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
+  },
+};
+
+/* ── Content examples ── */
+
+export const RealWorld: Story = {
+  args: {
+    label: 'Preferred contact method',
+    tooltipContent: 'We only use this to send appointment reminders',
+    required: true,
+    items: realItems,
+    value: 'email',
+  },
+};
+
+export const LongValuesWrap: Story = {
+  args: {
+    items: [
+      { label: 'Radio button label that wraps to multiple lines because it is too long', value: 'long-1' },
+      { label: 'Short value', value: 'short' },
+      { label: 'Another long radio value that needs to wrap beneath the first line', value: 'long-2' },
+    ],
+    value: 'long-1',
+  },
+};
+
+/* ------------------------------------------------------------------ */
+/*  Interaction tests                                                 */
+/* ------------------------------------------------------------------ */
+
+export const ClickSelects: Story = {
+  tags: ['test'],
+  args: { items: realItems, value: 'email' },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByText('SMS'));
+    await expect(canvas.getByRole('radio', { name: 'SMS' })).toBeChecked();
+    await expect(args.onChange).toHaveBeenCalledWith('sms');
+  },
+};
+
+export const ArrowKeysMoveSelection: Story = {
+  tags: ['test'],
+  args: { items: realItems, value: 'phone' },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    /* Roving tabindex: Tab lands on the selected radio */
+    await userEvent.tab();
+    await expect(canvas.getByRole('radio', { name: 'Phone call' })).toHaveFocus();
+    await userEvent.keyboard('{ArrowDown}');
+    await expect(canvas.getByRole('radio', { name: 'SMS' })).toHaveFocus();
+    await expect(canvas.getByRole('radio', { name: 'SMS' })).toBeChecked();
+    await userEvent.keyboard('{ArrowUp}{ArrowUp}');
+    await expect(canvas.getByRole('radio', { name: 'Email' })).toBeChecked();
+    /* Wraps from first to last */
+    await userEvent.keyboard('{ArrowUp}');
+    await expect(canvas.getByRole('radio', { name: 'Mail' })).toBeChecked();
+    await expect(args.onChange).toHaveBeenLastCalledWith('mail');
+  },
+};
+
+export const ArrowKeysSkipDisabled: Story = {
+  tags: ['test'],
+  args: {
+    items: [
+      { label: 'First', value: 'a' },
+      { label: 'Second', value: 'b', disabled: true },
+      { label: 'Third', value: 'c' },
+    ],
+    value: 'a',
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.tab();
+    await userEvent.keyboard('{ArrowDown}');
+    await expect(canvas.getByRole('radio', { name: 'Third' })).toHaveFocus();
+    await expect(canvas.getByRole('radio', { name: 'Third' })).toBeChecked();
+  },
+};
+
+export const DisabledGroupIgnoresInput: Story = {
+  tags: ['test'],
+  args: { items: realItems, value: 'email', disabled: true },
+  play: async ({ args, canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByRole('radiogroup')).toHaveAttribute('aria-disabled', 'true');
+    await userEvent.click(canvas.getByText('SMS'), { pointerEventsCheck: 0 });
+    await expect(args.onChange).not.toHaveBeenCalled();
   },
 };

@@ -1,21 +1,39 @@
-import { forwardRef, useId, useState, useCallback } from 'react';
+import { forwardRef, useId, useState } from 'react';
 import { cn } from '../../utils/cn';
-import { Icon } from '../../icons';
 import { Link } from '../link';
-import { IconTriggerTooltip } from '../icon-trigger-tooltip';
+import { FieldHeader, FieldMessage } from '../text-input/field-parts';
+import {
+  fieldAction,
+  fieldBackground,
+  fieldRoot,
+  fieldStroke,
+  placeholderText,
+  skeletonFill,
+  typeBody02,
+  typeLabel01,
+  valueText,
+} from '../text-input/field-styles';
+import { useFieldValue } from '../text-input/use-field-value';
+import { Icon } from '../../icons';
 import type { PasswordInputProps } from './password-input.types';
 
-/* ------------------------------------------------------------------ */
-/*  Component                                                          */
-/* ------------------------------------------------------------------ */
+/*
+ * Source: Figma "06. Scanner core 1.0.0 full" → Password input (node 6176:2285, page 15305:6752)
+ * 2 Layer sets × Filled (False/True) × 5 States (Enabled, Focused, Disabled, Error, Skeleton) × Visible (False/True) = 40 variants.
+ *
+ * Visibility toggle: Figma shows it when the field is Filled, or while Focused (even empty).
+ */
 
 /**
- * PasswordInput — a form field for password entry with show/hide toggle.
+ * Scanner PasswordInput — masked text entry with show/hide toggle, label, required indicator,
+ * explainer tooltip, "Forgot password?" link, helper/error text and skeleton state.
  *
- * Features label, required indicator, explainer tooltip, "Forgot password?"
- * link, helper/error text, and a visibility toggle button.
+ * Figma props → React: Layer set → `layer`, Filled → derived from the value, Visible → `passwordVisible` /
+ * `defaultPasswordVisible`, State → `:focus-within` (forceable via `data-state="focused"`) / `disabled` / `error` / `skeleton`,
+ * Show label/helper/link/explainer/placeholder → `showLabel` / `showHelper` / `showLink` / `showExplainer` / `placeholder`,
+ * Required → `required`.
  *
- * Figma: "Password input" (page "Password input", node 6176:2285)
+ * Keyboard: Tab focuses the field, Tab again reaches the visibility toggle (Enter/Space toggles it).
  *
  * @example
  * <PasswordInput label="Password" placeholder="Enter password" />
@@ -41,269 +59,166 @@ export const PasswordInput = forwardRef<HTMLInputElement, PasswordInputProps>(
       layer = 1,
       skeleton = false,
       passwordVisible: controlledVisible,
+      defaultPasswordVisible = false,
       onPasswordVisibleChange,
       disabled = false,
       className,
       id: providedId,
+      value,
+      defaultValue,
+      onChange,
       'aria-describedby': ariaDescribedBy,
+      'data-state': dataState,
       ...inputProps
     },
     ref,
   ) => {
     const autoId = useId();
-    const inputId = providedId ?? autoId;
+    const inputId = providedId ?? `password-input-${autoId}`;
     const helperId = `${inputId}-helper`;
     const errorId = `${inputId}-error`;
 
-    /* ---- Visibility state (controlled / uncontrolled) ---- */
-    const [internalVisible, setInternalVisible] = useState(false);
+    const { setRef, hasValue, handleChange, focusFromContainer } = useFieldValue<HTMLInputElement>({
+      value,
+      defaultValue,
+      onChange,
+      ref,
+    });
+
+    /* ---- Visibility (controlled / uncontrolled) ---- */
+    const [internalVisible, setInternalVisible] = useState(defaultPasswordVisible);
     const isVisible = controlledVisible ?? internalVisible;
-
-    const toggleVisibility = useCallback(() => {
+    const toggleVisibility = () => {
       const next = !isVisible;
-      if (onPasswordVisibleChange) {
-        onPasswordVisibleChange(next);
-      } else {
-        setInternalVisible(next);
-      }
-    }, [isVisible, onPasswordVisibleChange]);
+      if (controlledVisible === undefined) setInternalVisible(next);
+      onPasswordVisibleChange?.(next);
+    };
 
-    /* ---- Derived values ---- */
-    const dataState = skeleton
-      ? 'skeleton'
-      : disabled
-        ? 'disabled'
-        : error
-          ? 'error'
-          : undefined;
-
-    const describedBy =
-      ariaDescribedBy ?? (error ? errorId : showHelper ? helperId : undefined);
-
-    /* ================================================================ */
-    /*  Skeleton                                                         */
-    /* ================================================================ */
     if (skeleton) {
+      const bar = cn(
+        'h-[var(--scanner-password-input-skeleton-bar-height)] w-[var(--scanner-password-input-skeleton-bar-width)]',
+        skeletonFill,
+      );
       return (
-        <div
-          className={cn('flex flex-col items-start w-full', className)}
-          data-state="skeleton"
-          data-layer={layer}
-        >
-          {/* Skeleton label */}
+        <div aria-hidden="true" data-skeleton="" data-layer={layer} className={cn(fieldRoot, className)}>
           {showLabel && (
-            <div className="flex items-start gap-[var(--scanner-spacing-2)] pb-[var(--scanner-spacing-3)]">
-              <div
-                className="w-[40px] h-[16px] bg-[var(--scanner-bg-disabled)]"
-                aria-hidden="true"
-              />
-              {showExplainer && (
-                <div
-                  className="size-[16px] rounded-full bg-[var(--scanner-bg-disabled)]"
-                  aria-hidden="true"
-                />
-              )}
+            <div className="flex w-full items-start pb-[var(--scanner-spacing-3)]">
+              <div className={bar} />
             </div>
           )}
-
-          {/* Skeleton field */}
           <div
-            className="w-full h-[60px] rounded-[var(--scanner-radius-md)] bg-[var(--scanner-bg-disabled)]"
-            aria-hidden="true"
+            className={cn('h-[var(--scanner-password-input-height)] w-full rounded-[var(--scanner-radius-md)]', skeletonFill)}
           />
-
-          {/* Skeleton helper */}
           {showHelper && (
-            <div className="pt-[var(--scanner-spacing-3)]">
-              <div
-                className="w-[40px] h-[16px] bg-[var(--scanner-bg-disabled)]"
-                aria-hidden="true"
-              />
+            <div className="flex w-full items-start pt-[var(--scanner-spacing-3)]">
+              <div className={bar} />
             </div>
           )}
         </div>
       );
     }
 
-    /* ================================================================ */
-    /*  Normal / Error / Disabled / Focused                              */
-    /* ================================================================ */
+    const showError = error && !!errorText;
+    const showHelperText = !showError && showHelper && !!helperText;
+    const describedBy =
+      [ariaDescribedBy, showError && errorId, showHelperText && helperId].filter(Boolean).join(' ') || undefined;
+
     return (
-      <div
-        className={cn('flex flex-col items-start w-full', className)}
-        data-state={dataState}
-        data-layer={layer}
-      >
-        {/* ---- Label + Link row ---- */}
-        {(showLabel || showLink) && (
-          <div className="flex items-start justify-end w-full">
-            {showLabel && (
-              <label
-                htmlFor={inputId}
-                className={cn(
-                  'flex flex-1 min-w-0 items-start',
-                  'gap-[var(--scanner-spacing-2)]',
-                  'pb-[var(--scanner-spacing-3)]',
-                  'font-[family-name:var(--scanner-font-sans)]',
-                  /* 16px label — no exact token; shared across all form fields */
-                  'text-[16px] leading-[var(--scanner-leading-md)]',
-                  'font-[var(--scanner-font-regular)]',
-                  disabled
-                    ? 'text-[color:var(--scanner-text-tertiary)]'
-                    : 'text-[color:var(--scanner-text-primary)]',
-                )}
+      <div data-layer={layer} className={cn(fieldRoot, className)}>
+        <FieldHeader
+          htmlFor={inputId}
+          label={showLabel ? label : undefined}
+          required={required}
+          explainer={showExplainer && explainerContent ? explainerContent : undefined}
+          disabled={disabled}
+          labelClassName={typeLabel01}
+          trailing={
+            showLink ? (
+              <Link
+                type="primary"
+                size="small"
+                href={linkHref}
+                onClick={onLinkClick}
+                /* Figma link inside the field header is 16/24 (Link/$tp-link-01) */
+                className={cn('whitespace-nowrap text-right', typeLabel01)}
               >
-                <span>{label}</span>
+                {linkText}
+              </Link>
+            ) : undefined
+          }
+        />
 
-                {required && (
-                  <span
-                    className={cn(
-                      'text-[length:var(--scanner-text-xs)]',
-                      'leading-[var(--scanner-leading-xs)]',
-                      'text-[color:var(--scanner-text-error)]',
-                    )}
-                    aria-hidden="true"
-                  >
-                    *
-                  </span>
-                )}
-
-                {showExplainer && explainerContent && (
-                  <IconTriggerTooltip content={explainerContent} />
-                )}
-              </label>
-            )}
-
-            {showLink && (
-              <div
-                className={cn(
-                  'flex items-center justify-center shrink-0',
-                  'pb-[var(--scanner-spacing-3)] pl-[var(--scanner-spacing-3)]',
-                )}
-              >
-                <Link
-                  type="primary"
-                  size="medium"
-                  href={linkHref}
-                  onClick={onLinkClick}
-                  className="text-[16px] leading-[var(--scanner-leading-md)] whitespace-nowrap"
-                >
-                  {linkText}
-                </Link>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ---- Input field ---- */}
         <div
+          data-part="field"
+          data-state={dataState}
+          onMouseDown={focusFromContainer}
           className={cn(
-            'flex items-center w-full',
-            'gap-[var(--scanner-spacing-3)]',
-            'px-[var(--scanner-spacing-5)] py-[var(--scanner-spacing-5)]',
-            'rounded-[var(--scanner-radius-md)]',
-            'overflow-clip',
-            /* Background per layer set */
-            layer === 2
-              ? 'bg-[var(--scanner-bg-secondary)]'
-              : 'bg-[var(--scanner-bg-primary)]',
-            /* Border — use transparent default to prevent layout shift */
-            'border border-solid',
-            error
-              ? 'border-[var(--scanner-border-error)]'
-              : [
-                  'border-transparent',
-                  !disabled &&
-                    'focus-within:border-[var(--scanner-border-focus)]',
-                ],
-            'transition-colors duration-150',
+            'group/field flex w-full items-center gap-[var(--scanner-spacing-3)] overflow-clip',
+            'h-[var(--scanner-password-input-height)] rounded-[var(--scanner-radius-md)] p-[var(--scanner-spacing-5)]',
+            'transition-shadow duration-150',
+            fieldBackground[layer],
+            fieldStroke({ error, disabled }),
+            disabled ? 'cursor-not-allowed' : 'cursor-text',
           )}
         >
           <input
-            ref={ref}
+            ref={setRef}
             id={inputId}
             type={isVisible ? 'text' : 'password'}
             disabled={disabled}
             required={required}
+            value={value}
+            defaultValue={defaultValue}
             aria-invalid={error || undefined}
+            aria-required={required || undefined}
+            aria-disabled={disabled || undefined}
             aria-describedby={describedBy}
+            onChange={handleChange}
             className={cn(
-              'flex-1 min-w-0 bg-transparent outline-none border-none p-0',
-              'font-[family-name:var(--scanner-font-sans)]',
-              /* 18px field text — no exact token; shared across form inputs */
-              'text-[18px] leading-[var(--scanner-leading-lg)]',
-              'font-[var(--scanner-font-regular)]',
-              disabled
-                ? 'text-[color:var(--scanner-text-tertiary)] cursor-not-allowed'
-                : 'text-[color:var(--scanner-icon-primary)]',
-              disabled
-                ? 'placeholder:text-[color:var(--scanner-text-tertiary)]'
-                : 'placeholder:text-[color:var(--scanner-text-secondary)]',
+              'm-0 h-[var(--scanner-leading-lg)] min-w-0 flex-1 border-none bg-transparent p-0 outline-none',
+              typeBody02,
+              valueText(disabled),
+              placeholderText(disabled),
+              disabled && 'cursor-not-allowed',
             )}
             {...inputProps}
           />
 
           <button
             type="button"
+            data-part="visibility-toggle"
             onClick={toggleVisibility}
             disabled={disabled}
+            aria-disabled={disabled || undefined}
+            aria-controls={inputId}
+            aria-pressed={isVisible}
             aria-label={isVisible ? 'Hide password' : 'Show password'}
             className={cn(
-              'inline-flex items-center justify-center shrink-0',
-              'size-[24px] bg-transparent border-none outline-none p-0',
+              fieldAction,
+              'size-[var(--scanner-spacing-7)]',
+              /* Figma: toggle appears when Filled, or while Focused */
+              hasValue
+                ? 'inline-flex'
+                : 'hidden group-focus-within/field:inline-flex group-data-[state=focused]/field:inline-flex',
               disabled
-                ? 'text-[color:var(--scanner-icon-disabled)] cursor-not-allowed'
-                : 'text-[color:var(--scanner-icon-secondary)] cursor-pointer',
-              'focus-visible:outline-2 focus-visible:outline-offset-2',
-              'focus-visible:outline-[var(--scanner-focus-ring)]',
-              'focus-visible:rounded-[var(--scanner-radius-sm)]',
+                ? 'cursor-not-allowed text-[color:var(--scanner-icon-disabled)]'
+                : 'cursor-pointer text-[color:var(--scanner-icon-tertiary)]',
             )}
           >
-            <Icon name={isVisible ? 'eye' : 'eye-off'} size={24} />
+            {/* Figma "View on" (Visible=True) / "View off" (Visible=False), 24px */}
+            <Icon name={isVisible ? 'view' : 'view-off'} size={24} />
           </button>
         </div>
 
-        {/* ---- Error text ---- */}
-        {error && (
-          <div
-            id={errorId}
-            className="flex items-start pt-[var(--scanner-spacing-3)] w-full"
-            role="alert"
-          >
-            <p
-              className={cn(
-                'flex-1 min-w-0 m-0',
-                'font-[family-name:var(--scanner-font-sans)]',
-                'text-[16px] leading-[var(--scanner-leading-md)]',
-                'font-[var(--scanner-font-regular)]',
-                'text-[color:var(--scanner-text-error)]',
-              )}
-            >
-              {errorText}
-            </p>
-          </div>
+        {showError && (
+          <FieldMessage id={errorId} tone="error" className={typeLabel01}>
+            {errorText}
+          </FieldMessage>
         )}
-
-        {/* ---- Helper text ---- */}
-        {!error && showHelper && (
-          <div
-            id={helperId}
-            className="flex items-center pt-[var(--scanner-spacing-3)] w-full"
-          >
-            <p
-              className={cn(
-                'flex-1 min-w-0 m-0',
-                'font-[family-name:var(--scanner-font-sans)]',
-                'text-[16px] leading-[var(--scanner-leading-md)]',
-                'font-[var(--scanner-font-regular)]',
-                disabled
-                  ? 'text-[color:var(--scanner-text-tertiary)]'
-                  : 'text-[color:var(--scanner-text-primary)]',
-              )}
-            >
-              {helperText}
-            </p>
-          </div>
+        {showHelperText && (
+          <FieldMessage id={helperId} tone="helper" disabled={disabled} className={typeLabel01}>
+            {helperText}
+          </FieldMessage>
         )}
       </div>
     );

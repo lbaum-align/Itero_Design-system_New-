@@ -1,16 +1,59 @@
-import { forwardRef, useCallback, useId, useMemo } from 'react';
+import { forwardRef, useId } from 'react';
 import { cn } from '../../utils/cn';
 import { Icon } from '../../icons';
-import { IconTriggerTooltip } from '../icon-trigger-tooltip';
+import { FieldCounter, FieldHeader, FieldMessage } from '../text-input/field-parts';
+import {
+  fieldAction,
+  fieldBackground,
+  fieldRoot,
+  fieldStroke,
+  placeholderText,
+  skeletonFill,
+  typeBody02,
+  typeLabel01,
+  valueText,
+} from '../text-input/field-styles';
+import { useFieldValue } from '../text-input/use-field-value';
 import type { TextAreaProps } from './text-area.types';
 
-/* ------------------------------------------------------------------ */
-/*  TextArea                                                            */
-/* ------------------------------------------------------------------ */
+/*
+ * Source: Figma "06. Scanner core 1.0.0 full" → Text area (node 6176:2286, page 23885:186323)
+ * 2 Layer sets × Filled (False/True) × 5 States (Enabled, Focused, Disabled, Error, Skeleton) = 20 variants.
+ *
+ * The field container is the resizable element (CSS `resize: vertical`), so the resize handle sits in the
+ * field's bottom-right corner like Figma; the native grip is hidden and Figma's 8px handle glyph drawn on top.
+ * "Show scroll" is the native scrollbar, styled thin with the `border-subtle` colour.
+ */
+
+/** Figma "Resize handle" glyph (8×8). */
+const ResizeHandle = ({ className }: { className?: string }) => (
+  <svg
+    aria-hidden="true"
+    viewBox="0 0 8 8"
+    fill="none"
+    className={cn(
+      'pointer-events-none absolute size-[var(--scanner-text-area-resize-handle-size)]',
+      'right-[var(--scanner-text-area-resize-handle-inset)] bottom-[var(--scanner-text-area-resize-handle-inset)]',
+      className,
+    )}
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M7.85355 0.853553L0.853553 7.85355L0.146447 7.14645L7.14645 0.146447L7.85355 0.853553ZM7.85355 4.85355L4.85355 7.85355L4.14645 7.14645L7.14645 4.14645L7.85355 4.85355Z"
+      fill="currentColor"
+    />
+  </svg>
+);
 
 /**
- * Scanner TextArea — a multi-line text input with label, helper text,
- * error state, character counter, tooltip, and skeleton support.
+ * Scanner TextArea — multi-line free-form text entry with label, required indicator, explainer tooltip,
+ * counter, clear action, resize handle, helper/error text and skeleton state.
+ *
+ * Figma props → React: Layer set → `layer`, Filled → derived from the value,
+ * State → `:focus-within` (forceable via `data-state="focused"`) / `disabled` / `error` / `skeleton`,
+ * Show label/helper/placeholder/counter/explainer → `label` / `helperText` / `placeholder` / `showCounter`+`maxLength` (or `counter`) / `tooltipContent`,
+ * Required → `required`, Show scroll → native scrollbar on overflow.
  *
  * @example
  * <TextArea label="Description" placeholder="Enter a description..." />
@@ -27,7 +70,9 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       error = false,
       skeleton = false,
       showCounter = false,
+      counter,
       layer = 1,
+      clearable = true,
       onClear,
       className,
       disabled = false,
@@ -35,162 +80,92 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       maxLength,
       value,
       defaultValue,
+      onChange,
       id: idProp,
-      'aria-describedby': ariaDescribedByProp,
+      'aria-describedby': ariaDescribedBy,
+      'data-state': dataState,
       ...rest
     },
     ref,
   ) => {
-    /* ---- IDs for a11y linkage ---- */
     const autoId = useId();
-    const id = idProp ?? autoId;
+    const id = idProp ?? `text-area-${autoId}`;
     const helperId = `${id}-helper`;
     const errorId = `${id}-error`;
 
-    /* ---- Derived state ---- */
-    const isFilled = value !== undefined
-      ? String(value).length > 0
-      : defaultValue !== undefined && String(defaultValue).length > 0;
+    const { setRef, currentValue, hasValue, handleChange, clear, focusFromContainer } =
+      useFieldValue<HTMLTextAreaElement>({ value, defaultValue, onChange, ref });
 
-    const charCount = value !== undefined ? String(value).length : 0;
+    const counterText =
+      counter ?? (showCounter && maxLength !== undefined ? `${currentValue.length}/${maxLength}` : undefined);
 
-    const counterText = useMemo(() => {
-      if (!showCounter || maxLength === undefined) return undefined;
-      return `${charCount}/${maxLength}`;
-    }, [showCounter, maxLength, charCount]);
-
-    /* ---- aria-describedby ---- */
-    const describedBy = useMemo(() => {
-      const ids: string[] = [];
-      if (ariaDescribedByProp) ids.push(ariaDescribedByProp);
-      if (error && errorText) ids.push(errorId);
-      else if (helperText) ids.push(helperId);
-      return ids.length > 0 ? ids.join(' ') : undefined;
-    }, [ariaDescribedByProp, error, errorText, errorId, helperText, helperId]);
-
-    /* ---- Clear handler ---- */
-    const handleClear = useCallback(() => {
-      onClear?.();
-    }, [onClear]);
-
-    /* ---- Skeleton ---- */
     if (skeleton) {
+      const bar = 'h-[var(--scanner-text-area-skeleton-bar-height)]';
       return (
-        <div
-          className={cn('flex w-full flex-col', className)}
-          aria-hidden="true"
-          data-layer={layer}
-        >
-          {/* Label skeleton */}
-          {label !== undefined && (
-            <div className="flex items-start pb-[var(--scanner-spacing-3)]">
-              <div className="h-2 w-10 rounded-sm bg-[var(--scanner-bg-disabled)]" />
-              {showCounter && maxLength !== undefined && (
-                <div className="ml-auto h-2 w-7 rounded-sm bg-[var(--scanner-bg-disabled)]" />
+        <div aria-hidden="true" data-skeleton="" data-layer={layer} className={cn(fieldRoot, className)}>
+          {(label || counterText !== undefined) && (
+            <div className="flex w-full items-start justify-end">
+              <div className="flex min-w-px flex-1 items-start pb-[var(--scanner-spacing-3)]">
+                {label && <div className={cn(bar, 'w-[var(--scanner-text-area-skeleton-bar-width)]', skeletonFill)} />}
+              </div>
+              {counterText !== undefined && (
+                <div className="flex shrink-0 pb-[var(--scanner-spacing-3)] pl-[var(--scanner-spacing-3)]">
+                  <div className={cn(bar, 'w-[var(--scanner-text-area-skeleton-counter-width)]', skeletonFill)} />
+                </div>
               )}
             </div>
           )}
-          {/* Field skeleton */}
-          <div className="h-[124px] w-full rounded-[var(--scanner-radius-md)] bg-[var(--scanner-bg-disabled)]" />
-          {/* Helper skeleton */}
-          {(helperText !== undefined || errorText !== undefined) && (
-            <div className="flex items-start pt-[var(--scanner-spacing-3)]">
-              <div className="h-2 w-10 rounded-sm bg-[var(--scanner-bg-disabled)]" />
+          <div className={cn('h-[var(--scanner-text-area-height)] w-full rounded-[var(--scanner-radius-md)]', skeletonFill)} />
+          {(helperText || errorText) && (
+            <div className="flex w-full items-start pt-[var(--scanner-spacing-3)]">
+              <div className={cn(bar, 'w-[var(--scanner-text-area-skeleton-bar-width)]', skeletonFill)} />
             </div>
           )}
         </div>
       );
     }
 
-    /* ---- Field background & border classes ---- */
-    const fieldBg =
-      layer === 2
-        ? 'bg-[var(--scanner-bg-secondary)]'
-        : 'bg-[var(--scanner-bg-primary)]';
+    const showError = error && !!errorText;
+    const showHelper = !showError && !!helperText;
+    const showClear = clearable && hasValue && !disabled && !rest.readOnly;
+    const describedBy =
+      [ariaDescribedBy, showError && errorId, showHelper && helperId].filter(Boolean).join(' ') || undefined;
 
-    const fieldBorder = error
-      ? 'border border-solid border-[var(--scanner-border-error)]'
-      : disabled
-        ? 'border border-solid border-transparent'
-        : 'border border-solid border-[var(--scanner-border-subtle)]';
-
-    const fieldHoverBorder =
-      'hover:border-[var(--scanner-border-hover)]';
-    const fieldFocusBorder =
-      'focus-within:border-[var(--scanner-border-focus)]';
+    const handleClear = () => {
+      clear();
+      onClear?.();
+    };
 
     return (
-      <div
-        className={cn('flex w-full flex-col', className)}
-        data-layer={layer}
-      >
-        {/* ---- Label row ---- */}
-        {(label !== undefined || (showCounter && maxLength !== undefined)) && (
-          <div className="flex items-start pb-[var(--scanner-spacing-3)]">
-            {/* Label + required + tooltip */}
-            {label !== undefined && (
-              <div className="flex min-w-0 flex-1 items-start gap-[var(--scanner-spacing-2)]">
-                <label
-                  htmlFor={id}
-                  className={cn(
-                    'scanner-text-body-02 shrink-0 whitespace-nowrap',
-                    disabled
-                      ? 'text-[color:var(--scanner-text-disabled)]'
-                      : 'text-[color:var(--scanner-text-secondary)]',
-                  )}
-                >
-                  {label}
-                </label>
-                {required && (
-                  <span
-                    className="scanner-text-body-01 shrink-0 text-[color:var(--scanner-text-error)]"
-                    aria-hidden="true"
-                  >
-                    *
-                  </span>
-                )}
-                {tooltipContent && !disabled && (
-                  <IconTriggerTooltip
-                    content={tooltipContent}
-                    className="shrink-0"
-                  />
-                )}
-              </div>
-            )}
-            {/* Counter */}
-            {counterText !== undefined && (
-              <div
-                className={cn(
-                  'scanner-text-body-01 shrink-0 pl-[var(--scanner-spacing-3)] text-right',
-                  disabled
-                    ? 'text-[color:var(--scanner-text-disabled)]'
-                    : 'text-[color:var(--scanner-text-secondary)]',
-                )}
-                aria-live="polite"
-                aria-atomic="true"
-              >
-                {counterText}
-              </div>
-            )}
-          </div>
-        )}
+      <div data-layer={layer} className={cn(fieldRoot, className)}>
+        <FieldHeader
+          htmlFor={id}
+          label={label}
+          required={required}
+          explainer={tooltipContent}
+          disabled={disabled}
+          labelClassName={typeLabel01}
+          trailing={counterText !== undefined ? <FieldCounter disabled={disabled}>{counterText}</FieldCounter> : undefined}
+        />
 
-        {/* ---- Field container ---- */}
         <div
+          data-part="field"
+          data-state={dataState}
+          onMouseDown={focusFromContainer}
           className={cn(
-            'relative flex min-h-[80px] w-full items-start gap-[var(--scanner-spacing-3)]',
-            'overflow-hidden rounded-[var(--scanner-radius-md)]',
-            'px-[var(--scanner-spacing-5)] py-[var(--scanner-spacing-4)]',
-            fieldBg,
-            fieldBorder,
-            !disabled && !error && fieldHoverBorder,
-            !disabled && fieldFocusBorder,
-            'transition-colors duration-150',
+            'relative flex w-full items-start gap-[var(--scanner-spacing-3)] overflow-hidden',
+            'h-[var(--scanner-text-area-height)] min-h-[var(--scanner-text-area-min-height)]',
+            'rounded-[var(--scanner-radius-md)] px-[var(--scanner-spacing-5)] py-[var(--scanner-spacing-4)]',
+            'transition-shadow duration-150',
+            fieldBackground[layer],
+            fieldStroke({ error, disabled, subtle: true }),
+            /* Hide the native grip; Figma's handle glyph is drawn instead */
+            '[&::-webkit-resizer]:bg-transparent',
+            disabled ? 'cursor-not-allowed resize-none' : 'cursor-text resize-y',
           )}
         >
-          {/* Native textarea */}
           <textarea
-            ref={ref}
+            ref={setRef}
             id={id}
             disabled={disabled}
             required={required}
@@ -198,62 +173,47 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
             value={value}
             defaultValue={defaultValue}
             aria-invalid={error || undefined}
-            aria-describedby={describedBy}
             aria-required={required || undefined}
+            aria-disabled={disabled || undefined}
+            aria-describedby={describedBy}
+            onChange={handleChange}
             className={cn(
-              'scanner-text-body-03 min-h-[56px] min-w-0 flex-1 resize-y bg-transparent',
-              'outline-none',
-              'placeholder:text-[color:var(--scanner-text-tertiary)]',
-              disabled
-                ? 'cursor-not-allowed text-[color:var(--scanner-text-disabled)] placeholder:text-[color:var(--scanner-text-disabled)]'
-                : 'text-[color:var(--scanner-text-primary)]',
+              'm-0 min-w-0 flex-1 self-stretch resize-none border-none bg-transparent p-0 outline-none',
+              '[scrollbar-color:var(--scanner-border-subtle)_transparent] [scrollbar-width:thin]',
+              typeBody02,
+              valueText(disabled),
+              placeholderText(disabled),
+              disabled && 'cursor-not-allowed',
             )}
             {...rest}
           />
 
-          {/* Clear button — visible when textarea has content & not disabled */}
-          {isFilled && !disabled && onClear && (
+          {showClear && (
             <button
               type="button"
+              aria-label="Clear text"
+              aria-controls={id}
               onClick={handleClear}
-              tabIndex={-1}
-              className={cn(
-                'inline-flex shrink-0 items-center justify-center',
-                'size-6 cursor-pointer rounded-full',
-                'text-[color:var(--scanner-icon-tertiary)]',
-                'hover:text-[color:var(--scanner-icon-secondary)]',
-                'focus-visible:outline-2 focus-visible:outline-offset-2',
-                'focus-visible:outline-[var(--scanner-focus-ring)]',
-              )}
-              aria-label="Clear textarea"
+              className={cn(fieldAction, 'size-[var(--scanner-spacing-7)] cursor-pointer text-[color:var(--scanner-icon-tertiary)]')}
             >
               <Icon name="close-empty" size={24} />
             </button>
           )}
+
+          <ResizeHandle
+            className={disabled ? 'text-[color:var(--scanner-icon-disabled)]' : 'text-[color:var(--scanner-icon-secondary)]'}
+          />
         </div>
 
-        {/* ---- Helper / Error text ---- */}
-        {error && errorText && (
-          <p
-            id={errorId}
-            className="scanner-text-body-02 pt-[var(--scanner-spacing-3)] text-[color:var(--scanner-text-error)]"
-            role="alert"
-          >
+        {showError && (
+          <FieldMessage id={errorId} tone="error" className={typeLabel01}>
             {errorText}
-          </p>
+          </FieldMessage>
         )}
-        {!error && helperText && (
-          <p
-            id={helperId}
-            className={cn(
-              'scanner-text-body-02 pt-[var(--scanner-spacing-3)]',
-              disabled
-                ? 'text-[color:var(--scanner-text-disabled)]'
-                : 'text-[color:var(--scanner-text-secondary)]',
-            )}
-          >
+        {showHelper && (
+          <FieldMessage id={helperId} tone="helper" disabled={disabled} className={typeLabel01}>
             {helperText}
-          </p>
+          </FieldMessage>
         )}
       </div>
     );

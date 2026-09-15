@@ -1,19 +1,26 @@
 import type { AnchorHTMLAttributes, ReactNode } from 'react';
 
-export interface BreadcrumbLinkProps
-  extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'type'> {
-  /** URL the breadcrumb link points to */
+/**
+ * Interactive states that can be forced via `data-state` (Storybook / visual tests).
+ * Disabled and Skeleton are driven by their own props.
+ */
+export type BreadcrumbLinkForcedState = 'hovered' | 'focused';
+
+export interface BreadcrumbLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement> {
+  /** URL the breadcrumb link points to. */
   href?: string;
-  /** Link content */
-  children: ReactNode;
-  /** Whether this is the current page — renders as text with aria-current="page" */
+  /** Page name (Figma "Page name"). */
+  children?: ReactNode;
+  /** Render as the current page — plain text with `aria-current="page"`, not a link. */
   isCurrent?: boolean;
-  /** Disabled state — prevents interaction */
+  /** Figma State=Disabled — not focusable, not clickable. */
   disabled?: boolean;
-  /** Show skeleton loading placeholder */
+  /** Figma State=Skeleton — loading placeholder. */
   skeleton?: boolean;
-  /** Show chevron separator after the link (default: true) */
+  /** Show the "|" divider after the label (Figma "Show divider"). Default `true`. */
+  showDivider?: boolean;
+  /** @deprecated Alias of `showDivider`. */
   showSeparator?: boolean;
-  /** Additional CSS class names */
-  className?: string;
+  /** Force a visual state for screenshots / Storybook. */
+  'data-state'?: BreadcrumbLinkForcedState;
 }

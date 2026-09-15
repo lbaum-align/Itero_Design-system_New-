@@ -1,14 +1,19 @@
-export type StepperItemState = 'not-started' | 'in-progress' | 'completed' | 'error' | 'skeleton';
+import type { HTMLAttributes } from 'react';
+import type { StepperItemState } from '../_step-counter';
 
-export interface VerticalStepperItemsProps {
-  /** Current state of this step */
+export type { StepperItemState };
+
+export interface VerticalStepperItemsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+  /** Figma "State". @default 'not-started' */
   state?: StepperItemState;
-  /** Step label text */
+  /** "Step name" text. @default 'Step name' */
   label?: string;
-  /** Step number (1–8), used for the counter indicator */
+  /** Step number (1–8) for the counter indicator. @default 1 */
   step?: number;
-  /** Whether to show the connecting line above this step */
+  /** Show the progress line above the step (hidden for the first step in Stepper). @default true */
   showLine?: boolean;
+  /** Visually hidden status appended to the label for screen readers (set by Stepper). */
+  statusLabel?: string;
   /** Additional CSS class names */
   className?: string;
 }

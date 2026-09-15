@@ -1,339 +1,266 @@
-import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/react';
+import { expect, userEvent, within } from 'storybook/test';
 import { VerticalCheckboxGroup } from './VerticalCheckboxGroup';
 import { CheckboxItem } from '../checkbox-item';
+import type { VerticalCheckboxGroupProps } from './vertical-checkbox-group.types';
+
+/*
+ * Figma: "06. Scanner core 1.0.0 full" → 02 Vertical checkbox group (node 20619:27426)
+ * Levels (1, 2) × Show label × Show explainer × Required — rendered in `FigmaMatrix`.
+ */
+
+const table: React.CSSProperties = { borderCollapse: 'collapse', width: 'max-content' };
+const cell: React.CSSProperties = { padding: '8px 24px', verticalAlign: 'top' };
+const headCell: React.CSSProperties = {
+  ...cell,
+  font: '500 12px/16px var(--scanner-font-sans)',
+  color: 'var(--scanner-text-secondary)',
+  textAlign: 'left',
+  whiteSpace: 'nowrap',
+};
+
+/** Figma "Show label / Show explainer / Required" combinations. */
+const LABEL_COMBOS: { name: string; props: Partial<VerticalCheckboxGroupProps> }[] = [
+  { name: 'Show label=False', props: { showLabel: false } },
+  { name: 'Show label=True', props: {} },
+  { name: 'Required=True', props: { required: true } },
+  { name: 'Show explainer=True', props: { tooltipContent: 'Explainer text' } },
+  { name: 'Explainer + Required', props: { tooltipContent: 'Explainer text', required: true } },
+];
+
+/**
+ * Two items for Levels=1, main + two nested for Levels=2 — like the Figma component.
+ * Returned as an array (not a fragment component) so the group sees each item as a child.
+ */
+const items = (levels: 1 | 2) =>
+  Array.from({ length: levels === 2 ? 3 : 2 }, (_, i) => <CheckboxItem key={i} label="Checkbox value" />);
 
 const meta: Meta<typeof VerticalCheckboxGroup> = {
   title: 'Components/VerticalCheckboxGroup',
   component: VerticalCheckboxGroup,
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'Labelled vertical list of CheckboxItems. Levels=2 nests every item after the first under it; ' +
+          'checking the parent selects all children, unchecking clears them, a partial selection shows indeterminate. ' +
+          'Keyboard: ArrowUp/ArrowDown move between checkboxes, Space/Enter toggle.',
+      },
+    },
+  },
+  argTypes: {
+    levels: { name: 'Levels', control: 'inline-radio', options: [1, 2] },
+    label: { name: 'Label text', control: 'text' },
+    showLabel: { name: 'Show label', control: 'boolean' },
+    tooltipContent: { name: 'Show explainer (text)', control: 'text' },
+    required: { name: 'Required', control: 'boolean' },
+    helperText: { control: 'text' },
+    error: { control: 'boolean' },
+    errorMessage: { control: 'text' },
+    disabled: { control: 'boolean' },
+    skeleton: { control: 'boolean' },
+  },
   args: {
     label: 'Label',
     showLabel: true,
     required: false,
-    error: false,
-    disabled: false,
-    skeleton: false,
     levels: 1,
   },
-  argTypes: {
-    levels: { control: { type: 'inline-radio' }, options: [1, 2] },
-    label: { control: 'text' },
-    tooltipContent: { control: 'text' },
-    helperText: { control: 'text' },
-    errorMessage: { control: 'text' },
-  },
+  decorators: [
+    (Story) => (
+      <div style={{ padding: 16 }}>
+        <Story />
+      </div>
+    ),
+  ],
 };
-
 export default meta;
+
 type Story = StoryObj<typeof VerticalCheckboxGroup>;
 
-/* ------------------------------------------------------------------ */
-/* Default                                                              */
-/* ------------------------------------------------------------------ */
+/* ── Default ── */
+
 export const Default: Story = {
-  render: (args) => {
-    const [checked, setChecked] = useState<Record<string, boolean>>({
-      a: false,
-      b: true,
-      c: false,
-    });
-    return (
-      <VerticalCheckboxGroup {...args}>
-        <CheckboxItem
-          label="Option A"
-          checked={checked.a}
-          onChange={(v) => setChecked((s) => ({ ...s, a: v }))}
-          disabled={args.disabled}
-        />
-        <CheckboxItem
-          label="Option B"
-          checked={checked.b}
-          onChange={(v) => setChecked((s) => ({ ...s, b: v }))}
-          disabled={args.disabled}
-        />
-        <CheckboxItem
-          label="Option C"
-          checked={checked.c}
-          onChange={(v) => setChecked((s) => ({ ...s, c: v }))}
-          disabled={args.disabled}
-        />
-      </VerticalCheckboxGroup>
-    );
-  },
-};
-
-/* ------------------------------------------------------------------ */
-/* WithLabelAndHelperText                                               */
-/* ------------------------------------------------------------------ */
-export const WithLabelAndHelperText: Story = {
-  render: () => {
-    const [checked, setChecked] = useState<Record<string, boolean>>({
-      email: true,
-      sms: false,
-      push: false,
-    });
-    return (
-      <VerticalCheckboxGroup
-        label="Notification preferences"
-        helperText="Select how you'd like to be notified"
-      >
-        <CheckboxItem
-          label="Email"
-          checked={checked.email}
-          onChange={(v) => setChecked((s) => ({ ...s, email: v }))}
-        />
-        <CheckboxItem
-          label="SMS"
-          checked={checked.sms}
-          onChange={(v) => setChecked((s) => ({ ...s, sms: v }))}
-        />
-        <CheckboxItem
-          label="Push notifications"
-          checked={checked.push}
-          onChange={(v) => setChecked((s) => ({ ...s, push: v }))}
-        />
-      </VerticalCheckboxGroup>
-    );
-  },
-};
-
-/* ------------------------------------------------------------------ */
-/* WithTooltip                                                          */
-/* ------------------------------------------------------------------ */
-export const WithTooltip: Story = {
-  render: () => {
-    const [checked, setChecked] = useState<Record<string, boolean>>({
-      terms: false,
-      newsletter: false,
-    });
-    return (
-      <VerticalCheckboxGroup
-        label="Agreements"
-        tooltipContent="Please review each agreement carefully before accepting"
-        required
-      >
-        <CheckboxItem
-          label="I accept the terms and conditions"
-          checked={checked.terms}
-          onChange={(v) => setChecked((s) => ({ ...s, terms: v }))}
-        />
-        <CheckboxItem
-          label="Subscribe to newsletter"
-          checked={checked.newsletter}
-          onChange={(v) => setChecked((s) => ({ ...s, newsletter: v }))}
-        />
-      </VerticalCheckboxGroup>
-    );
-  },
-};
-
-/* ------------------------------------------------------------------ */
-/* ErrorState                                                           */
-/* ------------------------------------------------------------------ */
-export const ErrorState: Story = {
-  render: () => (
-    <VerticalCheckboxGroup
-      label="Required selection"
-      required
-      error
-      errorMessage="Please select at least one option"
-    >
-      <CheckboxItem label="Option A" checked={false} />
-      <CheckboxItem label="Option B" checked={false} />
-      <CheckboxItem label="Option C" checked={false} />
+  render: (args) => (
+    <VerticalCheckboxGroup {...args}>
+      {items(args.levels ?? 1)}
     </VerticalCheckboxGroup>
   ),
 };
 
-/* ------------------------------------------------------------------ */
-/* DisabledGroup                                                        */
-/* ------------------------------------------------------------------ */
-export const DisabledGroup: Story = {
-  render: () => (
-    <VerticalCheckboxGroup label="Disabled group" disabled>
-      <CheckboxItem label="Option A" checked disabled />
-      <CheckboxItem label="Option B" checked={false} disabled />
-      <CheckboxItem label="Option C" checked disabled />
-    </VerticalCheckboxGroup>
-  ),
+/* ── Per Levels ── */
+
+export const Levels1: Story = { name: 'Levels=1', args: { levels: 1 }, render: Default.render };
+export const Levels2: Story = { name: 'Levels=2', args: { levels: 2 }, render: Default.render };
+
+/* ── Label properties ── */
+
+export const WithExplainer: Story = {
+  name: 'Show explainer',
+  args: { tooltipContent: 'Select every jaw that was scanned' },
+  render: Default.render,
 };
+export const Required: Story = { args: { required: true }, render: Default.render };
+export const WithoutLabel: Story = { name: 'Show label=False', args: { showLabel: false }, render: Default.render };
 
-/* ------------------------------------------------------------------ */
-/* SkeletonState                                                        */
-/* ------------------------------------------------------------------ */
-export const SkeletonState: Story = {
+/* ── Full Figma matrix ── */
+
+export const FigmaMatrix: Story = {
+  name: 'Figma matrix (Levels × label properties)',
+  parameters: { layout: 'fullscreen' },
   render: () => (
-    <VerticalCheckboxGroup label="Loading..." skeleton helperText="placeholder">
-      <CheckboxItem label="A" skeleton />
-      <CheckboxItem label="B" skeleton />
-      <CheckboxItem label="C" skeleton />
-    </VerticalCheckboxGroup>
-  ),
-};
-
-/* ------------------------------------------------------------------ */
-/* Levels2Nested                                                        */
-/* ------------------------------------------------------------------ */
-export const Levels2Nested: Story = {
-  name: 'Levels = 2 (Nested)',
-  render: () => {
-    const [checked, setChecked] = useState<Record<string, boolean>>({
-      parent: false,
-      child1: false,
-      child2: false,
-      child3: false,
-    });
-
-    const allChildren = [checked.child1, checked.child2, checked.child3];
-    const allSelected = allChildren.every(Boolean);
-    const someSelected = allChildren.some(Boolean) && !allSelected;
-
-    return (
-      <VerticalCheckboxGroup label="Features" levels={2}>
-        <CheckboxItem
-          label="Select all"
-          checked={allSelected ? 'selected' : someSelected ? 'indeterminate' : 'unselected'}
-          onChange={(v) =>
-            setChecked({ parent: v, child1: v, child2: v, child3: v })
-          }
-        />
-        <CheckboxItem
-          label="Feature A"
-          checked={checked.child1}
-          onChange={(v) => setChecked((s) => ({ ...s, child1: v }))}
-        />
-        <CheckboxItem
-          label="Feature B"
-          checked={checked.child2}
-          onChange={(v) => setChecked((s) => ({ ...s, child2: v }))}
-        />
-        <CheckboxItem
-          label="Feature C"
-          checked={checked.child3}
-          onChange={(v) => setChecked((s) => ({ ...s, child3: v }))}
-        />
-      </VerticalCheckboxGroup>
-    );
-  },
-};
-
-/* ------------------------------------------------------------------ */
-/* AllStates — side by side matrix                                      */
-/* ------------------------------------------------------------------ */
-export const AllStates: Story = {
-  name: 'All States',
-  render: () => (
-    <div className="flex flex-wrap gap-[var(--scanner-spacing-8)]">
-      {/* Default */}
-      <div>
-        <p className="scanner-text-label-01 mb-4 text-[color:var(--scanner-text-secondary)]">
-          Default
-        </p>
-        <VerticalCheckboxGroup label="Label">
-          <CheckboxItem label="Option A" checked />
-          <CheckboxItem label="Option B" checked={false} />
-        </VerticalCheckboxGroup>
-      </div>
-
-      {/* With tooltip */}
-      <div>
-        <p className="scanner-text-label-01 mb-4 text-[color:var(--scanner-text-secondary)]">
-          With Tooltip
-        </p>
-        <VerticalCheckboxGroup
-          label="Label"
-          tooltipContent="Helpful context"
-        >
-          <CheckboxItem label="Option A" checked />
-          <CheckboxItem label="Option B" checked={false} />
-        </VerticalCheckboxGroup>
-      </div>
-
-      {/* Required */}
-      <div>
-        <p className="scanner-text-label-01 mb-4 text-[color:var(--scanner-text-secondary)]">
-          Required
-        </p>
-        <VerticalCheckboxGroup label="Label" required>
-          <CheckboxItem label="Option A" checked />
-          <CheckboxItem label="Option B" checked={false} />
-        </VerticalCheckboxGroup>
-      </div>
-
-      {/* With helper text */}
-      <div>
-        <p className="scanner-text-label-01 mb-4 text-[color:var(--scanner-text-secondary)]">
-          Helper Text
-        </p>
-        <VerticalCheckboxGroup
-          label="Label"
-          helperText="Select your preferences"
-        >
-          <CheckboxItem label="Option A" checked />
-          <CheckboxItem label="Option B" checked={false} />
-        </VerticalCheckboxGroup>
-      </div>
-
-      {/* Error */}
-      <div>
-        <p className="scanner-text-label-01 mb-4 text-[color:var(--scanner-text-secondary)]">
-          Error
-        </p>
-        <VerticalCheckboxGroup
-          label="Label"
-          required
-          error
-          errorMessage="Selection required"
-        >
-          <CheckboxItem label="Option A" checked={false} />
-          <CheckboxItem label="Option B" checked={false} />
-        </VerticalCheckboxGroup>
-      </div>
-
-      {/* Disabled */}
-      <div>
-        <p className="scanner-text-label-01 mb-4 text-[color:var(--scanner-text-secondary)]">
-          Disabled
-        </p>
-        <VerticalCheckboxGroup label="Label" disabled>
-          <CheckboxItem label="Option A" checked disabled />
-          <CheckboxItem label="Option B" checked={false} disabled />
-        </VerticalCheckboxGroup>
-      </div>
-
-      {/* Skeleton */}
-      <div>
-        <p className="scanner-text-label-01 mb-4 text-[color:var(--scanner-text-secondary)]">
-          Skeleton
-        </p>
-        <VerticalCheckboxGroup label="Label" skeleton>
-          <CheckboxItem label="Option A" skeleton />
-          <CheckboxItem label="Option B" skeleton />
-        </VerticalCheckboxGroup>
-      </div>
-
-      {/* Levels=2 */}
-      <div>
-        <p className="scanner-text-label-01 mb-4 text-[color:var(--scanner-text-secondary)]">
-          Levels = 2
-        </p>
-        <VerticalCheckboxGroup label="Label" levels={2}>
-          <CheckboxItem label="Parent" checked="indeterminate" />
-          <CheckboxItem label="Child A" checked />
-          <CheckboxItem label="Child B" checked={false} />
-        </VerticalCheckboxGroup>
-      </div>
-
-      {/* No label */}
-      <div>
-        <p className="scanner-text-label-01 mb-4 text-[color:var(--scanner-text-secondary)]">
-          No Label
-        </p>
-        <VerticalCheckboxGroup showLabel={false}>
-          <CheckboxItem label="Option A" checked />
-          <CheckboxItem label="Option B" checked={false} />
-        </VerticalCheckboxGroup>
-      </div>
+    <div style={{ padding: 24 }}>
+      <table style={table}>
+        <thead>
+          <tr>
+            <th style={headCell} />
+            {LABEL_COMBOS.map((c) => (
+              <th key={c.name} style={headCell}>{c.name}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {([1, 2] as const).map((levels) => (
+            <tr key={levels}>
+              <th style={headCell}>{`Levels=${levels}`}</th>
+              {LABEL_COMBOS.map((c) => (
+                <td key={c.name} style={cell}>
+                  <VerticalCheckboxGroup label="Label" levels={levels} {...c.props}>
+                    {items(levels)}
+                  </VerticalCheckboxGroup>
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   ),
+};
+
+/* ── All states of the contained items ── */
+
+const STATE_COLUMNS: { name: string; group: Partial<VerticalCheckboxGroupProps>; focused?: boolean }[] = [
+  { name: 'Enabled', group: {} },
+  { name: 'Focused (first item)', group: {}, focused: true },
+  { name: 'Disabled', group: { disabled: true } },
+  { name: 'Skeleton', group: { skeleton: true } },
+  { name: 'Error (not in Figma)', group: { required: true, error: true, errorMessage: 'Select at least one option' } },
+  { name: 'Helper text (not in Figma)', group: { helperText: 'Choose one or more' } },
+];
+
+export const AllStates: Story = {
+  render: () => (
+    <table style={table}>
+      <thead>
+        <tr>
+          {STATE_COLUMNS.map((c) => (
+            <th key={c.name} style={headCell}>{c.name}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          {STATE_COLUMNS.map((c) => (
+            <td key={c.name} style={cell}>
+              <VerticalCheckboxGroup label="Label" {...c.group}>
+                <CheckboxItem label="Unselected" data-state={c.focused ? 'focused' : undefined} />
+                <CheckboxItem label="Selected" defaultChecked />
+                <CheckboxItem label="Indeterminate" checked="indeterminate" onChange={() => {}} />
+              </VerticalCheckboxGroup>
+            </td>
+          ))}
+        </tr>
+      </tbody>
+    </table>
+  ),
+};
+
+/* ── Nesting behaviour (Figma docs "Nesting") ── */
+
+const CHILDREN = ['Upper jaw', 'Lower jaw', 'Bite', 'Pre-treatment'];
+
+const NestedSelection = () => {
+  const [selected, setSelected] = useState<string[]>([]);
+  const all = selected.length === CHILDREN.length;
+  const parent = all ? 'selected' : selected.length ? 'indeterminate' : 'unselected';
+  return (
+    <VerticalCheckboxGroup label="Scans" levels={2}>
+      <CheckboxItem label="All scans" checked={parent} onChange={(v) => setSelected(v ? CHILDREN : [])} />
+      {CHILDREN.map((c) => (
+        <CheckboxItem
+          key={c}
+          label={c}
+          checked={selected.includes(c)}
+          onChange={(v) => setSelected((s) => (v ? [...s, c] : s.filter((x) => x !== c)))}
+        />
+      ))}
+    </VerticalCheckboxGroup>
+  );
+};
+
+export const Nesting: Story = { render: () => <NestedSelection /> };
+
+/* ── Overflow: long values wrap, top-aligned ── */
+
+export const LongValues: Story = {
+  render: () => (
+    <div style={{ width: 260 }}>
+      <VerticalCheckboxGroup label="Checkbox label that wraps to multiple lines because it’s too long">
+        <CheckboxItem label="Checkbox value that wraps to multiple lines because it’s too long" />
+        <CheckboxItem label="Checkbox value" />
+      </VerticalCheckboxGroup>
+    </div>
+  ),
+};
+
+/* ------------------------------------------------------------------ */
+/*  Interaction tests                                                 */
+/* ------------------------------------------------------------------ */
+
+export const ArrowKeyNavigation: Story = {
+  tags: ['test'],
+  render: () => (
+    <VerticalCheckboxGroup label="Jaws">
+      <CheckboxItem label="Upper" />
+      <CheckboxItem label="Lower" disabled />
+      <CheckboxItem label="Bite" />
+    </VerticalCheckboxGroup>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.tab();
+    await expect(canvas.getByRole('checkbox', { name: 'Upper' })).toHaveFocus();
+    await userEvent.keyboard('{ArrowDown}');
+    /* Disabled items are skipped */
+    await expect(canvas.getByRole('checkbox', { name: 'Bite' })).toHaveFocus();
+    await userEvent.keyboard('{ArrowUp}');
+    await expect(canvas.getByRole('checkbox', { name: 'Upper' })).toHaveFocus();
+    await userEvent.keyboard(' ');
+    await expect(canvas.getByRole('checkbox', { name: 'Upper' })).toBeChecked();
+  },
+};
+
+export const ParentSelectsChildren: Story = {
+  tags: ['test'],
+  render: () => <NestedSelection />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'Bite' }));
+    await expect(canvas.getByRole('checkbox', { name: 'All scans' })).toBePartiallyChecked();
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'All scans' }));
+    for (const c of CHILDREN) await expect(canvas.getByRole('checkbox', { name: c })).toBeChecked();
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'All scans' }));
+    for (const c of CHILDREN) await expect(canvas.getByRole('checkbox', { name: c })).not.toBeChecked();
+  },
+};
+
+export const DisabledGroup: Story = {
+  tags: ['test'],
+  args: { disabled: true },
+  render: Default.render,
+  play: async ({ canvasElement }) => {
+    for (const cb of within(canvasElement).getAllByRole('checkbox')) await expect(cb).toBeDisabled();
+  },
 };

@@ -1,121 +1,147 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from '@storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 import { TabItem } from './TabItem';
+import { Badge } from '../badge';
+import type { TabItemProps } from './tab-item.types';
+
+/*
+ * Figma: "06. Scanner core 1.0.0 full" → _Tab item (node 28:1602)
+ * State × Show badge — every combination is rendered in `FigmaMatrix`.
+ */
+
+const STATES = ['enabled', 'hovered', 'focused', 'selected', 'disabled'] as const;
+type State = (typeof STATES)[number];
+const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+const stateProps = (state: State): Partial<TabItemProps> => ({
+  selected: state === 'selected',
+  disabled: state === 'disabled',
+  'data-state': state === 'hovered' || state === 'focused' ? state : undefined,
+});
+
+const table: React.CSSProperties = { borderCollapse: 'collapse', width: 'max-content' };
+const cell: React.CSSProperties = { padding: 12, verticalAlign: 'middle' };
+const headCell: React.CSSProperties = {
+  ...cell,
+  font: '500 12px/16px var(--scanner-font-sans)',
+  color: 'var(--scanner-text-secondary)',
+  textAlign: 'left',
+  whiteSpace: 'nowrap',
+};
 
 const meta: Meta<typeof TabItem> = {
-  title: 'Components/_TabItem',
+  title: 'Private/_TabItem',
   component: TabItem,
   argTypes: {
+    children: { name: 'Text value', control: 'text' },
     selected: { control: 'boolean' },
     disabled: { control: 'boolean' },
     skeleton: { control: 'boolean' },
+    badge: { table: { disable: true } },
+    'data-state': { name: 'Forced state', control: 'inline-radio', options: [undefined, 'hovered', 'focused'] },
   },
-  args: {
-    onClick: fn(),
-  },
+  args: { children: 'Tab item', onClick: fn() },
+  decorators: [
+    (Story) => (
+      <div style={{ padding: 16 }}>
+        <Story />
+      </div>
+    ),
+  ],
 };
 export default meta;
 
 type Story = StoryObj<typeof TabItem>;
 
-// ---------------------------------------------------------------------------
-// Default — interactive Controls for every prop
-// ---------------------------------------------------------------------------
-export const Default: Story = {
-  args: { children: 'Tab item' },
-};
+export const Default: Story = {};
 
-// ---------------------------------------------------------------------------
-// Selected — active tab with bottom indicator
-// ---------------------------------------------------------------------------
-export const Selected: Story = {
-  args: { children: 'Tab item', selected: true },
-};
+export const Enabled: Story = {};
+export const Hovered: Story = { args: { 'data-state': 'hovered' } };
+export const Focused: Story = { args: { 'data-state': 'focused' } };
+export const Selected: Story = { args: { selected: true } };
+export const Disabled: Story = { args: { disabled: true } };
+export const ShowBadge: Story = { name: 'Show badge: True', args: { badge: <Badge status="info">3</Badge> } };
+export const Skeleton: Story = { name: 'Skeleton (code-only)', args: { skeleton: true } };
 
-// ---------------------------------------------------------------------------
-// Disabled — dimmed, non-interactive
-// ---------------------------------------------------------------------------
-export const Disabled: Story = {
-  args: { children: 'Tab item', disabled: true },
-};
-
-// ---------------------------------------------------------------------------
-// Skeleton — loading placeholder
-// ---------------------------------------------------------------------------
-export const Skeleton: Story = {
-  args: { skeleton: true },
-};
-
-// ---------------------------------------------------------------------------
-// AllStates — matrix matching the Figma component set exactly.
-// Uses data-state attributes to force hover / focus visuals.
-// ---------------------------------------------------------------------------
 export const AllStates: Story = {
   render: () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {/* Row labels */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 32 }}>
-        <div style={{ width: 80, textAlign: 'right', fontSize: 12, color: '#666' }}>
-          Enabled
-        </div>
-        <TabItem>Tab item</TabItem>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 32 }}>
-        <div style={{ width: 80, textAlign: 'right', fontSize: 12, color: '#666' }}>
-          Hovered
-        </div>
-        <TabItem data-state="hovered">Tab item</TabItem>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 32 }}>
-        <div style={{ width: 80, textAlign: 'right', fontSize: 12, color: '#666' }}>
-          Focused
-        </div>
-        <TabItem data-state="focused">Tab item</TabItem>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 32 }}>
-        <div style={{ width: 80, textAlign: 'right', fontSize: 12, color: '#666' }}>
-          Selected
-        </div>
-        <TabItem selected>Tab item</TabItem>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 32 }}>
-        <div style={{ width: 80, textAlign: 'right', fontSize: 12, color: '#666' }}>
-          Disabled
-        </div>
-        <TabItem disabled>Tab item</TabItem>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 32 }}>
-        <div style={{ width: 80, textAlign: 'right', fontSize: 12, color: '#666' }}>
-          Skeleton
-        </div>
-        <TabItem skeleton>Tab item</TabItem>
-      </div>
-    </div>
+    <table style={table}>
+      <thead>
+        <tr>
+          {STATES.map((s) => (
+            <th key={s} style={headCell}>{label(s)}</th>
+          ))}
+          <th style={headCell}>Selected + Focused</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          {STATES.map((s) => (
+            <td key={s} style={cell}>
+              <TabItem {...stateProps(s)}>Tab item</TabItem>
+            </td>
+          ))}
+          <td style={cell}>
+            <TabItem selected data-state="focused">Tab item</TabItem>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   ),
 };
 
-// ---------------------------------------------------------------------------
-// TabBar — simulates a group of tabs as they'd appear in context
-// ---------------------------------------------------------------------------
-export const TabBar: Story = {
+export const FigmaMatrix: Story = {
+  name: 'Figma matrix (all variants)',
   render: () => (
-    <div
-      role="tablist"
-      style={{
-        display: 'flex',
-        gap: 24,
-        borderBottom: '1px solid var(--scanner-border-subtle)',
-      }}
-    >
-      <TabItem selected>Overview</TabItem>
-      <TabItem>Details</TabItem>
-      <TabItem>Settings</TabItem>
-      <TabItem disabled>Billing</TabItem>
-    </div>
+    <table style={table}>
+      <thead>
+        <tr>
+          <th style={headCell} />
+          {STATES.map((s) => (
+            <th key={s} style={headCell}>{`State=${label(s)}`}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {[false, true].map((b) => (
+          <tr key={String(b)}>
+            <th style={headCell}>{`Show badge=${b ? 'True' : 'False'}`}</th>
+            {STATES.map((s) => (
+              <td key={s} style={cell}>
+                <TabItem {...stateProps(s)} badge={b ? <Badge status="info">3</Badge> : undefined}>
+                  Tab item
+                </TabItem>
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   ),
+};
+
+/* ------------------------------------------------------------------ */
+/*  Interaction tests                                                 */
+/* ------------------------------------------------------------------ */
+
+export const ClickAndKeyboard: Story = {
+  tags: ['test'],
+  play: async ({ args, canvasElement }) => {
+    const tab = within(canvasElement).getByRole('tab', { name: 'Tab item' });
+    await userEvent.click(tab);
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard(' ');
+    await expect(args.onClick).toHaveBeenCalledTimes(3);
+  },
+};
+
+export const DisabledIgnoresClick: Story = {
+  tags: ['test'],
+  args: { disabled: true },
+  play: async ({ args, canvasElement }) => {
+    const tab = within(canvasElement).getByRole('tab', { name: 'Tab item' });
+    await expect(tab).toBeDisabled();
+    await userEvent.click(tab, { pointerEventsCheck: 0 });
+    await expect(args.onClick).not.toHaveBeenCalled();
+  },
 };

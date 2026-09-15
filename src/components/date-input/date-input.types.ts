@@ -1,27 +1,39 @@
+import type { InputHTMLAttributes } from 'react';
+
+/** Figma "Size" (Large / Medium / Small). */
 export type DateInputSize = 'large' | 'medium' | 'small';
 
-export interface DateInputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'size'> {
-  /** Size preset. */
+/**
+ * Figma "State" values that can be forced via `data-state` (Storybook / visual tests).
+ * Enabled is the default; Disabled, Error and Skeleton have their own props.
+ */
+export type DateInputForcedState = 'focused';
+
+export interface DateInputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'size'> {
+  /** Figma "Size". Default `'large'`. */
   size?: DateInputSize;
-  /** Layer set for background variation. */
+  /** Figma "Layer set": 1 → Set 01 (`background-layer-01`), 2 → Set 02 (`background-layer-02`). */
   layer?: 1 | 2;
-  /** Whether the input is in an error state. */
+  /** Figma State=Error — error stroke, error message and `aria-invalid`. */
   error?: boolean;
-  /** Show skeleton loading placeholder. */
+  /** Figma State=Skeleton — loading placeholder. */
   skeleton?: boolean;
-  /** Label text displayed above the input. */
+  /** Figma "Label text value". */
   label?: string;
-  /** Whether to show the label. */
+  /** Figma "Show label". Default `true` (the label renders when `label` is set). */
   showLabel?: boolean;
-  /** Helper text displayed below the input. */
+  /** Figma "Helper text value". Replaced by `errorText` in error state. */
   helperText?: string;
-  /** Error message displayed below the input when `error` is true. */
+  /** Figma "Error text value" — shown below the field when `error` is true. */
   errorText?: string;
-  /** Whether to show helper or error text below the input. */
+  /** Figma "Show helper" — gates both helper and error text. Default `true`. */
   showHelper?: boolean;
-  /** Show an explainer tooltip icon next to the label. */
+  /** Figma "Show explainer" — shows the explainer icon next to the label (needs `explainerText`). */
   showExplainer?: boolean;
   /** Tooltip content for the explainer icon. */
   explainerText?: string;
+  /** Force a visual state on the field for screenshots / Storybook. */
+  'data-state'?: DateInputForcedState;
+  /** Class names for the root wrapper. */
+  className?: string;
 }

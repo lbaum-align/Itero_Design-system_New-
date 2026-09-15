@@ -1,52 +1,39 @@
 import { forwardRef } from 'react';
 import { cn } from '../../utils/cn';
+import { NumberIcon } from './step-icons';
+import { clampStep } from './step-utils';
 import type { StepCounterProps } from './step-counter.types';
 
+/*
+ * Source: Figma "06. Scanner core 1.0.0 full" → _Step counter (node 34201:2238)
+ * State (Not started, In progress) × Step (1–8) = 16 variants.
+ * Each variant is a 24×24 icon: "Number outline / N" in icon-secondary, or "Number filled / N" in icon-link.
+ */
+
 /**
- * _StepCounter — a circular indicator showing the step number.
+ * _StepCounter — private step-number indicator used by the stepper items.
+ * Decorative (`aria-hidden`); the step's position and state are announced by `Stepper`.
  *
- * PRIVATE sub-component. Not exported from the package barrel.
- *
- * - "not-started": outlined circle with muted number
- * - "in-progress": filled brand-blue circle with white number
- *
- * Maps to Figma component "_Step counter" with variants:
- *   State: "Not started" | "In progress"
- *   Step: 1–8
+ * @example
+ * <StepCounter state="in-progress" step={2} />
  */
 export const StepCounter = forwardRef<HTMLSpanElement, StepCounterProps>(
   ({ state = 'not-started', step = 1, className, ...rest }, ref) => {
-    const displayStep = Math.min(Math.max(Math.round(step), 1), 8);
     const isInProgress = state === 'in-progress';
-
     return (
       <span
         ref={ref}
+        aria-hidden="true"
+        data-state={state}
+        data-step={clampStep(step)}
         className={cn(
-          // Base: 24x24 circle, centered content
-          'inline-flex size-[24px] shrink-0 items-center justify-center',
-          'rounded-[var(--scanner-radius-full)]',
-          'font-[family-name:var(--scanner-font-sans)]',
-          'text-[length:var(--scanner-text-xs)] leading-[var(--scanner-leading-xs)]',
-          'font-[number:var(--scanner-font-regular)]',
-          'select-none',
-          // State-specific styling
-          isInProgress
-            ? [
-                'bg-[var(--scanner-bg-brand)]',
-                'text-[color:var(--scanner-text-on-color)]',
-              ]
-            : [
-                'border border-solid border-[var(--scanner-border-default)]',
-                'bg-transparent',
-                'text-[color:var(--scanner-text-secondary)]',
-              ],
+          'inline-flex size-[var(--scanner-stepper-indicator-size)] shrink-0 items-center justify-center',
+          isInProgress ? 'text-[color:var(--scanner-icon-link)]' : 'text-[color:var(--scanner-icon-secondary)]',
           className,
         )}
-        aria-hidden="true"
         {...rest}
       >
-        {displayStep}
+        <NumberIcon step={step} filled={isInProgress} className="size-full" />
       </span>
     );
   },

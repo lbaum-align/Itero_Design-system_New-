@@ -1,33 +1,37 @@
-import type { ReactNode } from 'react';
+import type { HTMLAttributes, MouseEventHandler, ReactNode } from 'react';
 
+/** Figma "Type". */
 export type NotificationActionType = 'link' | 'button';
 
-export interface NotificationActionProps {
-  /** Visual type — mirrors the Figma "Type" variant property. */
+export interface NotificationActionProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+  /**
+   * Action style (Figma "Type"): a primary medium `Link`, or two secondary large `Button`s.
+   * @default 'link'
+   */
   type?: NotificationActionType;
 
-  /* ── Link variant props ── */
+  /* ── Type=Link ── */
 
-  /** Text content for the link (when type='link'). */
-  linkText?: string;
-  /** Href for the link (when type='link'). */
+  /** Link label (Figma Link "Text value"). */
+  linkText?: ReactNode;
+  /** Link URL. Without it the link still is focusable and fires `onLinkClick`. */
   linkHref?: string;
   /** Click handler for the link. */
-  onLinkClick?: React.MouseEventHandler<HTMLAnchorElement>;
+  onLinkClick?: MouseEventHandler<HTMLAnchorElement>;
+  /** Open the link in a new tab with the external icon (Link "External"). */
+  linkExternal?: boolean;
 
-  /* ── Button variant props ── */
+  /* ── Type=Button ── */
 
-  /** Text for the primary (first) button (when type='button'). */
-  primaryButtonText?: string;
-  /** Click handler for the primary button. */
-  onPrimaryButtonClick?: React.MouseEventHandler<HTMLButtonElement>;
-  /** Text for the secondary (second) button (when type='button'). */
-  secondaryButtonText?: string;
-  /** Click handler for the secondary button. */
-  onSecondaryButtonClick?: React.MouseEventHandler<HTMLButtonElement>;
+  /** Label of the first button. */
+  primaryButtonText?: ReactNode;
+  /** Click handler for the first button. */
+  onPrimaryButtonClick?: MouseEventHandler<HTMLButtonElement>;
+  /** Label of the second button. Pass `null` to render a single button. */
+  secondaryButtonText?: ReactNode;
+  /** Click handler for the second button. */
+  onSecondaryButtonClick?: MouseEventHandler<HTMLButtonElement>;
 
-  /** Override children for full custom rendering. */
+  /** Custom action content — replaces the built-in link/buttons but keeps the action spacing. */
   children?: ReactNode;
-  /** Additional CSS class names. */
-  className?: string;
 }

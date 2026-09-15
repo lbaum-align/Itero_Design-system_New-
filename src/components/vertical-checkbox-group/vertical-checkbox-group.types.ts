@@ -1,32 +1,30 @@
-import type { ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 
-export interface VerticalCheckboxGroupProps {
-  /** Group label text */
+export interface VerticalCheckboxGroupProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+  /** Figma "Label text" */
   label?: string;
-  /** Whether to show the group label */
+  /** Figma "Show label" (default `true`) */
   showLabel?: boolean;
-  /** Tooltip content shown via IconTriggerTooltip next to the label */
+  /** Figma "Show explainer" — explainer text shown in an IconTriggerTooltip next to the label */
   tooltipContent?: string;
-  /** Whether the group is required (shows asterisk) */
+  /** Figma "Required" — shows a red asterisk after the label */
   required?: boolean;
-  /** Helper text displayed below the checkbox items */
+  /** Helper text below the items (not in Figma) */
   helperText?: string;
-  /** Error state — shows error styling on helper text */
+  /** Error styling for the helper text (not in Figma) */
   error?: boolean;
-  /** Error message — replaces helper text when error is true */
+  /** Error message — replaces helper text when `error` is true (not in Figma) */
   errorMessage?: string;
-  /** Disables all checkboxes in the group */
+  /** Disables every CheckboxItem in the group */
   disabled?: boolean;
-  /** Shows skeleton loading state */
+  /** Renders the label and every CheckboxItem as skeletons */
   skeleton?: boolean;
   /**
-   * Nesting level from Figma.
+   * Figma "Levels".
    * - `1`: flat vertical list of checkbox items (default)
-   * - `2`: first child is the "main" item, remaining are nested sub-items
+   * - `2`: the first child is the parent item; the rest are nested 32px below it
    */
   levels?: 1 | 2;
-  /** CheckboxItem elements to render in the group */
+  /** CheckboxItem elements */
   children: ReactNode;
-  /** Additional CSS class names */
-  className?: string;
 }

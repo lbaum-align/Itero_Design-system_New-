@@ -1,95 +1,110 @@
-import { forwardRef, useCallback, useState } from 'react';
+import { forwardRef, useId, useState } from 'react';
+import type { KeyboardEvent } from 'react';
 import { cn } from '../../utils/cn';
 import { AccordionItem } from '../_accordion-item';
 import type { AccordionGroupProps } from './accordion-group.types';
 
+/*
+ * Source: Figma "06. Scanner core 1.0.0 full" → 02 Accordion group (node 36403:2957)
+ * Style: Line, Background 01, Background 02, Border (4 variants).
+ *
+ * A vertical stack of `_01 Accordion item`s: 8px gap for Background 01/02 and Border, no gap for Line.
+ * Keyboard (Figma docs): Tab focuses a header, Enter/Space toggles it,
+ * Arrow Up/Down move between headers in the group (wrapping); Home/End jump to the first/last header.
+ */
+
+/** Headers of this group only (not of accordions nested inside a panel), skipping disabled ones. */
+const HEADER_SELECTOR = ':scope > [data-accordion-item] > :first-child > [data-accordion-header]:not(:disabled)';
+
 /**
- * AccordionGroup — Renders a vertical list of expandable/collapsible
- * accordion items.
+ * Scanner AccordionGroup — vertically stacked sections that expand and collapse.
  *
- * Supports both controlled (`expandedIds` + `onExpandedChange`) and
- * uncontrolled (`defaultExpandedIds`) expansion state, plus a toggle
- * for single-expand vs multi-expand behaviour.
- *
- * Figma component: "02 Accordion group"
+ * Supports controlled (`expandedIds` + `onExpandedChange`) and uncontrolled (`defaultExpandedIds`)
+ * expansion, with multi-expand (default, per Figma docs) or single-expand (`allowMultiple={false}`).
  *
  * @example
- * ```tsx
  * <AccordionGroup
+ *   variant="line"
  *   items={[
- *     { id: '1', title: 'Section one', description: 'Content...' },
- *     { id: '2', title: 'Section two', description: 'Content...' },
+ *     { id: 'scan', title: 'Scan settings', description: 'Resolution and colour options.' },
+ *     { id: 'export', title: 'Export', description: 'File formats.' },
  *   ]}
- *   variant="background-01"
- *   allowMultiple
  * />
- * ```
  */
 export const AccordionGroup = forwardRef<HTMLDivElement, AccordionGroupProps>(
   (
     {
       items,
       variant = 'background-01',
-      allowMultiple = false,
+      allowMultiple = true,
       defaultExpandedIds = [],
       expandedIds: controlledIds,
       onExpandedChange,
       skeleton = false,
+      headingLevel = 3,
       className,
+      onKeyDown,
+      ...rest
     },
     ref,
   ) => {
-    /* ── Internal state (uncontrolled mode) ── */
+    const groupId = useId();
     const [internalIds, setInternalIds] = useState<string[]>(defaultExpandedIds);
-
     const isControlled = controlledIds !== undefined;
     const expandedIds = isControlled ? controlledIds : internalIds;
 
-    const setExpandedIds = useCallback(
-      (next: string[]) => {
-        if (!isControlled) {
-          setInternalIds(next);
-        }
-        onExpandedChange?.(next);
-      },
-      [isControlled, onExpandedChange],
-    );
+    const setExpandedIds = (next: string[]) => {
+      if (!isControlled) setInternalIds(next);
+      onExpandedChange?.(next);
+    };
 
-    /* ── Toggle handler ── */
-    const handleToggle = useCallback(
-      (itemId: string) => {
-        const isExpanded = expandedIds.includes(itemId);
+    const handleToggle = (itemId: string) => {
+      if (expandedIds.includes(itemId)) {
+        setExpandedIds(expandedIds.filter((id) => id !== itemId));
+      } else {
+        setExpandedIds(allowMultiple ? [...expandedIds, itemId] : [itemId]);
+      }
+    };
 
-        if (isExpanded) {
-          // Collapse this item
-          setExpandedIds(expandedIds.filter((id) => id !== itemId));
-        } else if (allowMultiple) {
-          // Multi-expand: add to the list
-          setExpandedIds([...expandedIds, itemId]);
-        } else {
-          // Single-expand: replace the list
-          setExpandedIds([itemId]);
-        }
-      },
-      [expandedIds, allowMultiple, setExpandedIds],
-    );
+    const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+      onKeyDown?.(event);
+      if (event.defaultPrevented) return;
+      if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
 
-    /* ── Determine spacing: line style has no gap; others use 8px ── */
-    const isLine = variant === 'line';
+      const headers = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>(HEADER_SELECTOR));
+      const current = headers.indexOf(event.target as HTMLButtonElement);
+      if (current === -1 || headers.length === 0) return;
+
+      const last = headers.length - 1;
+      const next =
+        event.key === 'ArrowDown'
+          ? (current + 1) % headers.length
+          : event.key === 'ArrowUp'
+            ? (current - 1 + headers.length) % headers.length
+            : event.key === 'Home'
+              ? 0
+              : last;
+
+      event.preventDefault();
+      headers[next].focus();
+    };
 
     return (
       <div
         ref={ref}
+        data-variant={variant}
+        onKeyDown={handleKeyDown}
         className={cn(
-          'flex flex-col items-start justify-center w-full',
-          isLine ? '' : 'gap-[var(--scanner-spacing-3)]',
+          'flex w-full flex-col items-start',
+          variant === 'line' ? 'gap-0' : 'gap-[var(--scanner-spacing-3)]',
           className,
         )}
+        {...rest}
       >
         {items.map((item) => (
           <AccordionItem
             key={item.id}
-            id={item.id}
+            id={`${groupId}-${item.id}`}
             title={item.title}
             description={item.description}
             expanded={expandedIds.includes(item.id)}
@@ -97,6 +112,7 @@ export const AccordionGroup = forwardRef<HTMLDivElement, AccordionGroupProps>(
             disabled={item.disabled}
             skeleton={skeleton}
             variant={variant}
+            headingLevel={headingLevel}
           >
             {item.content}
           </AccordionItem>

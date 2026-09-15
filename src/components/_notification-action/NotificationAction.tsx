@@ -4,21 +4,23 @@ import { Link } from '../link';
 import { Button } from '../button';
 import type { NotificationActionProps } from './notification-action.types';
 
+/*
+ * Source: Figma "06. Scanner core 1.0.0 full" → .Notification action (node 34305:10071)
+ * Type: Link, Button (2 variants). Used by Toast (34305:10008) below ".Notification text content".
+ *
+ * - Type=Link: 16px top padding, one Link (Type=Primary, Size=Medium), hugging its content.
+ * - Type=Button: 16px top padding, two Buttons (Brand / Secondary / Large / Text only), 8px gap, wrapping.
+ */
+
 /**
- * _NotificationAction — the action area of a notification / toast.
+ * _NotificationAction — the action area of a Toast / inline notification.
+ * Private building block (not exported from the package barrel).
  *
- * Renders either a single Link or up to two secondary Buttons,
- * matching the Figma ".Notification action" component set.
- *
- * @private This is a private sub-component; not exported from the package barrel.
+ * Keyboard (Figma docs): Tab moves between the action(s) and the close icon; Enter/Space trigger the action.
  *
  * @example
  * <NotificationAction type="link" linkText="View details" linkHref="/details" />
- * <NotificationAction
- *   type="button"
- *   primaryButtonText="Confirm"
- *   secondaryButtonText="Dismiss"
- * />
+ * <NotificationAction type="button" primaryButtonText="Retry" secondaryButtonText="Dismiss" />
  */
 export const NotificationAction = forwardRef<HTMLDivElement, NotificationActionProps>(
   (
@@ -27,6 +29,7 @@ export const NotificationAction = forwardRef<HTMLDivElement, NotificationActionP
       linkText = 'Link',
       linkHref,
       onLinkClick,
+      linkExternal = false,
       primaryButtonText = 'Button text',
       onPrimaryButtonClick,
       secondaryButtonText = 'Button text',
@@ -37,72 +40,36 @@ export const NotificationAction = forwardRef<HTMLDivElement, NotificationActionP
     },
     ref,
   ) => {
-    /* ── Custom children override ── */
-    if (children) {
-      return (
-        <div
-          ref={ref}
-          className={cn(
-            'flex items-start pt-[var(--scanner-spacing-5)]',
-            className,
-          )}
-          {...rest}
-        >
-          {children}
-        </div>
-      );
-    }
+    const isButton = type === 'button';
 
-    /* ── Link variant ── */
-    if (type === 'link') {
-      return (
-        <div
-          ref={ref}
-          className={cn(
-            'flex flex-col items-stretch',
-            'pt-[var(--scanner-spacing-5)]',
-            className,
-          )}
-          {...rest}
-        >
-          <Link
-            href={linkHref}
-            size="medium"
-            type="primary"
-            onClick={onLinkClick}
-          >
-            {linkText}
-          </Link>
-        </div>
-      );
-    }
-
-    /* ── Button variant ── */
     return (
       <div
         ref={ref}
+        data-type={type}
         className={cn(
-          'flex flex-wrap items-start content-start',
-          'gap-[var(--scanner-spacing-3)]',
-          'pt-[var(--scanner-spacing-5)]',
+          'flex items-start pt-[var(--scanner-spacing-5)]',
+          isButton && 'flex-wrap content-start gap-[var(--scanner-spacing-3)]',
           className,
         )}
         {...rest}
       >
-        <Button
-          emphasis="secondary"
-          size="large"
-          onClick={onPrimaryButtonClick}
-        >
-          {primaryButtonText}
-        </Button>
-        <Button
-          emphasis="secondary"
-          size="large"
-          onClick={onSecondaryButtonClick}
-        >
-          {secondaryButtonText}
-        </Button>
+        {children ??
+          (isButton ? (
+            <>
+              <Button emphasis="secondary" size="large" onClick={onPrimaryButtonClick}>
+                {primaryButtonText}
+              </Button>
+              {secondaryButtonText != null && (
+                <Button emphasis="secondary" size="large" onClick={onSecondaryButtonClick}>
+                  {secondaryButtonText}
+                </Button>
+              )}
+            </>
+          ) : (
+            <Link type="primary" size="medium" href={linkHref} external={linkExternal} onClick={onLinkClick}>
+              {linkText}
+            </Link>
+          ))}
       </div>
     );
   },

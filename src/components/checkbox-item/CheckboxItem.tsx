@@ -1,209 +1,212 @@
-import { forwardRef, useCallback, useId } from 'react';
+import { forwardRef, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import type { Ref } from 'react';
 import { cn } from '../../utils/cn';
+import { CheckboxGroupContext } from './checkbox-group-context';
 import type { CheckboxItemProps, CheckboxSelection } from './checkbox-item.types';
 
-/** Normalise the `checked` prop to a canonical CheckboxSelection value. */
-function normaliseChecked(checked: CheckboxSelection | boolean | undefined): CheckboxSelection {
-  if (checked === true) return 'selected';
-  if (checked === false) return 'unselected';
-  return checked ?? 'unselected';
+/*
+ * Source: Figma "06. Scanner core 1.0.0 full" → 01 Checkbox item (node 1223:1396)
+ * Selected (Unselected, Selected, Indeterminate) × State (Enabled, Focused, Disabled, Skeleton)
+ * = 12 variants, plus "Show value" and "Text value" properties.
+ *
+ * Layout: 16px vertical padding, 8px gap, 28×28 indicator, value Body/$tp-body-02 (18/28).
+ * The indicator is a single glyph from the icon library (box with the mark cut out),
+ * coloured icon-primary (unselected) / icon-link (selected, indeterminate) / icon-disabled.
+ * Focused adds a 1.4px border-focus stroke inside the 28px indicator (radius 4).
+ * Figma defines no hover or pressed states.
+ */
+
+/** Outer rounded square shared by all glyphs (28×28 viewBox). */
+const BOX =
+  'M23.5833 2.5H4.41667C3.90834 2.5 3.42082 2.70193 3.06138 3.06138C2.70193 3.42082 2.5 3.90834 2.5 4.41667V23.5833C2.5 24.0917 2.70193 24.5792 3.06138 24.9386C3.42082 25.2981 3.90834 25.5 4.41667 25.5H23.5833C24.0917 25.5 24.5792 25.2981 24.9386 24.9386C25.2981 24.5792 25.5 24.0917 25.5 23.5833V4.41667C25.5 3.90834 25.2981 3.42082 24.9386 3.06138C24.5792 2.70193 24.0917 2.5 23.5833 2.5Z';
+
+/** Cut-out drawn inside the box for each selection. */
+const CUTOUT: Record<CheckboxSelection, string> = {
+  unselected: 'M4.41667 23.5833V4.41667H23.5833V23.5833H4.41667Z',
+  selected:
+    'M12.0833 19.2708L7.29167 14.5201L8.81618 13.0417L12.0833 16.2479L19.1833 9.20833L20.7088 10.7198L12.0833 19.2708Z',
+  indeterminate: 'M19.75 15.9167H8.25V12.0833H19.75V15.9167Z',
+};
+
+function normalise(value: CheckboxSelection | boolean | undefined): CheckboxSelection {
+  if (value === true) return 'selected';
+  if (value === false || value === undefined) return 'unselected';
+  return value;
 }
 
+const Glyph = ({ selection }: { selection: CheckboxSelection }) => (
+  <svg
+    width="28"
+    height="28"
+    viewBox="0 0 28 28"
+    fill="none"
+    aria-hidden="true"
+    className="block size-full"
+    data-glyph={selection}
+  >
+    <path d={`${BOX}${CUTOUT[selection]}`} fill="currentColor" fillRule="evenodd" clipRule="evenodd" />
+  </svg>
+);
+
+function assignRef<T>(ref: Ref<T> | undefined, value: T | null) {
+  if (typeof ref === 'function') ref(value);
+  else if (ref) (ref as { current: T | null }).current = value;
+}
+
+const indicatorBox = 'relative flex size-[var(--scanner-checkbox-indicator-size)] shrink-0 rounded-[var(--scanner-radius-sm)]';
+const valueText = cn(
+  'min-w-0 break-words',
+  'font-[family-name:var(--scanner-font-sans)] font-[number:var(--scanner-font-regular)]',
+  'text-[length:var(--scanner-text-scanner-md)] leading-[var(--scanner-leading-lg)]',
+);
+
 /**
- * Scanner CheckboxItem — a labelled checkbox with unselected / selected / indeterminate states.
+ * Scanner CheckboxItem — a checkbox with an optional value text.
+ *
+ * Figma props → React: Selected → `checked`, Show value → `showLabel`, Text value → `label`,
+ * State → `:focus-visible` (forceable via `data-state="focused"`), `disabled`, `skeleton`.
+ *
+ * The checkbox and its value text form one click target. Keyboard: Tab to focus,
+ * Space to toggle (Enter also toggles, per Figma docs); arrow keys move between items in a group.
  *
  * @example
- * <CheckboxItem label="Accept terms" checked="selected" onChange={setAccepted} />
- * <CheckboxItem label="Mixed" checked="indeterminate" />
+ * <CheckboxItem label="Upper jaw" checked={upper} onChange={setUpper} />
+ * <CheckboxItem label="All teeth" checked="indeterminate" onChange={selectAll} />
+ * <CheckboxItem label="Uncontrolled" defaultChecked />
  */
 export const CheckboxItem = forwardRef<HTMLInputElement, CheckboxItemProps>(
   (
     {
       checked,
+      defaultChecked,
       label,
       showLabel = true,
-      disabled = false,
-      skeleton = false,
+      disabled: disabledProp = false,
+      skeleton: skeletonProp = false,
       onChange,
-      name,
-      value,
+      onKeyDown,
       className,
       'aria-label': ariaLabel,
+      'data-state': dataState,
       ...rest
     },
-    ref
+    ref,
   ) => {
-    const generatedId = useId();
-    const inputId = `checkbox-${generatedId}`;
-    const selection = normaliseChecked(checked);
-    const isSelected = selection === 'selected';
+    const group = useContext(CheckboxGroupContext);
+    const disabled = disabledProp || group.disabled;
+    const skeleton = skeletonProp || !!group.skeleton;
+
+    const isControlled = checked !== undefined;
+    const [internal, setInternal] = useState<CheckboxSelection>(() => normalise(defaultChecked));
+    const selection = isControlled ? normalise(checked) : internal;
     const isIndeterminate = selection === 'indeterminate';
 
-    const handleChange = useCallback(() => {
-      if (!disabled && !skeleton) {
-        // Clicking an indeterminate checkbox resolves to selected.
-        onChange?.(isIndeterminate ? true : !isSelected);
-      }
-    }, [disabled, skeleton, onChange, isSelected, isIndeterminate]);
+    /* `indeterminate` only exists as a DOM property */
+    const inputRef = useRef<HTMLInputElement | null>(null);
+    const setRefs = useCallback(
+      (node: HTMLInputElement | null) => {
+        inputRef.current = node;
+        assignRef(ref, node);
+      },
+      [ref],
+    );
+    useEffect(() => {
+      if (inputRef.current) inputRef.current.indeterminate = isIndeterminate;
+    }, [isIndeterminate, skeleton]);
 
-    /* ------------------------------------------------------------------ */
-    /* Skeleton state                                                        */
-    /* ------------------------------------------------------------------ */
+    const toggle = () => {
+      if (disabled) return;
+      // An indeterminate checkbox resolves to selected.
+      const next = selection !== 'selected';
+      if (!isControlled) setInternal(next ? 'selected' : 'unselected');
+      onChange?.(next);
+    };
+
+    /* ── Skeleton ── */
     if (skeleton) {
       return (
-        <div
-          className={cn(
-            'flex items-center gap-2 py-4',
-            className
-          )}
+        <span
           aria-hidden="true"
-        >
-          {/* Indicator placeholder */}
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center">
-            <div className="h-5 w-5 animate-pulse rounded-[4px] bg-[var(--scanner-gray-alpha-10)]" />
-          </div>
-          {/* Label placeholder */}
-          {showLabel && (
-            <div className="h-4 w-24 animate-pulse rounded bg-[var(--scanner-gray-alpha-10)]" />
+          data-skeleton=""
+          className={cn(
+            'flex w-fit max-w-full animate-pulse items-start gap-[var(--scanner-spacing-3)] py-[var(--scanner-spacing-5)]',
+            className,
           )}
-        </div>
+        >
+          <span className={cn(indicatorBox, 'text-[color:var(--scanner-icon-disabled)]')}>
+            <Glyph selection={selection} />
+          </span>
+          {showLabel && (
+            <span className="h-[var(--scanner-leading-lg)] w-[var(--scanner-checkbox-skeleton-value-width)] min-w-px shrink bg-[var(--scanner-bg-highlight-gray)]" />
+          )}
+        </span>
       );
     }
 
-    /* ------------------------------------------------------------------ */
-    /* Normal state                                                          */
-    /* ------------------------------------------------------------------ */
+    const hasVisibleLabel = showLabel && !!label;
+
     return (
-      <div
+      <label
+        data-selection={selection}
+        data-state={dataState}
+        data-disabled={disabled || undefined}
         className={cn(
-          'flex items-center gap-2 py-4',
-          disabled && 'cursor-not-allowed',
-          className
+          'group flex w-fit max-w-full items-start gap-[var(--scanner-spacing-3)] py-[var(--scanner-spacing-5)]',
+          'select-none',
+          disabled ? 'cursor-not-allowed' : 'cursor-pointer',
+          className,
         )}
-        data-state={selection}
       >
-        {/* Hidden native input for form semantics */}
         <input
-          ref={ref}
-          id={inputId}
+          ref={setRefs}
           type="checkbox"
-          name={name}
-          value={value}
-          checked={isSelected || isIndeterminate}
+          checked={selection === 'selected'}
           disabled={disabled}
-          aria-checked={isIndeterminate ? 'mixed' : isSelected}
-          aria-label={!showLabel || !label ? ariaLabel ?? label : undefined}
-          onChange={handleChange}
-          className="sr-only"
+          aria-checked={isIndeterminate ? 'mixed' : selection === 'selected'}
+          aria-disabled={disabled || undefined}
+          aria-label={hasVisibleLabel ? ariaLabel : (ariaLabel ?? label)}
+          onChange={toggle}
+          onKeyDown={(e) => {
+            onKeyDown?.(e);
+            // Figma docs: Enter/Space toggle (native checkboxes only toggle on Space)
+            if (e.key === 'Enter' && !e.defaultPrevented) {
+              e.preventDefault();
+              toggle();
+            }
+          }}
+          className="peer sr-only"
           {...rest}
         />
 
-        {/* Visual indicator — 28×28 container around a 20×20 box */}
-        <label
-          htmlFor={inputId}
+        {/* Indicator — 28×28 glyph; focus stroke drawn inside like Figma */}
+        <span
           className={cn(
-            'flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center',
-            'rounded-[4px]',
-            // Focus ring applied to the label when the hidden input is focused
-            'has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2',
-            'has-[:focus-visible]:outline-[var(--scanner-focus-ring)]',
-            disabled && 'cursor-not-allowed'
+            indicatorBox,
+            disabled
+              ? 'text-[color:var(--scanner-icon-disabled)]'
+              : selection === 'unselected'
+                ? 'text-[color:var(--scanner-icon-primary)]'
+                : 'text-[color:var(--scanner-icon-link)]',
+            'peer-focus-visible:shadow-[inset_0_0_0_var(--scanner-checkbox-focus-width)_var(--scanner-border-focus)]',
+            'group-data-[state=focused]:shadow-[inset_0_0_0_var(--scanner-checkbox-focus-width)_var(--scanner-border-focus)]',
           )}
-          aria-hidden={showLabel && label ? 'true' : undefined}
         >
-          {/* 20×20 visible box */}
-          <div
+          <Glyph selection={selection} />
+        </span>
+
+        {hasVisibleLabel && (
+          <span
             className={cn(
-              'relative flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px]',
-              // Selected / indeterminate: filled brand background
-              (isSelected || isIndeterminate) && 'bg-[var(--scanner-action-primary)]',
-              // Unselected: white fill, interactive border
-              !isSelected && !isIndeterminate && [
-                'bg-white',
-                'ring-2 ring-inset ring-[var(--scanner-border-interactive)]',
-              ],
-              // Disabled: reduce opacity
-              disabled && 'opacity-[0.23]'
-            )}
-          >
-            {/* Unselected: border path rendered as SVG stroke */}
-            {!isSelected && !isIndeterminate && (
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-                className="absolute inset-0"
-              >
-                <path
-                  d="M1 4C1 2.34 2.34 1 4 1H16C17.66 1 19 2.34 19 4V16C19 17.66 17.66 19 16 19H4C2.34 19 1 17.66 1 16V4Z"
-                  stroke="var(--scanner-border-interactive)"
-                  strokeWidth="2"
-                  fill="none"
-                />
-              </svg>
-            )}
-
-            {/* Selected: checkmark */}
-            {isSelected && (
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                <path
-                  d="M4 10L8 14L16 6"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            )}
-
-            {/* Indeterminate: minus line */}
-            {isIndeterminate && (
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-              >
-                <path
-                  d="M5 10H15"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            )}
-          </div>
-        </label>
-
-        {/* Label text */}
-        {showLabel && label && (
-          <label
-            htmlFor={inputId}
-            className={cn(
-              'cursor-pointer select-none font-["Roboto",sans-serif] text-[18px] leading-[28px]',
-              disabled
-                ? 'cursor-not-allowed text-[var(--scanner-text-disabled)]'
-                : 'text-[var(--scanner-text-primary)]'
+              valueText,
+              disabled ? 'text-[color:var(--scanner-text-disabled)]' : 'text-[color:var(--scanner-text-primary)]',
             )}
           >
             {label}
-          </label>
+          </span>
         )}
-      </div>
+      </label>
     );
-  }
+  },
 );
 
 CheckboxItem.displayName = 'CheckboxItem';

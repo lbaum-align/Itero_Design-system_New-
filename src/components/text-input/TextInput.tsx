@@ -1,79 +1,81 @@
-import { forwardRef, useCallback, useId, useRef, useState } from 'react';
+import { forwardRef, useId } from 'react';
+import type { KeyboardEvent } from 'react';
 import { cn } from '../../utils/cn';
 import { Icon } from '../../icons';
-import { IconTriggerTooltip } from '../icon-trigger-tooltip';
+import { FieldCounter, FieldHeader, FieldMessage } from './field-parts';
+import {
+  fieldAction,
+  fieldBackground,
+  fieldRoot,
+  fieldStroke,
+  placeholderText,
+  skeletonFill,
+  typeBody02,
+  typeLabel01,
+  typeSm,
+  typeXs,
+  valueText,
+} from './field-styles';
+import { useFieldValue } from './use-field-value';
 import type { TextInputProps, TextInputSize } from './text-input.types';
 
-/* ------------------------------------------------------------------ */
-/*  Size configuration                                                  */
-/* ------------------------------------------------------------------ */
+/*
+ * Source: Figma "06. Scanner core 1.0.0 full" → Text input (node 28:1412, page 23885:185666)
+ * 4 Sizes × 2 Layer sets × Filled (False/True) × 5 States (Enabled, Focused, Disabled, Error, Skeleton) = 80 variants.
+ */
 
-interface SizeConfig {
-  /** Classes for the label text */
-  label: string;
-  /** Classes for the field wrapper (padding + radius) */
-  field: string;
-  /** Classes for the native input text */
-  input: string;
-  /** Classes for the helper / error text */
-  helper: string;
-  /** Classes for the counter text */
-  counter: string;
-  /** Height of the skeleton field placeholder */
-  skeletonFieldH: string;
-  /** Radius for the skeleton field */
-  skeletonRadius: string;
-}
-
-const SIZE_CONFIG: Record<TextInputSize, SizeConfig> = {
+const sizeConfig: Record<
+  TextInputSize,
+  { label: string; message: string; field: string; radius: string; input: string; skeleton: string }
+> = {
   'x-large': {
-    label: 'text-[16px] leading-[var(--scanner-leading-md)]',
-    field: 'px-[var(--scanner-spacing-5)] py-[var(--scanner-spacing-5)] rounded-[var(--scanner-radius-md)]',
-    input: 'text-[18px] leading-[var(--scanner-leading-lg)]',
-    helper: 'text-[16px] leading-[var(--scanner-leading-md)]',
-    counter: 'text-[length:var(--scanner-text-xs)] leading-[var(--scanner-leading-xs)]',
-    skeletonFieldH: 'h-[60px]',
-    skeletonRadius: 'rounded-[var(--scanner-radius-md)]',
+    label: typeLabel01, // 16/24
+    message: typeLabel01, // 16/24
+    field: 'h-[var(--scanner-text-input-height-xl)] px-[var(--scanner-spacing-5)] py-[var(--scanner-spacing-5)]', // 60 · 16/16
+    radius: 'rounded-[var(--scanner-radius-md)]',
+    input: cn('h-[var(--scanner-leading-lg)]', typeBody02), // 18/28
+    skeleton: 'h-[var(--scanner-text-input-height-xl)]',
   },
   large: {
-    label: 'text-[length:var(--scanner-text-xs)] leading-[var(--scanner-leading-xs)]',
-    field: 'px-[var(--scanner-spacing-5)] py-[var(--scanner-spacing-4)] rounded-[var(--scanner-radius-md)]',
-    input: 'text-[length:var(--scanner-text-sm)] leading-[var(--scanner-leading-sm)] h-5',
-    helper: 'text-[length:var(--scanner-text-xs)] leading-[var(--scanner-leading-xs)]',
-    counter: 'text-[length:var(--scanner-text-xs)] leading-[var(--scanner-leading-xs)]',
-    skeletonFieldH: 'h-[44px]',
-    skeletonRadius: 'rounded-[var(--scanner-radius-md)]',
+    label: typeXs, // 12/16
+    message: typeXs, // 12/16
+    field: 'h-[var(--scanner-text-input-height-lg)] px-[var(--scanner-spacing-5)] py-[var(--scanner-spacing-4)]', // 44 · 16/12
+    radius: 'rounded-[var(--scanner-radius-md)]',
+    input: cn('h-[var(--scanner-leading-sm)]', typeSm), // 14/20
+    skeleton: 'h-[var(--scanner-text-input-height-lg)]',
   },
   medium: {
-    label: 'text-[18px] leading-[var(--scanner-leading-lg)]',
-    field: 'px-[var(--scanner-spacing-4)] py-[var(--scanner-spacing-3)] rounded-[var(--scanner-radius-md)]',
-    input: 'text-[18px] leading-[var(--scanner-leading-lg)] h-5',
-    helper: 'text-[18px] leading-[var(--scanner-leading-lg)]',
-    counter: 'text-[length:var(--scanner-text-xs)] leading-[var(--scanner-leading-xs)]',
-    skeletonFieldH: 'h-[36px]',
-    skeletonRadius: 'rounded-[var(--scanner-radius-md)]',
+    label: typeBody02, // 18/28
+    message: typeBody02, // 18/28
+    field: 'h-[var(--scanner-text-input-height-md)] px-[var(--scanner-spacing-4)] py-[var(--scanner-spacing-3)]', // 36 · 12/8
+    radius: 'rounded-[var(--scanner-radius-md)]',
+    /* Figma: 18px text in a 20px-tall line box */
+    input: 'h-[var(--scanner-leading-sm)] text-[length:var(--scanner-text-scanner-md)] leading-[var(--scanner-leading-sm)]',
+    skeleton: 'h-[var(--scanner-text-input-height-md)]',
   },
   small: {
-    label: 'text-[18px] leading-[var(--scanner-leading-lg)]',
-    field: 'px-[var(--scanner-spacing-3)] py-[var(--scanner-spacing-2)] rounded-[var(--scanner-radius-sm)]',
-    input: 'text-[18px] leading-[var(--scanner-leading-lg)] h-5',
-    helper: 'text-[length:var(--scanner-text-xs)] leading-[var(--scanner-leading-xs)]',
-    counter: 'text-[length:var(--scanner-text-xs)] leading-[var(--scanner-leading-xs)]',
-    skeletonFieldH: 'h-[28px]',
-    skeletonRadius: 'rounded-[var(--scanner-radius-sm)]',
+    label: typeBody02, // 18/28
+    message: typeBody02, // 18/28 (majority of Small states)
+    field: 'h-[var(--scanner-text-input-height-sm)] px-[var(--scanner-spacing-3)] py-[var(--scanner-spacing-2)]', // 28 · 8/4
+    radius: 'rounded-[var(--scanner-radius-sm)]',
+    input: 'h-[var(--scanner-leading-sm)] text-[length:var(--scanner-text-scanner-md)] leading-[var(--scanner-leading-sm)]',
+    skeleton: 'h-[var(--scanner-text-input-height-sm)]',
   },
 };
 
-/* ------------------------------------------------------------------ */
-/*  Component                                                           */
-/* ------------------------------------------------------------------ */
-
 /**
- * TextInput — a labelled single-line text field with helper / error text,
- * character counter, clearable action, tooltip explainer, and skeleton state.
+ * Scanner TextInput — single-line free-form text entry with label, required indicator,
+ * explainer tooltip, counter, clear action, helper/error text and skeleton state.
+ *
+ * Figma props → React: Size → `size`, Layer set → `layer`, Filled → derived from the value,
+ * State → `:focus-within` (forceable via `data-state="focused"`) / `disabled` / `error` / `skeleton`,
+ * Show label/helper/placeholder/counter/explainer → `label` / `helperText` / `placeholder` / `counter`|`showCounter` / `tooltip`,
+ * Required → `required`, Clearable → `clearable`.
+ *
+ * Keyboard: Tab focuses the field; Escape clears it when `clearable`.
  *
  * @example
- * <TextInput label="Email" placeholder="Enter email" helperText="We'll never share it." />
+ * <TextInput label="Email" placeholder="you@example.com" helperText="We'll never share it." />
  * <TextInput label="Name" required error errorText="Name is required" />
  */
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
@@ -88,293 +90,148 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       required = false,
       tooltip,
       counter,
+      showCounter = false,
       clearable = false,
       onClear,
       skeleton = false,
       disabled = false,
       className,
       id: externalId,
-      value: controlledValue,
+      value,
       defaultValue,
       onChange,
+      onKeyDown,
+      maxLength,
+      'aria-describedby': ariaDescribedBy,
+      'data-state': dataState,
       ...inputProps
     },
     ref,
   ) => {
     const generatedId = useId();
-    const inputId = externalId || `text-input-${generatedId}`;
+    const inputId = externalId ?? `text-input-${generatedId}`;
     const helperId = `${inputId}-helper`;
-    const errorMsgId = `${inputId}-error`;
+    const errorId = `${inputId}-error`;
+    const cfg = sizeConfig[size];
 
-    /* Track value internally for uncontrolled inputs (clear-button visibility) */
-    const [internalValue, setInternalValue] = useState<string>(
-      String(defaultValue ?? ''),
-    );
-    const isControlled = controlledValue !== undefined;
-    const currentValue = isControlled ? String(controlledValue) : internalValue;
-    const hasValue = currentValue.length > 0;
+    const { setRef, currentValue, hasValue, handleChange, clear, focusFromContainer } =
+      useFieldValue<HTMLInputElement>({ value, defaultValue, onChange, ref });
 
-    /* Ref for focusing the input after clear */
-    const internalRef = useRef<HTMLInputElement | null>(null);
-    const setRefs = useCallback(
-      (node: HTMLInputElement | null) => {
-        internalRef.current = node;
-        if (typeof ref === 'function') ref(node);
-        else if (ref) (ref as React.MutableRefObject<HTMLInputElement | null>).current = node;
-      },
-      [ref],
-    );
-
-    const handleChange = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!isControlled) setInternalValue(e.target.value);
-        onChange?.(e);
-      },
-      [isControlled, onChange],
-    );
-
-    const handleClear = useCallback(() => {
-      if (!isControlled) setInternalValue('');
-      onClear?.();
-      internalRef.current?.focus();
-    }, [isControlled, onClear]);
-
-    /* Derived flags */
-    const showLabel = !!label;
-    const showHelper = !!helperText && !error;
-    const showError = error && !!errorText;
-    const showCounter = !!counter;
-    const showClearBtn = clearable && hasValue && !disabled;
-
-    const describedBy =
-      [showError && errorMsgId, showHelper && helperId]
-        .filter(Boolean)
-        .join(' ') || undefined;
-
-    const cfg = SIZE_CONFIG[size];
-
-    /* -------------------------------------------------------------- */
-    /* Skeleton state                                                    */
-    /* -------------------------------------------------------------- */
     if (skeleton) {
+      /* Figma skeleton: field box + helper bar (no label) */
       return (
-        <div
-          className={cn('flex w-full flex-col items-start', className)}
-          aria-hidden="true"
-          data-layer={layer}
-        >
-          {/* Field skeleton */}
-          <div
-            className={cn(
-              'w-full bg-[var(--scanner-bg-disabled)]',
-              cfg.skeletonFieldH,
-              cfg.skeletonRadius,
-            )}
-          />
-          {/* Helper skeleton bar */}
-          <div className="flex w-full items-start pt-[var(--scanner-spacing-3)]">
-            <div className="h-2 w-10 bg-[var(--scanner-bg-disabled)]" />
-          </div>
+        <div aria-hidden="true" data-skeleton="" data-layer={layer} className={cn(fieldRoot, className)}>
+          <div className={cn('w-full', cfg.skeleton, cfg.radius, skeletonFill)} />
+          {(helperText || errorText) && (
+            <div className="flex w-full items-start pt-[var(--scanner-spacing-3)]">
+              <div
+                className={cn(
+                  'h-[var(--scanner-text-input-skeleton-bar-height)] w-[var(--scanner-text-input-skeleton-bar-width)]',
+                  skeletonFill,
+                )}
+              />
+            </div>
+          )}
         </div>
       );
     }
 
-    /* -------------------------------------------------------------- */
-    /* Normal render                                                     */
-    /* -------------------------------------------------------------- */
+    const showError = error && !!errorText;
+    const showHelper = !showError && !!helperText;
+    const counterText =
+      counter ?? (showCounter && maxLength !== undefined ? `${currentValue.length}/${maxLength}` : undefined);
+    const showClear = clearable && hasValue && !disabled && !inputProps.readOnly;
+
+    const describedBy =
+      [ariaDescribedBy, showError && errorId, showHelper && helperId].filter(Boolean).join(' ') || undefined;
+
+    const handleClear = () => {
+      clear();
+      onClear?.();
+    };
+
+    const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+      onKeyDown?.(e);
+      if (!e.defaultPrevented && e.key === 'Escape' && showClear) {
+        e.preventDefault();
+        handleClear();
+      }
+    };
+
     return (
-      <div
-        className={cn('flex w-full flex-col items-start', className)}
-        data-layer={layer}
-      >
-        {/* ---- Label + Counter row ---- */}
-        {(showLabel || showCounter) && (
-          <div className="flex w-full items-start justify-between">
-            {showLabel && (
-              <div
-                className={cn(
-                  'flex min-w-0 flex-1 items-start',
-                  'gap-[var(--scanner-spacing-2)] pb-[var(--scanner-spacing-3)]',
-                )}
-              >
-                <label
-                  htmlFor={inputId}
-                  className={cn(
-                    'shrink-0 whitespace-nowrap',
-                    'font-[family-name:var(--scanner-font-sans)]',
-                    'font-[var(--scanner-font-regular)]',
-                    cfg.label,
-                    disabled
-                      ? 'text-[color:var(--scanner-text-disabled)]'
-                      : 'text-[color:var(--scanner-text-secondary)]',
-                  )}
-                >
-                  {label}
-                </label>
+      <div data-layer={layer} className={cn(fieldRoot, className)}>
+        <FieldHeader
+          htmlFor={inputId}
+          label={label}
+          required={required}
+          explainer={tooltip}
+          disabled={disabled}
+          labelClassName={cfg.label}
+          trailing={counterText !== undefined ? <FieldCounter disabled={disabled}>{counterText}</FieldCounter> : undefined}
+        />
 
-                {required && (
-                  <span
-                    aria-hidden="true"
-                    className={cn(
-                      'shrink-0',
-                      'font-[family-name:var(--scanner-font-sans)]',
-                      'font-[var(--scanner-font-regular)]',
-                      'text-[length:var(--scanner-text-xs)] leading-[var(--scanner-leading-xs)]',
-                      'text-[color:var(--scanner-text-error)]',
-                    )}
-                  >
-                    *
-                  </span>
-                )}
-
-                {tooltip && (
-                  <IconTriggerTooltip
-                    content={tooltip}
-                    iconName="help"
-                    className="shrink-0"
-                  />
-                )}
-              </div>
-            )}
-
-            {showCounter && (
-              <div
-                className={cn(
-                  'flex shrink-0 items-center justify-center',
-                  'pb-[var(--scanner-spacing-3)] pl-[var(--scanner-spacing-3)]',
-                )}
-              >
-                <span
-                  className={cn(
-                    'whitespace-nowrap text-right',
-                    'font-[family-name:var(--scanner-font-sans)]',
-                    'font-[var(--scanner-font-regular)]',
-                    cfg.counter,
-                    disabled
-                      ? 'text-[color:var(--scanner-text-disabled)]'
-                      : 'text-[color:var(--scanner-text-secondary)]',
-                  )}
-                >
-                  {counter}
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ---- Field ---- */}
         <div
+          data-part="field"
+          data-state={dataState}
+          onMouseDown={focusFromContainer}
           className={cn(
             'flex w-full items-center gap-[var(--scanner-spacing-3)] overflow-clip',
+            'transition-shadow duration-150',
             cfg.field,
-            /* Background based on layer */
-            layer === 2
-              ? 'bg-[var(--scanner-bg-secondary)]'
-              : 'bg-[var(--scanner-bg-primary)]',
-            /* Border: transparent by default to prevent layout shift */
-            'border border-solid',
-            error
-              ? 'border-[var(--scanner-border-error)]'
-              : 'border-transparent',
-            /* Focus-within: show focus border (overrides transparent & error) */
-            !error && 'focus-within:border-[var(--scanner-border-focus)]',
-            /* Disabled: muted background */
-            disabled && 'cursor-not-allowed',
+            cfg.radius,
+            fieldBackground[layer],
+            fieldStroke({ error, disabled }),
+            disabled ? 'cursor-not-allowed' : 'cursor-text',
           )}
-          data-state={
-            disabled ? 'disabled' : error ? 'error' : undefined
-          }
         >
           <input
-            ref={setRefs}
+            ref={setRef}
             id={inputId}
             type="text"
             disabled={disabled}
             required={required}
-            value={isControlled ? controlledValue : undefined}
-            defaultValue={isControlled ? undefined : defaultValue}
+            maxLength={maxLength}
+            value={value}
+            defaultValue={defaultValue}
             aria-invalid={error || undefined}
-            aria-describedby={describedBy}
             aria-required={required || undefined}
+            aria-disabled={disabled || undefined}
+            aria-describedby={describedBy}
             onChange={handleChange}
+            onKeyDown={handleKeyDown}
             className={cn(
-              'min-w-0 flex-1 bg-transparent outline-none',
-              'font-[family-name:var(--scanner-font-sans)]',
-              'font-[var(--scanner-font-regular)]',
+              'm-0 min-w-0 flex-1 border-none bg-transparent p-0 outline-none',
+              'text-ellipsis',
               cfg.input,
-              /* Text colour */
-              disabled
-                ? 'text-[color:var(--scanner-text-disabled)] cursor-not-allowed'
-                : 'text-[color:var(--scanner-text-primary)]',
-              /* Placeholder colour */
-              disabled
-                ? 'placeholder:text-[color:var(--scanner-text-disabled)]'
-                : 'placeholder:text-[color:var(--scanner-text-tertiary)]',
+              valueText(disabled),
+              placeholderText(disabled),
+              disabled && 'cursor-not-allowed',
             )}
             {...inputProps}
           />
 
-          {showClearBtn && (
+          {showClear && (
             <button
               type="button"
-              onClick={handleClear}
-              tabIndex={-1}
               aria-label="Clear input"
-              className={cn(
-                'inline-flex shrink-0 items-center justify-center',
-                'size-5 cursor-pointer',
-                'text-[color:var(--scanner-icon-tertiary)]',
-                'hover:text-[color:var(--scanner-icon-secondary)]',
-                'focus-visible:outline-2 focus-visible:outline-offset-2',
-                'focus-visible:outline-[var(--scanner-focus-ring)]',
-              )}
+              aria-controls={inputId}
+              onClick={handleClear}
+              className={cn(fieldAction, 'size-[var(--scanner-spacing-6)] cursor-pointer text-[color:var(--scanner-icon-tertiary)]')}
             >
               <Icon name="close-empty" size={20} />
             </button>
           )}
         </div>
 
-        {/* ---- Error text ---- */}
         {showError && (
-          <div
-            id={errorMsgId}
-            role="alert"
-            className="flex w-full items-start pt-[var(--scanner-spacing-3)]"
-          >
-            <p
-              className={cn(
-                'min-w-0 flex-1',
-                'font-[family-name:var(--scanner-font-sans)]',
-                'font-[var(--scanner-font-regular)]',
-                cfg.helper,
-                'text-[color:var(--scanner-text-error)]',
-              )}
-            >
-              {errorText}
-            </p>
-          </div>
+          <FieldMessage id={errorId} tone="error" className={cfg.message}>
+            {errorText}
+          </FieldMessage>
         )}
-
-        {/* ---- Helper text ---- */}
         {showHelper && (
-          <div
-            id={helperId}
-            className="flex w-full items-center pt-[var(--scanner-spacing-3)]"
-          >
-            <p
-              className={cn(
-                'min-w-0 flex-1',
-                'font-[family-name:var(--scanner-font-sans)]',
-                'font-[var(--scanner-font-regular)]',
-                cfg.helper,
-                disabled
-                  ? 'text-[color:var(--scanner-text-disabled)]'
-                  : 'text-[color:var(--scanner-text-secondary)]',
-              )}
-            >
-              {helperText}
-            </p>
-          </div>
+          <FieldMessage id={helperId} tone="helper" disabled={disabled} className={cfg.message}>
+            {helperText}
+          </FieldMessage>
         )}
       </div>
     );

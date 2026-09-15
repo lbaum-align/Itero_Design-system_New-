@@ -1,157 +1,181 @@
-import { forwardRef } from 'react';
+import { forwardRef, useContext, useLayoutEffect, useState } from 'react';
 import { cn } from '../../utils/cn';
 import { Icon } from '../../icons';
+import { Tooltip } from '../tooltip';
+import { TagSizeContext } from './tag-context';
 import type { TagProps, TagSize } from './tag.types';
 
-// ---------------------------------------------------------------------------
-// Size config — maps Figma dimensions to Tailwind utilities and token values.
-// ---------------------------------------------------------------------------
+/*
+ * Source: Figma "06. Scanner core 1.0.0 full" → 01 Tag (node 22123:13334)
+ * Size (Large, Medium, Small, Extra small) × State (Enabled, Disabled, Skeleton) = 12 variants.
+ *
+ * The 1px stroke sits inside the box in Figma, so it is drawn as an inset
+ * box-shadow — a CSS border would make every tag 2px larger.
+ */
 
-type SizeConfig = {
-  /** Wrapper padding + gap + radius classes */
-  wrapper: string;
-  /** Close icon pixel size (square) */
-  iconSize: 20 | 24;
-  /** Skeleton fixed width (px) */
-  skeletonW: number;
-  /** Skeleton fixed height (px) */
-  skeletonH: number;
-};
-
-const sizeConfig: Record<TagSize, SizeConfig> = {
+const sizeConfig: Record<
+  TagSize,
+  { box: string; radius: string; iconSize: 20 | 24; skeleton: string }
+> = {
   large: {
-    // 12px v-pad | 16px left | 12px right | 8px gap | radius 8px
-    wrapper: 'py-3 pl-4 pr-3 gap-2 rounded-[var(--scanner-radius-md)]',
+    // 12 / 12 / 12 / 16, gap 8, radius 8
+    box: 'py-[var(--scanner-spacing-4)] pr-[var(--scanner-spacing-4)] pl-[var(--scanner-spacing-5)] gap-[var(--scanner-spacing-3)]',
+    radius: 'rounded-[var(--scanner-radius-md)]',
     iconSize: 24,
-    skeletonW: 113,
-    skeletonH: 48,
+    skeleton: 'h-[var(--scanner-tag-height-lg)] w-[var(--scanner-tag-skeleton-width-lg)]',
   },
   medium: {
-    // 8px v-pad | 12px left | 8px right | 8px gap | radius 8px
-    wrapper: 'py-2 pl-3 pr-2 gap-2 rounded-[var(--scanner-radius-md)]',
+    // 8 / 8 / 8 / 12, gap 8, radius 8
+    box: 'py-[var(--scanner-spacing-3)] pr-[var(--scanner-spacing-3)] pl-[var(--scanner-spacing-4)] gap-[var(--scanner-spacing-3)]',
+    radius: 'rounded-[var(--scanner-radius-md)]',
     iconSize: 24,
-    skeletonW: 105,
-    skeletonH: 40,
+    skeleton: 'h-[var(--scanner-tag-height-md)] w-[var(--scanner-tag-skeleton-width-md)]',
   },
   small: {
-    // 4px v-pad | 8px left | 4px right | 4px gap | radius 4px
-    wrapper: 'py-1 pl-2 pr-1 gap-1 rounded-[var(--scanner-radius-sm)]',
-    iconSize: 20,
-    skeletonW: 93,
-    skeletonH: 32,
+    // 4 / 4 / 4 / 8, gap 4, radius 4
+    box: 'py-[var(--scanner-spacing-2)] pr-[var(--scanner-spacing-2)] pl-[var(--scanner-spacing-3)] gap-[var(--scanner-spacing-2)]',
+    radius: 'rounded-[var(--scanner-radius-sm)]',
+    iconSize: 24,
+    skeleton: 'h-[var(--scanner-tag-height-sm)] w-[var(--scanner-tag-skeleton-width-sm)]',
   },
   'extra-small': {
-    // 0 v-pad | 4px left | 0 right | 0 gap | radius 4px
-    wrapper: 'pl-1 pr-0 gap-0 rounded-[var(--scanner-radius-sm)]',
+    // 0 / 0 / 0 / 4, gap 0, radius 4, 20px icon
+    box: 'pl-[var(--scanner-spacing-2)]',
+    radius: 'rounded-[var(--scanner-radius-sm)]',
     iconSize: 20,
-    skeletonW: 81,
-    skeletonH: 24,
+    skeleton: 'h-[var(--scanner-tag-height-xs)] w-[var(--scanner-tag-skeleton-width-xs)]',
   },
 };
 
-// ---------------------------------------------------------------------------
-// Tag component
-// ---------------------------------------------------------------------------
+/** True when the element's text is cut off by `text-overflow: ellipsis`. */
+function useIsTruncated<T extends HTMLElement>(content: unknown) {
+  // Callback ref in state: the label remounts inside a Tooltip once truncated,
+  // so the observer must follow the current element.
+  const [el, setEl] = useState<T | null>(null);
+  const [truncated, setTruncated] = useState(false);
+
+  useLayoutEffect(() => {
+    if (!el) return;
+    const check = () => setTruncated(el.scrollWidth > el.clientWidth);
+    check();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(check);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [el, content]);
+
+  return [setEl, truncated] as const;
+}
 
 /**
- * Scanner Tag — a dismissible label used to categorise or filter content.
+ * Scanner Tag — shows an applied filter or selected item that the user can remove.
+ * Use a Chip for filtering controls and a Badge for status.
+ *
+ * Figma props → React: Size → `size`, State → `disabled` / `skeleton`, Text → `children`.
+ * Keyboard: Tab focuses the close icon; Enter/Space dismisses.
+ * Overflow: long labels truncate with an ellipsis and show the full text in a tooltip.
  *
  * @example
- * <Tag size="medium" onDismiss={() => removeTag(id)}>Design system</Tag>
- * <Tag size="small" disabled>Read only</Tag>
- * <Tag size="large" skeleton />
+ * <Tag onDismiss={() => remove(id)}>Upper jaw</Tag>
+ * <Tag size="small" disabled onDismiss={remove}>Read only</Tag>
+ * <Tag size="large" skeleton>Loading</Tag>
  */
 export const Tag = forwardRef<HTMLSpanElement, TagProps>(
   (
     {
       children,
-      size = 'medium',
+      size: sizeProp,
       disabled = false,
       skeleton = false,
       onDismiss,
+      dismissLabel,
       className,
       ...rest
     },
     ref,
   ) => {
-    const config = sizeConfig[size];
+    const groupSize = useContext(TagSizeContext);
+    const size = sizeProp ?? groupSize ?? 'medium';
+    const cfg = sizeConfig[size];
+    const [labelRef, truncated] = useIsTruncated<HTMLSpanElement>(children);
 
-    // ------------------------------------------------------------------
-    // Skeleton state — fixed-dimension gray placeholder, no content
-    // NOTE: `--scanner-bg-highlight-gray` is not yet defined in the token
-    // system; `--scanner-bg-tertiary` (neutral-200, #e9e9e9) is the closest
-    // available solid gray semantic token and is used here instead.
-    // ------------------------------------------------------------------
+    /* ── Skeleton ── */
     if (skeleton) {
       return (
         <span
           ref={ref}
-          style={{ width: config.skeletonW, height: config.skeletonH }}
+          aria-hidden="true"
+          data-skeleton=""
           className={cn(
-            'inline-block animate-pulse rounded-[var(--scanner-radius-md)]',
-            size === 'small' || size === 'extra-small'
-              ? 'rounded-[var(--scanner-radius-sm)]'
-              : 'rounded-[var(--scanner-radius-md)]',
-            'bg-[var(--scanner-bg-tertiary)]',
+            'inline-block shrink-0 animate-pulse align-middle',
+            'bg-[var(--scanner-bg-highlight-gray)]',
+            cfg.radius,
+            cfg.skeleton,
             className,
           )}
-          aria-hidden="true"
           {...rest}
         />
       );
     }
 
-    // ------------------------------------------------------------------
-    // Rendered state
-    // ------------------------------------------------------------------
+    const text = typeof children === 'string' || typeof children === 'number' ? String(children) : undefined;
+
+    const label = (
+      <span
+        ref={labelRef}
+        className={cn(
+          'block min-w-px flex-1 truncate',
+          'font-[family-name:var(--scanner-font-sans)] font-[number:var(--scanner-font-regular)]',
+          'text-[length:var(--scanner-text-base)] leading-[var(--scanner-leading-md)]',
+          disabled ? 'text-[color:var(--scanner-text-disabled)]' : 'text-[color:var(--scanner-text-primary)]',
+        )}
+      >
+        {children}
+      </span>
+    );
+
     return (
       <span
         ref={ref}
-        aria-disabled={disabled ? true : undefined}
+        aria-disabled={disabled || undefined}
         className={cn(
-          // Layout
-          'inline-flex items-center',
-          config.wrapper,
-          // Border
-          'border border-solid',
+          'group inline-flex max-w-full items-center justify-center align-middle',
+          'min-w-[var(--scanner-tag-min-width)]',
+          cfg.box,
+          cfg.radius,
           disabled
-            ? 'border-[var(--scanner-border-disabled)]'
-            : 'border-[var(--scanner-border-subtle)]',
-          // Typography — Roboto Regular, body-02 style (closest token match
-          // to Figma's 16px/24lh; see typography.css .scanner-text-body-02)
-          'scanner-text-body-02',
-          // Text color
-          disabled
-            ? 'text-[var(--scanner-text-disabled)]'
-            : 'text-[var(--scanner-text-primary)]',
-          // Cursor / pointer-events
-          disabled && 'cursor-not-allowed',
+            ? 'shadow-[inset_0_0_0_1px_var(--scanner-border-disabled)] cursor-not-allowed'
+            : 'shadow-[inset_0_0_0_1px_var(--scanner-border-subtle)]',
           className,
         )}
         {...rest}
       >
-        {/* Label */}
-        <span className="min-w-px">{children}</span>
+        {/* Overflow: ellipsis + tooltip with the full label (Figma "Content → Overflow") */}
+        {truncated && text && !disabled ? (
+          <Tooltip content={text} position="top" className="min-w-px flex-1">
+            {label}
+          </Tooltip>
+        ) : (
+          label
+        )}
 
-        {/* Dismiss button — only rendered when onDismiss is provided */}
         {onDismiss && (
           <button
             type="button"
-            aria-label="Remove"
+            aria-label={dismissLabel ?? (text ? `Remove ${text}` : 'Remove')}
             disabled={disabled}
             onClick={onDismiss}
             className={cn(
-              'inline-flex shrink-0 items-center justify-center',
-              'bg-transparent p-0 border-0 outline-none cursor-pointer',
-              // Inherit icon colour from the tag's text colour context
+              'inline-flex shrink-0 items-center justify-center border-0 bg-transparent p-0 outline-none',
+              'rounded-[var(--scanner-radius-sm)]',
               disabled
-                ? 'text-[var(--scanner-icon-disabled)] cursor-not-allowed pointer-events-none'
-                : 'text-[var(--scanner-icon-secondary)] hover:text-[var(--scanner-icon-primary)]',
-              // Focus ring
-              'focus-visible:ring-2 focus-visible:ring-[var(--scanner-focus-ring)] focus-visible:rounded-[var(--scanner-radius-sm)]',
+                ? 'cursor-not-allowed text-[color:var(--scanner-icon-disabled)]'
+                : 'cursor-pointer text-[color:var(--scanner-icon-secondary)]',
+              'focus-visible:shadow-[0_0_0_var(--scanner-tag-close-focus-width)_var(--scanner-border-focus)]',
+              'group-data-[state=focused]:shadow-[0_0_0_var(--scanner-tag-close-focus-width)_var(--scanner-border-focus)]',
             )}
           >
-            <Icon name="close-empty" size={config.iconSize} />
+            <Icon name="close-empty" size={cfg.iconSize} />
           </button>
         )}
       </span>

@@ -1,2 +1,2 @@
 export { SelectMenuItem } from './SelectMenuItem';
-export type { SelectMenuItemProps, SelectMenuItemSize } from './select-menu-item.types';
+export type { SelectMenuItemProps, SelectMenuItemSize, SelectMenuItemForcedState } from './select-menu-item.types';

@@ -1,135 +1,106 @@
 import { forwardRef, useState } from 'react';
 import { cn } from '../../utils/cn';
 import { Icon } from '../../icons';
-import { Status } from '../_status';
-import type { AvatarProps, AvatarSize } from './avatar.types';
-import type { StatusSize } from '../_status/status.types';
 import type { IconSize } from '../../icons/icon.types';
+import { Status } from '../_status';
+import type { StatusPixelSize } from '../_status/status.types';
+import type { AvatarPixelSize, AvatarProps, AvatarVariant } from './avatar.types';
+import { getInitials, toPixelSize } from './avatar.utils';
 
-/* ------------------------------------------------------------------ */
-/*  Size configuration — pixel values from Figma "01 Avatar"          */
-/* ------------------------------------------------------------------ */
+/*
+ * Source: Figma "06. Scanner core 1.0.0 full" → 01 Avatar (node 20920:34)
+ * Variant (Image, Initials, Icon) × Size (28…80) × State Enabled = 27, plus 9 Skeleton = 36 variants.
+ *
+ * Status: Figma subtracts a circle (dot + 2px gap) from the avatar and places the
+ * _Status dot inside the hole, so the ring is transparent on any background.
+ * Reproduced with a CSS radial-gradient mask driven by per-size custom properties.
+ */
 
 type SizeConfig = {
-  /** CSS size class for the avatar container */
-  dimension: string;
-  /** Raw pixel value */
-  px: number;
-  /** Font size for initials text */
-  fontSize: string;
-  /** Line height for initials text */
-  lineHeight: string;
-  /** Icon size for the user-icon fallback */
-  iconSize: IconSize;
-  /** Status dot size */
-  statusSize: StatusSize;
-  /** Bottom offset for status dot (px) */
-  statusBottom: number;
-  /** Right offset for status dot (px) */
-  statusRight: number;
+  /** Box size + per-size custom properties for the status dot / cut-out */
+  box: string;
+  /** Initials text style (Figma Heading 01/02/03) */
+  text: string;
+  icon: IconSize;
+  status: StatusPixelSize;
 };
 
-const sizeConfig: Record<AvatarSize, SizeConfig> = {
-  'extra-small': {
-    dimension: 'size-[28px]',
-    px: 28,
-    fontSize: 'text-[16px]',
-    lineHeight: 'leading-[var(--scanner-leading-md)]',      // 24px
-    iconSize: 16,
-    statusSize: 'small',
-    statusBottom: -1,
-    statusRight: -1,
+const sizeConfig: Record<AvatarPixelSize, SizeConfig> = {
+  28: {
+    box: 'size-[var(--scanner-avatar-size-28)] [--avatar-status-size:var(--scanner-avatar-status-size-xs)] [--avatar-status-offset:var(--scanner-avatar-status-offset)]',
+    text: 'scanner-text-heading-01',
+    icon: 16,
+    status: 6,
   },
-  small: {
-    dimension: 'size-[32px]',
-    px: 32,
-    fontSize: 'text-[16px]',
-    lineHeight: 'leading-[var(--scanner-leading-md)]',
-    iconSize: 16,
-    statusSize: 'small',
-    statusBottom: 0,
-    statusRight: 0,
+  32: {
+    /* Figma places the 32px dot 2px from the edge (1px at every other size) */
+    box: 'size-[var(--scanner-avatar-size-32)] [--avatar-status-size:var(--scanner-avatar-status-size-xs)] [--avatar-status-offset:var(--scanner-spacing-1)]',
+    text: 'scanner-text-heading-01',
+    icon: 16,
+    status: 6,
   },
-  medium: {
-    dimension: 'size-[36px]',
-    px: 36,
-    fontSize: 'text-[16px]',
-    lineHeight: 'leading-[var(--scanner-leading-md)]',
-    iconSize: 20,
-    statusSize: 'small',
-    statusBottom: -1,
-    statusRight: -1,
+  36: {
+    box: 'size-[var(--scanner-avatar-size-36)] [--avatar-status-size:var(--scanner-avatar-status-size-sm)] [--avatar-status-offset:var(--scanner-avatar-status-offset)]',
+    text: 'scanner-text-heading-01',
+    icon: 20,
+    status: 8,
   },
-  large: {
-    dimension: 'size-[40px]',
-    px: 40,
-    fontSize: 'text-[length:var(--scanner-text-md)]',       // 17px → rounds to 18
-    lineHeight: 'leading-[var(--scanner-leading-lg)]',       // 28px
-    iconSize: 20,
-    statusSize: 'small',
-    statusBottom: -1,
-    statusRight: -1,
+  40: {
+    box: 'size-[var(--scanner-avatar-size-40)] [--avatar-status-size:var(--scanner-avatar-status-size-sm)] [--avatar-status-offset:var(--scanner-avatar-status-offset)]',
+    text: 'scanner-text-heading-02',
+    icon: 20,
+    status: 8,
   },
-  'extra-large': {
-    dimension: 'size-[44px]',
-    px: 44,
-    fontSize: 'text-[length:var(--scanner-text-md)]',
-    lineHeight: 'leading-[var(--scanner-leading-lg)]',
-    iconSize: 20,
-    statusSize: 'medium',
-    statusBottom: -2,
-    statusRight: -2,
+  44: {
+    box: 'size-[var(--scanner-avatar-size-44)] [--avatar-status-size:var(--scanner-avatar-status-size-md)] [--avatar-status-offset:var(--scanner-avatar-status-offset)]',
+    text: 'scanner-text-heading-02',
+    icon: 24,
+    status: 10,
   },
-  '2xl': {
-    dimension: 'size-[48px]',
-    px: 48,
-    fontSize: 'text-[length:var(--scanner-text-md)]',
-    lineHeight: 'leading-[var(--scanner-leading-lg)]',
-    iconSize: 24,
-    statusSize: 'medium',
-    statusBottom: -1,
-    statusRight: -1,
+  48: {
+    box: 'size-[var(--scanner-avatar-size-48)] [--avatar-status-size:var(--scanner-avatar-status-size-md)] [--avatar-status-offset:var(--scanner-avatar-status-offset)]',
+    text: 'scanner-text-heading-02',
+    icon: 24,
+    status: 10,
   },
-  '3xl': {
-    dimension: 'size-[60px]',
-    px: 60,
-    fontSize: 'text-[length:var(--scanner-text-md)]',
-    lineHeight: 'leading-[var(--scanner-leading-lg)]',
-    iconSize: 24,
-    statusSize: 'medium',
-    statusBottom: 3,
-    statusRight: 3,
+  52: {
+    box: 'size-[var(--scanner-avatar-size-52)] [--avatar-status-size:var(--scanner-avatar-status-size-md)] [--avatar-status-offset:var(--scanner-avatar-status-offset)]',
+    text: 'scanner-text-heading-02',
+    icon: 24,
+    status: 10,
   },
-  '4xl': {
-    dimension: 'size-[80px]',
-    px: 80,
-    fontSize: 'text-[length:var(--scanner-text-lg)]',        // 20px
-    lineHeight: 'leading-[var(--scanner-leading-xl)]',        // 32px
-    iconSize: 32,
-    statusSize: 'medium',
-    statusBottom: 5,
-    statusRight: 5,
+  60: {
+    box: 'size-[var(--scanner-avatar-size-60)] [--avatar-status-size:var(--scanner-avatar-status-size-lg)] [--avatar-status-offset:var(--scanner-avatar-status-offset)]',
+    text: 'scanner-text-heading-02',
+    icon: 24,
+    status: 12,
+  },
+  80: {
+    box: 'size-[var(--scanner-avatar-size-80)] [--avatar-status-size:var(--scanner-avatar-status-size-xl)] [--avatar-status-offset:var(--scanner-avatar-status-offset)]',
+    text: 'scanner-text-heading-03',
+    icon: 32,
+    status: 16,
   },
 };
 
-/* ------------------------------------------------------------------ */
-/*  Component                                                         */
-/* ------------------------------------------------------------------ */
+/* Hole centre (from the bottom-right edge) and radius: dot radius + 2px gap */
+const CUT_CENTER = 'calc(100% - var(--avatar-status-offset) - var(--avatar-status-size) / 2)';
+const CUT_RADIUS = 'calc(var(--avatar-status-size) / 2 + var(--scanner-spacing-1))';
+const STATUS_CUTOUT = `radial-gradient(circle at ${CUT_CENTER} ${CUT_CENTER}, transparent ${CUT_RADIUS}, black calc(${CUT_RADIUS} + 0.5px))`;
 
 /**
- * Avatar — circular user representation.
+ * Avatar — visual representation of a user or role. Not interactive.
  *
- * Three visual modes (derived automatically from props):
- * 1. **Image** — when `src` is provided, renders a photo.
- * 2. **Initials** — when `initials` is provided (no src), renders 1–2 letters.
- * 3. **Icon** — fallback when neither src nor initials is given.
- *
- * Optionally shows a `_Status` dot (online/offline/away/busy) bottom-right.
+ * Figma props → React:
+ * - Variant → derived from `src` / `initials` / `name` (override with `variant`)
+ * - Size → `size` (28…80, legacy names accepted)
+ * - Show status → `status` / `showStatus`
+ * - State=Skeleton → `skeleton`
  *
  * @example
- * <Avatar src="/photo.jpg" alt="Jane Doe" size="large" />
- * <Avatar initials="JD" alt="Jane Doe" status="online" />
- * <Avatar alt="Unknown user" size="small" />
+ * <Avatar src="/photo.jpg" alt="Jane Doe" size={40} />
+ * <Avatar name="Jane Doe" alt="Jane Doe" showStatus />
+ * <Avatar alt="Guest" size={28} />
  * <Avatar alt="Loading" skeleton />
  */
 export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
@@ -138,104 +109,109 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
       src,
       alt,
       initials,
-      size = 'medium',
+      name,
+      variant,
+      size = 36,
       status,
+      showStatus = false,
       skeleton = false,
       className,
+      style,
       ...rest
     },
     ref,
   ) => {
-    const cfg = sizeConfig[size];
-    const [imgError, setImgError] = useState(false);
+    const px = toPixelSize(size);
+    const cfg = sizeConfig[px];
+    const [failedSrc, setFailedSrc] = useState<string>();
 
     /* ── Skeleton ── */
     if (skeleton) {
       return (
         <div
           ref={ref}
+          aria-hidden="true"
+          data-skeleton=""
+          data-size={px}
           className={cn(
             'inline-block shrink-0 animate-pulse rounded-[var(--scanner-radius-full)]',
-            'bg-[var(--scanner-bg-tertiary)]',
-            cfg.dimension,
+            'bg-[var(--scanner-bg-highlight-gray)]',
+            cfg.box,
             className,
           )}
-          aria-hidden="true"
+          style={style}
           {...rest}
         />
       );
     }
 
-    /* ── Determine variant ── */
-    const hasImage = !!src && !imgError;
-    const hasInitials = !!initials && !hasImage;
-    const showIcon = !hasImage && !hasInitials;
+    const text = initials?.trim().slice(0, 2).toUpperCase() || (name ? getInitials(name) : '');
+    const imageOk = !!src && failedSrc !== src;
+
+    /* Forced variant wins only when its content exists (Image needs a loadable src, Initials need text) */
+    const resolved: AvatarVariant =
+      variant === 'icon' || (variant === 'initials' && text)
+        ? variant
+        : imageOk
+          ? 'image'
+          : text
+            ? 'initials'
+            : 'icon';
+
+    const presence = status ?? (showStatus ? 'online' : undefined);
 
     return (
       <div
         ref={ref}
-        className={cn(
-          'relative inline-flex shrink-0 items-center justify-center',
-          cfg.dimension,
-          className,
-        )}
+        role="img"
+        aria-label={presence ? `${alt} (${presence})` : alt}
+        data-variant={resolved}
+        data-size={px}
+        className={cn('relative inline-flex shrink-0', cfg.box, className)}
+        style={style}
         {...rest}
       >
-        {/* ── Circle container (clips image) ── */}
+        {/* ── Circle (clips the image; cut out under the status dot) ── */}
         <div
+          data-slot="avatar-circle"
           className={cn(
-            'flex size-full items-center justify-center',
-            'overflow-hidden rounded-[var(--scanner-radius-full)]',
-            /* Background for initials / icon variants */
-            !hasImage && 'bg-[var(--scanner-bg-tertiary)]',
+            'flex size-full items-center justify-center overflow-hidden rounded-[var(--scanner-radius-full)]',
+            resolved !== 'image' &&
+              'bg-[var(--scanner-bg-highlight-gray)] shadow-[inset_0_0_0_var(--scanner-avatar-stroke-width)_var(--scanner-border-highlight-gray)]',
           )}
-          role={!hasImage ? 'img' : undefined}
-          aria-label={!hasImage ? alt : undefined}
+          style={presence ? { maskImage: STATUS_CUTOUT, WebkitMaskImage: STATUS_CUTOUT } : undefined}
         >
-          {/* ── Image ── */}
-          {hasImage && (
+          {resolved === 'image' && (
             <img
               src={src}
-              alt={alt}
+              alt=""
+              draggable={false}
               className="size-full object-cover"
-              onError={() => setImgError(true)}
+              onError={() => setFailedSrc(src)}
             />
           )}
 
-          {/* ── Initials ── */}
-          {hasInitials && (
+          {resolved === 'initials' && (
             <span
               aria-hidden="true"
-              className={cn(
-                'select-none text-center',
-                'font-[family-name:var(--scanner-font-sans)] font-[var(--scanner-font-medium)]',
-                'text-[color:var(--scanner-text-primary)]',
-                cfg.fontSize,
-                cfg.lineHeight,
-              )}
+              className={cn('select-none text-center text-[color:var(--scanner-text-primary)]', cfg.text)}
             >
-              {initials.slice(0, 2).toUpperCase()}
+              {text}
             </span>
           )}
 
-          {/* ── Icon fallback ── */}
-          {showIcon && (
-            <Icon
-              name="user"
-              size={cfg.iconSize}
-              className="text-[var(--scanner-icon-tertiary)]"
-            />
+          {resolved === 'icon' && (
+            <Icon name="user" size={cfg.icon} focusable="false" className="text-[color:var(--scanner-icon-primary)]" />
           )}
         </div>
 
-        {/* ── Status dot (positioned outside overflow clip) ── */}
-        {status && (
-          <span
-            className="absolute"
-            style={{ bottom: cfg.statusBottom, right: cfg.statusRight }}
-          >
-            <Status status={status} size={cfg.statusSize} />
-          </span>
+        {presence && (
+          <Status
+            status={presence}
+            size={cfg.status}
+            label={null}
+            className="absolute right-[var(--avatar-status-offset)] bottom-[var(--avatar-status-offset)]"
+          />
         )}
       </div>
     );

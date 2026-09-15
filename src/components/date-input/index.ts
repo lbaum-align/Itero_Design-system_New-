@@ -1,2 +1,2 @@
 export { DateInput } from './DateInput';
-export type { DateInputProps, DateInputSize } from './date-input.types';
+export type { DateInputProps, DateInputSize, DateInputForcedState } from './date-input.types';

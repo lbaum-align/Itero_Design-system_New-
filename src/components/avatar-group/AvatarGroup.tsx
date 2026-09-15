@@ -1,171 +1,130 @@
 import { forwardRef } from 'react';
 import { cn } from '../../utils/cn';
 import { Avatar } from '../avatar';
-import type { AvatarSize } from '../avatar/avatar.types';
+import { toPixelSize } from '../avatar/avatar.utils';
+import type { AvatarPixelSize } from '../avatar/avatar.types';
 import type { AvatarGroupProps } from './avatar-group.types';
 
-/* ------------------------------------------------------------------ */
-/*  Per-size configuration — values from Figma "02 Avatars group"     */
-/* ------------------------------------------------------------------ */
+/*
+ * Source: Figma "06. Scanner core 1.0.0 full" → 02 Avatars group (node 24505:108025)
+ * Size: 28, 32, 36, 40, 44, 48, 52 — horizontal auto-layout with a negative gap,
+ * each avatar wrapped in a 1px `border-on-color-strong` stroke drawn outside
+ * (box-shadow, so it doesn't change layout), ending in a "+N" counter.
+ */
 
 type GroupSizeConfig = {
-  /** CSS dimension class for the avatar wrapper and overflow indicator */
-  dimension: string;
-  /** Negative right margin to create the overlap between items */
+  /** Negative gap between items */
   overlap: string;
-  /** Font size class for the "+N" overflow text */
-  overflowFontSize: string;
-  /** Line height class for the "+N" overflow text */
-  overflowLineHeight: string;
-  /** Whether to add horizontal padding inside the overflow indicator */
-  overflowPaddingX: boolean;
+  /** Counter bubble size + padding */
+  box: string;
+  /** Counter text style */
+  counter: string;
 };
 
-const groupSizeConfig: Record<AvatarSize, GroupSizeConfig> = {
-  /* --- Figma-defined sizes --- */
-  'extra-small': {
-    dimension: 'size-[28px]',
-    overlap: 'mr-[-12px]',
-    overflowFontSize: 'text-[length:var(--scanner-text-xs)]',
-    overflowLineHeight: 'leading-[var(--scanner-leading-xs)]',
-    overflowPaddingX: false,
+const groupSizeConfig: Record<AvatarPixelSize, GroupSizeConfig> = {
+  28: {
+    overlap: '[&>*+*]:ml-[calc(var(--scanner-spacing-4)*-1)]', // -12
+    box: 'size-[var(--scanner-avatar-size-28)]',
+    counter: 'text-[length:var(--scanner-text-xs)] leading-[var(--scanner-leading-xs)]',
   },
-  small: {
-    dimension: 'size-[32px]',
-    overlap: 'mr-[-16px]',
-    overflowFontSize: 'text-[length:var(--scanner-text-xs)]',
-    overflowLineHeight: 'leading-[var(--scanner-leading-xs)]',
-    overflowPaddingX: true,
+  32: {
+    overlap: '[&>*+*]:ml-[calc(var(--scanner-spacing-5)*-1)]', // -16
+    box: 'size-[var(--scanner-avatar-size-32)] px-[var(--scanner-spacing-2)]',
+    counter: 'text-[length:var(--scanner-text-xs)] leading-[var(--scanner-leading-xs)]',
   },
-  medium: {
-    dimension: 'size-[36px]',
-    overlap: 'mr-[-16px]',
-    overflowFontSize: 'text-[length:var(--scanner-text-xs)]',
-    overflowLineHeight: 'leading-[var(--scanner-leading-xs)]',
-    overflowPaddingX: true,
+  36: {
+    overlap: '[&>*+*]:ml-[calc(var(--scanner-spacing-5)*-1)]', // -16
+    box: 'size-[var(--scanner-avatar-size-36)] px-[var(--scanner-spacing-2)]',
+    counter: 'text-[length:var(--scanner-text-xs)] leading-[var(--scanner-leading-xs)]',
   },
-  large: {
-    dimension: 'size-[40px]',
-    overlap: 'mr-[-16px]',
-    overflowFontSize: 'text-[length:var(--scanner-text-sm)]',
-    overflowLineHeight: 'leading-[var(--scanner-leading-sm)]',
-    overflowPaddingX: true,
+  40: {
+    overlap: '[&>*+*]:ml-[calc(var(--scanner-spacing-5)*-1)]', // -16
+    box: 'size-[var(--scanner-avatar-size-40)] px-[var(--scanner-spacing-2)]',
+    counter: 'text-[length:var(--scanner-text-sm)] leading-[var(--scanner-leading-sm)]',
   },
-  'extra-large': {
-    dimension: 'size-[44px]',
-    overlap: 'mr-[-20px]',
-    overflowFontSize: 'text-[length:var(--scanner-text-sm)]',
-    overflowLineHeight: 'leading-[var(--scanner-leading-sm)]',
-    overflowPaddingX: true,
+  44: {
+    overlap: '[&>*+*]:ml-[calc(var(--scanner-spacing-6)*-1)]', // -20
+    box: 'size-[var(--scanner-avatar-size-44)] px-[var(--scanner-spacing-2)]',
+    counter: 'text-[length:var(--scanner-text-sm)] leading-[var(--scanner-leading-sm)]',
   },
-  '2xl': {
-    dimension: 'size-[48px]',
-    overlap: 'mr-[-24px]',
-    overflowFontSize: 'text-[length:var(--scanner-text-sm)]',
-    overflowLineHeight: 'leading-[var(--scanner-leading-sm)]',
-    overflowPaddingX: true,
+  48: {
+    overlap: '[&>*+*]:ml-[calc(var(--scanner-spacing-7)*-1)]', // -24
+    box: 'size-[var(--scanner-avatar-size-48)] px-[var(--scanner-spacing-2)]',
+    counter: 'text-[length:var(--scanner-text-sm)] leading-[var(--scanner-leading-sm)]',
   },
-  /* --- Extrapolated sizes (not explicitly in Figma) --- */
-  '3xl': {
-    dimension: 'size-[60px]',
-    overlap: 'mr-[-28px]',
-    overflowFontSize: 'text-[length:var(--scanner-text-sm)]',
-    overflowLineHeight: 'leading-[var(--scanner-leading-sm)]',
-    overflowPaddingX: true,
+  52: {
+    overlap: '[&>*+*]:ml-[calc(var(--scanner-spacing-7)*-1)]', // -24
+    box: 'size-[var(--scanner-avatar-size-52)] px-[var(--scanner-spacing-2)]',
+    counter: 'text-[length:var(--scanner-text-sm)] leading-[var(--scanner-leading-sm)]',
   },
-  '4xl': {
-    dimension: 'size-[80px]',
-    overlap: 'mr-[-36px]',
-    overflowFontSize: 'text-[length:var(--scanner-text-md)]',
-    overflowLineHeight: 'leading-[var(--scanner-leading-md)]',
-    overflowPaddingX: true,
+  /* Not in Figma "02 Avatars group" — extrapolated */
+  60: {
+    overlap: '[&>*+*]:ml-[calc(var(--scanner-spacing-7)*-1)]', // -24
+    box: 'size-[var(--scanner-avatar-size-60)] px-[var(--scanner-spacing-2)]',
+    counter: 'text-[length:var(--scanner-text-sm)] leading-[var(--scanner-leading-sm)]',
+  },
+  80: {
+    overlap: '[&>*+*]:ml-[calc(var(--scanner-spacing-8)*-1)]', // -32
+    box: 'size-[var(--scanner-avatar-size-80)] px-[var(--scanner-spacing-2)]',
+    counter: 'text-[length:var(--scanner-text-base)] leading-[var(--scanner-leading-md)]',
   },
 };
 
-/* ------------------------------------------------------------------ */
-/*  Component                                                         */
-/* ------------------------------------------------------------------ */
+const ring = 'relative rounded-[var(--scanner-radius-full)] shadow-[0_0_0_var(--scanner-avatar-group-ring-width)_var(--scanner-border-on-color-strong)]';
 
 /**
- * AvatarGroup — horizontally stacked, overlapping avatars with an
- * optional "+N" overflow indicator.
- *
- * Renders up to `max` avatars from the `avatars` array. When there
- * are more items than `max`, the excess is collapsed into a dark
- * count badge at the end of the row.
+ * AvatarGroup — overlapping avatars with an optional "+N" overflow counter.
  *
  * @example
- * <AvatarGroup
- *   size="large"
- *   max={3}
- *   avatars={[
- *     { src: '/a.jpg', alt: 'Alice' },
- *     { src: '/b.jpg', alt: 'Bob' },
- *     { src: '/c.jpg', alt: 'Carol' },
- *     { src: '/d.jpg', alt: 'Dave' },
- *     { src: '/e.jpg', alt: 'Eve' },
- *   ]}
- * />
+ * <AvatarGroup size={40} max={4} avatars={[{ src: '/a.jpg', alt: 'Alice' }, { name: 'Bob Stone', alt: 'Bob Stone' }]} />
  */
 export const AvatarGroup = forwardRef<HTMLDivElement, AvatarGroupProps>(
-  ({ avatars, max = 4, size = 'medium', className, ...rest }, ref) => {
-    const cfg = groupSizeConfig[size];
+  ({ avatars, max = 4, size = 36, className, 'aria-label': ariaLabel, ...rest }, ref) => {
+    const px = toPixelSize(size);
+    const cfg = groupSizeConfig[px];
 
-    const visibleAvatars = avatars.slice(0, max);
-    const overflowCount = avatars.length - max;
-    const hasOverflow = overflowCount > 0;
+    const visibleCount = Math.max(0, Math.min(max, avatars.length));
+    const visibleAvatars = avatars.slice(0, visibleCount);
+    const overflowCount = avatars.length - visibleCount;
 
     return (
       <div
         ref={ref}
         role="group"
-        aria-label={`Group of ${avatars.length} avatars`}
-        className={cn('inline-flex items-center', className)}
+        aria-label={ariaLabel ?? `Group of ${avatars.length} avatars`}
+        data-size={px}
+        className={cn('inline-flex items-center', cfg.overlap, className)}
         {...rest}
       >
         {visibleAvatars.map((item, index) => (
           <div
-            key={index}
-            className={cn(
-              /* White border ring around each avatar for visual separation */
-              'flex shrink-0 items-center rounded-[var(--scanner-radius-full)]',
-              'border border-[var(--scanner-border-inverse)]',
-              /* Negative margin pulls the next item leftward to overlap */
-              (hasOverflow || index < visibleAvatars.length - 1) &&
-                cfg.overlap,
-            )}
+            key={`${item.alt}-${index}`}
+            data-slot="avatar-group-item"
+            /* Opaque backing (not in Figma) so translucent Initials/Icon avatars don't show the one beneath */
+            className={cn('flex shrink-0 bg-[var(--scanner-bg-layer-01)]', ring)}
           >
-            <Avatar
-              src={item.src}
-              alt={item.alt}
-              initials={item.initials}
-              size={size}
-            />
+            <Avatar {...item} size={px} />
           </div>
         ))}
 
-        {/* "+N" overflow indicator */}
-        {hasOverflow && (
+        {overflowCount > 0 && (
           <div
+            role="img"
             aria-label={`${overflowCount} more`}
+            data-slot="avatar-group-overflow"
             className={cn(
-              'flex shrink-0 items-center justify-center',
-              'rounded-[var(--scanner-radius-full)]',
-              'border border-[var(--scanner-border-inverse)]',
-              'bg-[var(--scanner-bg-inverse)]',
-              cfg.dimension,
-              cfg.overflowPaddingX && 'px-[var(--scanner-spacing-2)]',
+              'flex shrink-0 items-center justify-center bg-[var(--scanner-bg-inverse)]',
+              ring,
+              cfg.box,
             )}
           >
             <span
               aria-hidden="true"
               className={cn(
                 'min-w-px flex-1 select-none truncate text-center',
-                'font-[family-name:var(--scanner-font-sans)]',
-                'font-[var(--scanner-font-regular)]',
+                'font-[family-name:var(--scanner-font-sans)] font-[number:var(--scanner-font-regular)]',
                 'text-[color:var(--scanner-text-inverse)]',
-                cfg.overflowFontSize,
-                cfg.overflowLineHeight,
+                cfg.counter,
               )}
             >
               +{overflowCount}

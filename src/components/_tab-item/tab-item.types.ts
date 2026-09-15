@@ -1,15 +1,22 @@
-import type { ReactNode, ButtonHTMLAttributes } from 'react';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
-export interface TabItemProps
-  extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
-  /** Label text content */
+/**
+ * Interactive states that can be forced via `data-state` (Storybook / visual tests).
+ * Selected and Disabled are driven by their own props.
+ */
+export type TabItemForcedState = 'hovered' | 'focused';
+
+export interface TabItemProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'> {
+  /** Label (Figma "Text value"). */
   children: ReactNode;
-  /** Whether this tab is currently selected */
+  /** Figma State=Selected — 2px interactive indicator + `aria-selected`. */
   selected?: boolean;
-  /** Disabled state — suppresses interaction and dims appearance */
+  /** Figma State=Disabled. */
   disabled?: boolean;
-  /** Skeleton loading state — renders a fixed-dimension placeholder with no content */
+  /** Content after the label, e.g. a `Badge` (Figma "Show badge"). */
+  badge?: ReactNode;
+  /** Loading placeholder (code-only; Figma has no skeleton for tabs). */
   skeleton?: boolean;
-  /** Additional CSS class names */
-  className?: string;
+  /** Force a visual state for screenshots / Storybook. */
+  'data-state'?: TabItemForcedState;
 }

@@ -1,36 +1,45 @@
+import type { HTMLAttributes, ReactNode } from 'react';
 import type { MenuTrailingElementsProps } from '../_menu-trailing-elements';
 
+/** Figma "Size". */
 export type MenuItemSize = 'large' | 'medium' | 'small';
+/** Figma "Type". */
 export type MenuItemType = 'neutral' | 'destructive';
+/** Interactive states that can be forced via `data-state` (Storybook / visual tests). Disabled has its own prop. */
+export type MenuItemForcedState = 'hovered' | 'focused';
 
-export interface MenuItemsProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
-  /** Size variant — mirrors Figma Size property. */
+export interface MenuItemsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+  /** Figma "Size". Defaults to the parent `Menu` size, else `large`. */
   size?: MenuItemSize;
-  /** Visual type — neutral or destructive. */
+  /** Figma "Type" — neutral or destructive. */
   type?: MenuItemType;
-  /** Show a divider line below the item. */
+  /** Figma "Show divider" — divider below the item. */
   showDivider?: boolean;
-  /** Show a headline label above the item row. */
+  /** Figma "Show headline" — group headline above the item. */
   showHeadline?: boolean;
-  /** Show a description line below the option label. */
+  /** Figma "Show subtext" — second line below the option text. */
   showSubtext?: boolean;
-  /** The main option label text. */
-  label?: string;
-  /** Headline text displayed above the item row. */
-  headline?: string;
-  /** Description text displayed below the option label. */
-  subtext?: string;
-  /** Indent the item (adds left space for grouped items). */
+  /** Figma "Option text value". */
+  label?: ReactNode;
+  /** Figma "Headline text value". */
+  headline?: ReactNode;
+  /** Figma "Subhead text value". */
+  subtext?: ReactNode;
+  /** Figma "Indented" — 20px leading space so the text lines up with selected (checkmarked) items. */
   indented?: boolean;
-  /** Show a checkmark icon (neutral type only). */
+  /**
+   * Figma "Selected" — leading checkmark (Neutral only). Passing a boolean makes the item a
+   * `menuitemcheckbox` with `aria-checked`; leave `undefined` for a plain action item.
+   */
   selected?: boolean;
-  /** Show trailing element (shortcut / toggle / submenu). */
+  /** Figma "Show trailing element". */
   showTrailingElement?: boolean;
-  /** Props forwarded to _MenuTrailingElements. */
+  /** Props for the trailing `_MenuTrailingElements` (Type Keyboard shortcut / Toggle / Submenu). */
   trailingElementProps?: MenuTrailingElementsProps;
-  /** Whether the item is disabled. */
+  /** Figma State=Disabled. */
   disabled?: boolean;
-  /** Additional class names. */
+  /** Force a visual state for screenshots / Storybook. */
+  'data-state'?: MenuItemForcedState;
+  /** Class names for the outer wrapper (headline + item + divider). */
   className?: string;
 }

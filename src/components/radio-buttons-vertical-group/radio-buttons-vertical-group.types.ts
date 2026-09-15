@@ -1,6 +1,9 @@
-/** A single option within the radio button group. */
+import type { HTMLAttributes } from 'react';
+import type { TooltipPosition } from '../_tooltip-container';
+
+/** A single option within a radio button group. */
 export interface RadioOption {
-  /** Display label for the radio item */
+  /** Display label for the radio item (Figma "Text value") */
   label: string;
   /** Unique value for the radio item */
   value: string;
@@ -8,31 +11,38 @@ export interface RadioOption {
   disabled?: boolean;
 }
 
-export interface RadioButtonsVerticalGroupProps {
-  /** Group label text (mirrors Figma "Label text value") */
+/** Props shared by the vertical and horizontal radio groups. */
+export interface RadioGroupSharedProps
+  extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue' | 'children'> {
+  /** Group label text (Figma "Label text value") */
   label?: string;
-  /** Show or hide the group label (mirrors Figma "Show label") */
+  /** Show or hide the group label (Figma "Show label"). When hidden, `label` becomes the group's aria-label. @default true */
   showLabel?: boolean;
-  /** Tooltip content shown next to the label via IconTriggerTooltip (mirrors Figma "Show explainer") */
+  /** Explainer tooltip text; renders an IconTriggerTooltip next to the label (Figma "Show explainer") */
   tooltipContent?: string;
-  /** Show a red asterisk required indicator (mirrors Figma "Required") */
+  /** Explainer tooltip placement. @default 'top' (Figma: Placement=Top) */
+  tooltipPosition?: TooltipPosition;
+  /** Show the red asterisk and set `aria-required` (Figma "Required") */
   required?: boolean;
-  /** Helper or error message displayed below the items */
+  /** Helper or error message displayed below the items (code extension — not in Figma) */
   helperText?: string;
-  /** Marks the group as having an error — changes helperText color */
+  /** Error state — helper text turns red and the group gets `aria-invalid` (code extension) */
   error?: boolean;
-  /** Disables all radio items in the group */
+  /** Disables every radio item in the group */
   disabled?: boolean;
-  /** Renders skeleton loading placeholders */
+  /** Renders every item in Figma State=Skeleton */
   skeleton?: boolean;
-  /** Shared HTML name attribute for all radio inputs */
-  name: string;
-  /** Currently selected value (controlled) */
+  /** Shared HTML name for the radio inputs. Auto-generated when omitted. */
+  name?: string;
+  /** Selected value (controlled). Use `''` for "nothing selected". */
   value?: string;
-  /** Called when the selected value changes */
+  /** Initially selected value (uncontrolled). */
+  defaultValue?: string;
+  /** Called with the newly selected value (click, Space, or arrow keys). */
   onChange?: (value: string) => void;
-  /** Radio options to render as RadioButtonItem children */
+}
+
+export interface RadioButtonsVerticalGroupProps extends RadioGroupSharedProps {
+  /** Radio options, rendered top to bottom */
   items: RadioOption[];
-  /** Additional CSS class names */
-  className?: string;
 }

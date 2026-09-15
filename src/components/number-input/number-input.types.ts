@@ -1,42 +1,57 @@
+import type { InputHTMLAttributes } from 'react';
+
+/** Figma "Size" (X- Large / Large / Medium / Small). */
 export type NumberInputSize = 'small' | 'medium' | 'large' | 'x-large';
 
+/**
+ * Figma "State" values that can be forced via `data-state` (Storybook / visual tests).
+ * Enabled is the default; Disabled, Error and Skeleton have their own props.
+ */
+export type NumberInputForcedState = 'focused';
+
 export interface NumberInputProps
-  extends Omit<
-    React.InputHTMLAttributes<HTMLInputElement>,
-    'type' | 'value' | 'defaultValue' | 'onChange' | 'size'
-  > {
-  /** Current numeric value (controlled). */
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'value' | 'defaultValue' | 'onChange' | 'size'> {
+  /** Figma "Number value" — current value (controlled). */
   value?: number;
-  /** Initial numeric value (uncontrolled). */
+  /** Initial value (uncontrolled). Default `0`. */
   defaultValue?: number;
-  /** Called when the value changes via typing or stepper buttons. */
+  /**
+   * Called with the new value when it changes via the controls, the keyboard, or typing.
+   * Values are always within `min`/`max`: out-of-range typing is clamped on blur.
+   */
   onChange?: (value: number) => void;
   /** Minimum allowed value. */
   min?: number;
   /** Maximum allowed value. */
   max?: number;
-  /** Step amount for increment / decrement. */
+  /** Step for the controls and ArrowUp/ArrowDown (PageUp/PageDown use 10 × step). Default `1`. */
   step?: number;
-  /** Size variant. */
+  /** Figma "Size". Default `'large'`. */
   size?: NumberInputSize;
-  /** Layer set for background theming (1 = primary, 2 = secondary). */
+  /** Figma "Layer set": 1 → Set 01 (`background-layer-01`), 2 → Set 02 (`background-layer-02`). */
   layer?: 1 | 2;
-  /** Label text displayed above the input. */
+  /** Figma "Label text value". Omit for "Show label: False". */
   label?: string;
-  /** Helper text displayed below the input. */
+  /** Figma "Helper text value". Omit for "Show helper: False". Replaced by `errorText` in error state. */
   helperText?: string;
-  /** Error message displayed below the input when `error` is true. */
+  /** Figma "Error text value" — shown below the field when `error` is true. */
   errorText?: string;
-  /** Puts the component in error state. */
+  /** Figma State=Error — error stroke, error message and `aria-invalid`. */
   error?: boolean;
-  /** Renders a skeleton loading placeholder. */
+  /** Figma State=Skeleton — loading placeholder. */
   skeleton?: boolean;
-  /** Show increment / decrement stepper buttons (defaults to true). */
+  /** Figma "Show controls" — Subtract / Add buttons. Default `true`. */
   showControls?: boolean;
-  /** Show an explainer tooltip icon next to the label. */
+  /** Figma "Show explainer" — shows the explainer icon next to the label (needs `explainerText`). */
   showExplainer?: boolean;
-  /** Text content for the explainer tooltip. */
+  /** Tooltip content for the explainer icon. */
   explainerText?: string;
-  /** Additional CSS class names on the root wrapper. */
+  /** Accessible label of the Subtract button. Default `'Decrement'`. */
+  decrementLabel?: string;
+  /** Accessible label of the Add button. Default `'Increment'`. */
+  incrementLabel?: string;
+  /** Force a visual state on the field for screenshots / Storybook. */
+  'data-state'?: NumberInputForcedState;
+  /** Class names for the root wrapper. */
   className?: string;
 }

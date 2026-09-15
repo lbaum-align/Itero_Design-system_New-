@@ -4,144 +4,116 @@ import { Icon } from '../../icons';
 import { Spinner } from '../spinner';
 import type { ButtonProps, ButtonSize, ButtonType, ButtonEmphasis } from './button.types';
 
+/*
+ * Source: Figma "06. Scanner core 1.0.0 full" → 01 Button (node 36403:6395)
+ * 3 Types × 3 Emphases × 3 Sizes × 3 Contents × 7 States = 567 variants.
+ *
+ * Strokes are drawn as inset box-shadows: Figma strokes sit inside the box and
+ * don't affect layout, so a CSS border would make bordered buttons 2px wider.
+ */
+
 /* ------------------------------------------------------------------ */
 /*  Size config                                                       */
 /* ------------------------------------------------------------------ */
 
 const sizeConfig: Record<
   ButtonSize,
-  {
-    height: string;
-    px: string;
-    py: string;
-    gap: string;
-    radius: string;
-    iconSize: 20 | 24;
-    spinnerSize: 'mini' | 'small';
-    minW: string;
-    iconOnlyPad: string;
-    /** Secondary needs slightly different min-width */
-    minWSecondary: string;
-  }
+  { box: string; iconOnly: string; padding: string; gap: string; radius: string; focusRadius: string }
 > = {
   large: {
-    height: 'h-[60px]',
-    px: 'px-[var(--scanner-spacing-5)]',        // 16px
-    py: 'py-4',                                  // 16px
-    gap: 'gap-[var(--scanner-spacing-3)]',       // 8px
-    radius: 'rounded-[var(--scanner-radius-md)]', // 8px
-    iconSize: 24,
-    spinnerSize: 'mini',
-    minW: 'min-w-[72px]',
-    iconOnlyPad: 'p-[18px]',
-    minWSecondary: 'min-w-[100px]',
+    box: 'min-h-[var(--scanner-button-height-lg)]',
+    iconOnly: 'size-[var(--scanner-button-height-lg)]',
+    padding: 'px-[var(--scanner-spacing-5)] py-[var(--scanner-spacing-5)]', // 16 / 16
+    gap: 'gap-[var(--scanner-spacing-3)]', // 8
+    radius: 'rounded-[var(--scanner-radius-md)]', // 8
+    focusRadius: 'rounded-[var(--scanner-radius-lg)]', // 12
   },
   medium: {
-    height: 'h-12',                              // 48px
-    px: 'px-[var(--scanner-spacing-4)]',         // 12px
-    py: 'py-[var(--scanner-spacing-3)]',         // 8px
-    gap: 'gap-[var(--scanner-spacing-3)]',       // 8px
-    radius: 'rounded-[var(--scanner-radius-md)]', // 8px
-    iconSize: 24,
-    spinnerSize: 'mini',
-    minW: 'min-w-[72px]',
-    iconOnlyPad: 'p-3',                          // 12px
-    minWSecondary: 'min-w-[100px]',
+    box: 'min-h-[var(--scanner-button-height-md)]',
+    iconOnly: 'size-[var(--scanner-button-height-md)]',
+    padding: 'px-[var(--scanner-spacing-4)] py-[var(--scanner-spacing-3)]', // 12 / 8
+    gap: 'gap-[var(--scanner-spacing-3)]', // 8
+    radius: 'rounded-[var(--scanner-radius-md)]', // 8
+    focusRadius: 'rounded-[var(--scanner-radius-lg)]', // 12
   },
   small: {
-    height: 'h-9',                               // 36px
-    px: 'px-[var(--scanner-spacing-3)]',         // 8px
-    py: 'py-[var(--scanner-spacing-2)]',         // 4px
-    gap: 'gap-[var(--scanner-spacing-2)]',       // 4px
-    radius: 'rounded-[var(--scanner-radius-sm)]', // 4px
-    iconSize: 20,
-    spinnerSize: 'mini',
-    minW: 'min-w-[72px]',
-    iconOnlyPad: 'p-2',                          // 8px
-    minWSecondary: 'min-w-[100px]',
+    box: 'min-h-[var(--scanner-button-height-sm)]',
+    iconOnly: 'size-[var(--scanner-button-height-sm)]',
+    padding: 'px-[var(--scanner-spacing-3)] py-[var(--scanner-spacing-2)]', // 8 / 4
+    gap: 'gap-[var(--scanner-spacing-2)]', // 4
+    radius: 'rounded-[var(--scanner-radius-sm)]', // 4
+    focusRadius: 'rounded-[var(--scanner-radius-md)]', // 8
   },
 };
 
+/** Figma uses a 24px icon at every size. */
+const ICON_SIZE = 24;
+
 /* ------------------------------------------------------------------ */
-/*  Colour matrix — Type × Emphasis                                   */
+/*  Colour matrix                                                     */
 /* ------------------------------------------------------------------ */
 
-type ColourSet = {
-  bg: string;
-  bgHover: string;
-  bgActive: string;
-  text: string;
-  border?: string;
-  borderHover?: string;
+/** Enabled + hovered + pressed surface styles, per emphasis (and per type for primary). */
+const primarySurface: Record<ButtonType, string> = {
+  brand: cn(
+    'bg-[var(--scanner-bg-brand)]',
+    'hover:bg-[var(--scanner-bg-brand-hover)] data-[state=hovered]:bg-[var(--scanner-bg-brand-hover)]',
+    'active:bg-[var(--scanner-bg-brand-active)] data-[state=pressed]:bg-[var(--scanner-bg-brand-active)]',
+  ),
+  danger: cn(
+    'bg-[var(--scanner-bg-destructive)]',
+    'hover:bg-[var(--scanner-bg-destructive-hover)] data-[state=hovered]:bg-[var(--scanner-bg-destructive-hover)]',
+    'active:bg-[var(--scanner-bg-destructive-active)] data-[state=pressed]:bg-[var(--scanner-bg-destructive-active)]',
+  ),
+  success: cn(
+    'bg-[var(--scanner-bg-success)]',
+    'hover:bg-[var(--scanner-bg-success-hover)] data-[state=hovered]:bg-[var(--scanner-bg-success-hover)]',
+    'active:bg-[var(--scanner-bg-success-active)] data-[state=pressed]:bg-[var(--scanner-bg-success-active)]',
+  ),
 };
 
-const colours: Record<ButtonType, Record<ButtonEmphasis, ColourSet>> = {
-  brand: {
-    primary: {
-      bg: 'bg-[var(--scanner-bg-brand)]',
-      bgHover: 'hover:bg-[var(--scanner-bg-brand-hover)]',
-      bgActive: 'active:bg-[var(--scanner-bg-brand-active)]',
-      text: 'text-[var(--scanner-text-on-color)]',
-    },
-    secondary: {
-      bg: '',
-      bgHover: 'hover:bg-[var(--scanner-bg-hover)]',
-      bgActive: 'active:bg-[var(--scanner-bg-active)]',
-      text: 'text-[var(--scanner-text-primary)]',
-      border: 'border-2 border-[var(--scanner-border-subtle)]',
-      borderHover: 'hover:border-[var(--scanner-border-hover)]',
-    },
-    ghost: {
-      bg: '',
-      bgHover: 'hover:bg-[var(--scanner-bg-hover)]',
-      bgActive: 'active:bg-[var(--scanner-bg-active)]',
-      text: 'text-[var(--scanner-text-primary)]',
-    },
+const secondarySurface = cn(
+  'shadow-[inset_0_0_0_1px_var(--scanner-border-subtle)]',
+  'hover:shadow-[inset_0_0_0_1px_var(--scanner-border-subtle-hover)] data-[state=hovered]:shadow-[inset_0_0_0_1px_var(--scanner-border-subtle-hover)]',
+  'active:shadow-[inset_0_0_0_1px_var(--scanner-border-subtle-active)] data-[state=pressed]:shadow-[inset_0_0_0_1px_var(--scanner-border-subtle-active)]',
+);
+
+const ghostSurface = cn(
+  'hover:bg-[var(--scanner-bg-hover)] data-[state=hovered]:bg-[var(--scanner-bg-hover)]',
+  'active:bg-[var(--scanner-bg-active)] data-[state=pressed]:bg-[var(--scanner-bg-active)]',
+  /* Focused ghost gains a subtle stroke inside the focus ring */
+  'focus-visible:shadow-[inset_0_0_0_1px_var(--scanner-border-subtle)] data-[state=focused]:shadow-[inset_0_0_0_1px_var(--scanner-border-subtle)]',
+);
+
+/** Surface while disabled or loading — no hover/pressed feedback. */
+const inactiveSurface: Record<ButtonEmphasis, string> = {
+  primary: 'bg-[var(--scanner-bg-disabled)]',
+  secondary: 'shadow-[inset_0_0_0_1px_var(--scanner-border-disabled)]',
+  ghost: '',
+};
+
+/** Label + icon colours for enabled/hovered/focused/pressed. */
+const foreground: Record<ButtonEmphasis, Record<ButtonType, { text: string; icon: string }>> = {
+  primary: {
+    brand: { text: 'text-[color:var(--scanner-text-on-color)]', icon: 'text-[color:var(--scanner-icon-on-color)]' },
+    danger: { text: 'text-[color:var(--scanner-text-on-color)]', icon: 'text-[color:var(--scanner-icon-on-color)]' },
+    success: { text: 'text-[color:var(--scanner-text-on-color)]', icon: 'text-[color:var(--scanner-icon-on-color)]' },
   },
-  danger: {
-    primary: {
-      bg: 'bg-[var(--scanner-bg-destructive)]',
-      bgHover: 'hover:bg-[var(--scanner-bg-destructive-hover)]',
-      bgActive: 'active:bg-[var(--scanner-bg-destructive-active)]',
-      text: 'text-[var(--scanner-text-on-color)]',
-    },
-    secondary: {
-      bg: '',
-      bgHover: 'hover:bg-[var(--scanner-bg-hover)]',
-      bgActive: 'active:bg-[var(--scanner-bg-active)]',
-      text: 'text-[var(--scanner-text-error)]',
-      border: 'border-2 border-[var(--scanner-border-subtle)]',
-      borderHover: 'hover:border-[var(--scanner-border-hover)]',
-    },
-    ghost: {
-      bg: '',
-      bgHover: 'hover:bg-[var(--scanner-bg-hover)]',
-      bgActive: 'active:bg-[var(--scanner-bg-active)]',
-      text: 'text-[var(--scanner-text-error)]',
-    },
+  secondary: {
+    brand: { text: 'text-[color:var(--scanner-text-primary)]', icon: 'text-[color:var(--scanner-icon-primary)]' },
+    danger: { text: 'text-[color:var(--scanner-text-error)]', icon: 'text-[color:var(--scanner-icon-error)]' },
+    success: { text: 'text-[color:var(--scanner-text-success)]', icon: 'text-[color:var(--scanner-icon-success)]' },
   },
-  success: {
-    primary: {
-      bg: 'bg-[var(--scanner-bg-success)]',
-      bgHover: 'hover:bg-[var(--scanner-bg-success-hover)]',
-      bgActive: 'active:bg-[var(--scanner-bg-success-active)]',
-      text: 'text-[var(--scanner-text-on-color)]',
-    },
-    secondary: {
-      bg: '',
-      bgHover: 'hover:bg-[var(--scanner-bg-hover)]',
-      bgActive: 'active:bg-[var(--scanner-bg-active)]',
-      text: 'text-[var(--scanner-text-success)]',
-      border: 'border-2 border-[var(--scanner-border-subtle)]',
-      borderHover: 'hover:border-[var(--scanner-border-hover)]',
-    },
-    ghost: {
-      bg: '',
-      bgHover: 'hover:bg-[var(--scanner-bg-hover)]',
-      bgActive: 'active:bg-[var(--scanner-bg-active)]',
-      text: 'text-[var(--scanner-text-success)]',
-    },
+  ghost: {
+    brand: { text: 'text-[color:var(--scanner-text-primary)]', icon: 'text-[color:var(--scanner-icon-primary)]' },
+    danger: { text: 'text-[color:var(--scanner-text-error)]', icon: 'text-[color:var(--scanner-icon-error)]' },
+    success: { text: 'text-[color:var(--scanner-text-success)]', icon: 'text-[color:var(--scanner-icon-success)]' },
   },
+};
+
+const disabledForeground = {
+  text: 'text-[color:var(--scanner-text-disabled)]',
+  icon: 'text-[color:var(--scanner-icon-disabled)]',
 };
 
 /* ------------------------------------------------------------------ */
@@ -149,11 +121,13 @@ const colours: Record<ButtonType, Record<ButtonEmphasis, ColourSet>> = {
 /* ------------------------------------------------------------------ */
 
 /**
- * Scanner Button — the primary action element.
+ * Scanner Button — triggers an action. Use `Link` for navigation.
  *
- * Supports 3 types (brand/danger/success), 3 emphasis levels
- * (primary/secondary/ghost), 3 sizes (large/medium/small), and
- * 3 content modes (text-only, text+icon, icon-only).
+ * Figma props → React:
+ * - Type → `variant`, Emphasis → `emphasis`, Size → `size`
+ * - Content → `iconName` (Text + icon) / `iconName` + `iconOnly` (Icon only)
+ * - State → `:hover` / `:focus-visible` / `:active` (forceable via `data-state`),
+ *   `disabled`, `loading`, `skeleton`
  *
  * @example
  * <Button>Save</Button>
@@ -175,114 +149,105 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       disabled = false,
       children,
       className,
+      onClick,
       ...rest
     },
     ref,
   ) => {
     const cfg = sizeConfig[size];
+    const isIconOnly = iconOnly && !!iconName;
+    const shape = isIconOnly
+      ? cn(cfg.iconOnly, cfg.radius)
+      : cn(cfg.box, cfg.padding, cfg.gap, cfg.radius, 'min-w-[var(--scanner-button-min-width)]');
+
+    const renderContent = (iconClassName?: string) => (
+      <>
+        {iconName && <Icon name={iconName} size={ICON_SIZE} className={iconClassName} />}
+        {!isIconOnly && <span className="min-w-px flex-1 break-words text-center">{children}</span>}
+      </>
+    );
 
     /* ── Skeleton ── */
     if (skeleton) {
       return (
         <div
+          aria-hidden="true"
+          data-skeleton=""
           className={cn(
             'inline-flex animate-pulse items-center justify-center',
-            cfg.radius,
-            iconOnly
-              ? `${cfg.iconOnlyPad} size-[${cfg.iconSize === 24 ? '60px' : '36px'}]`
-              : `${cfg.height} ${cfg.px} ${cfg.py} ${cfg.minW}`,
-            'bg-[var(--scanner-bg-disabled)]',
+            'text-[length:var(--scanner-text-scanner-md)] leading-[var(--scanner-leading-lg)]',
+            shape,
+            'bg-[var(--scanner-bg-highlight-gray)]',
             className,
           )}
-          aria-hidden="true"
-        />
+        >
+          {/* Invisible content keeps the placeholder the same size as the real button */}
+          <span className={cn('invisible inline-flex items-center', !isIconOnly && cfg.gap)}>
+            {renderContent()}
+          </span>
+        </div>
       );
     }
 
-    const colour = colours[variant][emphasis];
-    const isDisabled = disabled || loading;
-    const isIconOnly = iconOnly && !!iconName;
-    const showIcon = !!iconName && !isIconOnly;
+    const inactive = disabled || loading;
+    const fg = disabled ? disabledForeground : foreground[emphasis][variant];
+
+    const surface = inactive
+      ? inactiveSurface[emphasis]
+      : emphasis === 'primary'
+        ? primarySurface[variant]
+        : emphasis === 'secondary'
+          ? secondarySurface
+          : ghostSurface;
 
     return (
       <button
         ref={ref}
         type={htmlType}
-        disabled={isDisabled}
+        disabled={disabled}
+        aria-disabled={inactive || undefined}
+        aria-busy={loading || undefined}
+        onClick={loading ? undefined : onClick}
         className={cn(
-          /* Layout */
-          'relative inline-flex items-center justify-center',
-          'font-[family-name:var(--scanner-font-sans)]',
-          'text-[length:var(--scanner-text-md)] font-normal leading-[var(--scanner-leading-lg)]',
-          'select-none whitespace-nowrap transition-colors duration-150',
-
-          /* Size */
-          cfg.radius,
-          isIconOnly
-            ? cfg.iconOnlyPad
-            : [
-                cfg.height,
-                cfg.px,
-                cfg.py,
-                cfg.gap,
-                emphasis === 'secondary' ? cfg.minWSecondary : cfg.minW,
-              ],
-
-          /* Colours */
-          isDisabled
-            ? [
-                'bg-[var(--scanner-bg-disabled)]',
-                'text-[var(--scanner-text-disabled)]',
-                'cursor-not-allowed',
-                emphasis === 'secondary' &&
-                  'border-2 border-[var(--scanner-border-disabled)]',
-              ]
-            : [
-                colour.bg,
-                colour.bgHover,
-                colour.bgActive,
-                colour.text,
-                colour.border,
-                colour.borderHover,
-                'cursor-pointer',
-              ],
-
-          /* Focus ring */
-          'focus-visible:outline-2 focus-visible:outline-offset-2',
-          'focus-visible:outline-[var(--scanner-focus-ring)]',
-
+          'group relative inline-flex items-center justify-center align-middle',
+          'font-[family-name:var(--scanner-font-sans)] font-[number:var(--scanner-font-regular)]',
+          'text-[length:var(--scanner-text-scanner-md)] leading-[var(--scanner-leading-lg)]',
+          'select-none outline-none transition-[background-color,box-shadow] duration-150',
+          shape,
+          surface,
+          fg.text,
+          disabled ? 'cursor-not-allowed' : loading ? 'cursor-default' : 'cursor-pointer',
           className,
         )}
         {...rest}
       >
-        {/* ── Loading overlay ── */}
-        {loading && (
-          <span className="absolute inset-0 flex items-center justify-center">
-            <Spinner
-              size={cfg.spinnerSize}
-              onColor={emphasis === 'primary'}
-            />
-          </span>
-        )}
-
-        {/* ── Content (invisible when loading) ── */}
         <span
           className={cn(
-            'inline-flex items-center justify-center',
+            'inline-flex min-w-0 flex-1 items-center justify-center',
             !isIconOnly && cfg.gap,
             loading && 'invisible',
           )}
         >
-          {/* Leading icon */}
-          {(showIcon || isIconOnly) && iconName && (
-            <Icon name={iconName} size={cfg.iconSize} className="shrink-0" />
-          )}
-
-          {/* Text */}
-          {!isIconOnly && (
-            <span className="min-w-px flex-1 text-center">{children}</span>
-          )}
+          {renderContent(fg.icon)}
         </span>
+
+        {loading && (
+          <span className="absolute inset-0 flex items-center justify-center">
+            <Spinner size="mini" />
+          </span>
+        )}
+
+        {/* Focus ring — 2px, 4px outside the button */}
+        <span
+          aria-hidden="true"
+          className={cn(
+            'pointer-events-none absolute hidden',
+            'inset-[calc(var(--scanner-button-focus-offset)*-1)]',
+            'border-[length:var(--scanner-button-focus-width)] border-solid border-[color:var(--scanner-border-focus)]',
+            cfg.focusRadius,
+            'group-focus-visible:block group-data-[state=focused]:block',
+          )}
+        />
       </button>
     );
   },

@@ -1,134 +1,139 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { expect, fn, userEvent, within } from 'storybook/test';
 import { BreadcrumbLink } from './BreadcrumbLink';
+import type { BreadcrumbLinkProps } from './breadcrumb-link.types';
 
-const meta = {
+/*
+ * Figma: "06. Scanner core 1.0.0 full" → _Breadcrumb link (node 25889:49863)
+ * State × Show divider — every combination is rendered in `FigmaMatrix`.
+ */
+
+const STATES = ['enabled', 'hovered', 'focused', 'disabled', 'skeleton'] as const;
+type State = (typeof STATES)[number];
+const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+const stateProps = (state: State): Partial<BreadcrumbLinkProps> => ({
+  disabled: state === 'disabled',
+  skeleton: state === 'skeleton',
+  'data-state': state === 'hovered' || state === 'focused' ? state : undefined,
+});
+
+const table: React.CSSProperties = { borderCollapse: 'collapse', width: 'max-content' };
+const cell: React.CSSProperties = { padding: 12, verticalAlign: 'middle' };
+const headCell: React.CSSProperties = {
+  ...cell,
+  font: '500 12px/16px var(--scanner-font-sans)',
+  color: 'var(--scanner-text-secondary)',
+  textAlign: 'left',
+  whiteSpace: 'nowrap',
+};
+
+const meta: Meta<typeof BreadcrumbLink> = {
   title: 'Private/_BreadcrumbLink',
   component: BreadcrumbLink,
-  tags: ['autodocs'],
   argTypes: {
     children: { control: 'text' },
     href: { control: 'text' },
+    showDivider: { name: 'Show divider', control: 'boolean' },
+    showSeparator: { table: { disable: true } },
     isCurrent: { control: 'boolean' },
     disabled: { control: 'boolean' },
     skeleton: { control: 'boolean' },
-    showSeparator: { control: 'boolean' },
+    'data-state': { name: 'Forced state', control: 'inline-radio', options: [undefined, 'hovered', 'focused'] },
   },
-  args: {
-    children: 'Page name',
-    href: '#',
-    showSeparator: true,
-  },
-} satisfies Meta<typeof BreadcrumbLink>;
-
+  args: { children: 'Page name', href: '#', showDivider: true, onClick: fn() },
+  decorators: [
+    (Story) => (
+      <div style={{ padding: 16 }}>
+        <Story />
+      </div>
+    ),
+  ],
+};
 export default meta;
-type Story = StoryObj<typeof meta>;
 
-/** Default enabled state with separator */
+type Story = StoryObj<typeof BreadcrumbLink>;
+
 export const Default: Story = {};
 
-/** Current page — rendered as text, not a link */
-export const Current: Story = {
-  args: {
-    isCurrent: true,
-    children: 'Current page',
-  },
-};
+export const Enabled: Story = {};
+export const Hovered: Story = { args: { 'data-state': 'hovered' } };
+export const Focused: Story = { args: { 'data-state': 'focused' } };
+export const Disabled: Story = { args: { disabled: true } };
+export const Skeleton: Story = { args: { skeleton: true } };
+export const WithoutDivider: Story = { name: 'Show divider: False', args: { showDivider: false } };
+export const CurrentPage: Story = { args: { isCurrent: true, showDivider: false } };
 
-/** Disabled state — not interactive */
-export const Disabled: Story = {
-  args: {
-    disabled: true,
-    children: 'Disabled link',
-  },
-};
-
-/** Skeleton loading placeholder */
-export const Skeleton: Story = {
-  args: {
-    skeleton: true,
-  },
-};
-
-/** All states side by side for visual comparison */
 export const AllStates: Story = {
-  name: 'All States',
   render: () => (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2">
-        <span className="w-20 text-xs text-gray-500">Enabled</span>
-        <BreadcrumbLink href="#">Page name</BreadcrumbLink>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="w-20 text-xs text-gray-500">Hovered</span>
-        <BreadcrumbLink href="#" data-state="hovered">
-          Page name
-        </BreadcrumbLink>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="w-20 text-xs text-gray-500">Focused</span>
-        <BreadcrumbLink href="#" data-state="focused">
-          Page name
-        </BreadcrumbLink>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="w-20 text-xs text-gray-500">Disabled</span>
-        <BreadcrumbLink href="#" disabled>
-          Page name
-        </BreadcrumbLink>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="w-20 text-xs text-gray-500">Current</span>
-        <BreadcrumbLink isCurrent>Page name</BreadcrumbLink>
-      </div>
-      <div className="flex items-center gap-2">
-        <span className="w-20 text-xs text-gray-500">Skeleton</span>
-        <BreadcrumbLink skeleton>Page name</BreadcrumbLink>
-      </div>
-    </div>
+    <table style={table}>
+      <tbody>
+        {STATES.map((s) => (
+          <tr key={s}>
+            <th style={headCell}>{label(s)}</th>
+            <td style={cell}>
+              <BreadcrumbLink href="#" {...stateProps(s)}>Page name</BreadcrumbLink>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   ),
 };
 
-/** Full breadcrumb trail showing multiple items together */
-export const BreadcrumbTrail: Story = {
-  name: 'Breadcrumb Trail',
+export const FigmaMatrix: Story = {
+  name: 'Figma matrix (all variants)',
   render: () => (
-    <nav aria-label="Breadcrumb">
-      <ol className="m-0 flex list-none items-center p-0">
-        <li>
-          <BreadcrumbLink href="#">Home</BreadcrumbLink>
-        </li>
-        <li>
-          <BreadcrumbLink href="#">Products</BreadcrumbLink>
-        </li>
-        <li>
-          <BreadcrumbLink href="#">Category</BreadcrumbLink>
-        </li>
-        <li>
-          <BreadcrumbLink isCurrent showSeparator={false}>
-            Current page
-          </BreadcrumbLink>
-        </li>
-      </ol>
-    </nav>
+    <table style={table}>
+      <thead>
+        <tr>
+          <th style={headCell} />
+          <th style={headCell}>Show divider=True</th>
+          <th style={headCell}>Show divider=False</th>
+        </tr>
+      </thead>
+      <tbody>
+        {STATES.map((s) => (
+          <tr key={s}>
+            <th style={headCell}>{`State=${label(s)}`}</th>
+            {[true, false].map((d) => (
+              <td key={String(d)} style={cell}>
+                <BreadcrumbLink href="#" showDivider={d} {...stateProps(s)}>Page name</BreadcrumbLink>
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   ),
 };
 
-/** Breadcrumb trail in skeleton state */
-export const BreadcrumbTrailSkeleton: Story = {
-  name: 'Breadcrumb Trail (Skeleton)',
-  render: () => (
-    <nav aria-label="Breadcrumb">
-      <ol className="m-0 flex list-none items-center p-0">
-        <li>
-          <BreadcrumbLink skeleton />
-        </li>
-        <li>
-          <BreadcrumbLink skeleton />
-        </li>
-        <li>
-          <BreadcrumbLink skeleton showSeparator={false} />
-        </li>
-      </ol>
-    </nav>
-  ),
+/* ------------------------------------------------------------------ */
+/*  Interaction tests                                                 */
+/* ------------------------------------------------------------------ */
+
+export const KeyboardActivation: Story = {
+  tags: ['test'],
+  play: async ({ args, canvasElement }) => {
+    const link = within(canvasElement).getByRole('link', { name: 'Page name' });
+    await userEvent.tab();
+    await expect(link).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard(' ');
+    await expect(args.onClick).toHaveBeenCalledTimes(2);
+  },
+};
+
+export const DisabledIsInert: Story = {
+  tags: ['test'],
+  args: { disabled: true },
+  play: async ({ args, canvasElement }) => {
+    const link = within(canvasElement).getByRole('link', { name: 'Page name' });
+    await expect(link).toHaveAttribute('aria-disabled', 'true');
+    await expect(link).not.toHaveAttribute('href');
+    await userEvent.tab();
+    await expect(link).not.toHaveFocus();
+    await userEvent.click(link);
+    await expect(args.onClick).not.toHaveBeenCalled();
+  },
 };

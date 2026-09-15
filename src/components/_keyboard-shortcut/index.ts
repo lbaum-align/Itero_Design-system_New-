@@ -1,2 +1,3 @@
 export { KeyboardShortcut } from './KeyboardShortcut';
-export type { KeyboardShortcutProps } from './keyboard-shortcut.types';
+export { resolveGlyph } from './keyboard-shortcut.glyphs';
+export type { KeyboardShortcutProps, KeyboardShortcutGlyph } from './keyboard-shortcut.types';

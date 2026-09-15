@@ -1,14 +1,19 @@
-import { forwardRef, useCallback, useRef, useMemo } from 'react';
+import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { FocusEvent, KeyboardEvent } from 'react';
 import { cn } from '../../utils/cn';
 import { MenuContext } from './menu-context';
-import type { MenuProps, MenuDividerProps } from './menu.types';
+import type { MenuDividerProps, MenuProps } from './menu.types';
 
-/* ------------------------------------------------------------------ */
-/*  MenuDivider — standalone divider between item groups              */
-/* ------------------------------------------------------------------ */
+/*
+ * Source: Figma "06. Scanner core 1.0.0 full" → Menu (node 30413:43333, page "Menu").
+ * Size (Large, Medium, Small) + Scroll. 180px wide (min 120 / max 288), 4px padding, radius 8,
+ * background-elevated, "Depth 01" shadow. Large adds a 1px border-subtle stroke inside the box.
+ */
+
+const ITEM_SELECTOR = '[role="menuitem"]:not([aria-disabled="true"]),[role="menuitemcheckbox"]:not([aria-disabled="true"]),[role="menuitemradio"]:not([aria-disabled="true"])';
 
 /**
- * A horizontal divider for separating groups of menu items.
+ * Divider between groups of menu items (same 8px divider as `MenuItems` "Show divider").
  *
  * @example
  * <Menu>
@@ -18,35 +23,23 @@ import type { MenuProps, MenuDividerProps } from './menu.types';
  * </Menu>
  */
 export const MenuDivider = ({ className }: MenuDividerProps) => (
-  <div
-    role="separator"
-    className={cn('h-2 w-full overflow-clip relative', className)}
-    aria-hidden="true"
-  >
-    <div
-      className="absolute left-0 right-0 top-[3px] h-px border-t border-[var(--scanner-border-subtle)]"
-    />
+  <div role="separator" className={cn('relative h-[var(--scanner-spacing-3)] w-full shrink-0', className)}>
+    <span className="absolute inset-x-0 top-[var(--scanner-menu-divider-offset)] h-px bg-[var(--scanner-border-subtle)]" />
   </div>
 );
 
 MenuDivider.displayName = 'MenuDivider';
 
-/* ------------------------------------------------------------------ */
-/*  Menu — the dropdown panel container                               */
-/* ------------------------------------------------------------------ */
-
 /**
- * Scanner Menu — a dropdown menu panel that wraps `_MenuItems`.
+ * Scanner Menu — a panel of actions (`role="menu"`) built from `MenuItems`.
  *
- * Provides:
- * - `role="menu"` with keyboard navigation (ArrowUp/Down, Home/End, Enter, Escape)
- * - Size context propagated to child items
- * - Elevated background, shadow, and border styling
+ * Keyboard (Figma docs + WAI-ARIA menu pattern): Tab focuses the menu (first item), ArrowUp/ArrowDown move
+ * between enabled items (wrapping), Home/End jump to the first/last item, Enter/Space activate the focused item,
+ * ArrowRight opens a submenu item, Escape calls `onClose`. Items use roving focus, so Tab leaves the menu.
  *
  * @example
- * <Menu size="large">
- *   <MenuItems label="Edit" showTrailingElement trailingElementProps={{ shortcutKeys: ['⌘', 'E'] }} />
- *   <MenuItems label="Copy" showTrailingElement trailingElementProps={{ shortcutKeys: ['⌘', 'C'] }} />
+ * <Menu size="large" aria-label="Edit">
+ *   <MenuItems label="Cut" showTrailingElement trailingElementProps={{ shortcutKeys: ['⌘', 'X'] }} />
  *   <MenuDivider />
  *   <MenuItems label="Delete" type="destructive" />
  * </Menu>
@@ -56,134 +49,124 @@ export const Menu = forwardRef<HTMLDivElement, MenuProps>(
     {
       size = 'large',
       scroll = false,
+      maxHeight,
+      autoFocus = false,
       children,
       className,
+      style,
       onClose,
       onKeyDown,
+      onFocus,
+      onBlur,
       ...rest
     },
     ref,
   ) => {
     const menuRef = useRef<HTMLDivElement | null>(null);
+    const [focusWithin, setFocusWithin] = useState(false);
 
-    /* Merge external + internal refs */
     const setRef = useCallback(
       (node: HTMLDivElement | null) => {
         menuRef.current = node;
         if (typeof ref === 'function') ref(node);
-        else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+        else if (ref) ref.current = node;
       },
       [ref],
     );
 
-    /* ── Keyboard navigation ── */
-    const getMenuItems = useCallback((): HTMLElement[] => {
-      if (!menuRef.current) return [];
-      return Array.from(
-        menuRef.current.querySelectorAll<HTMLElement>(
-          '[role="menuitem"]:not([aria-disabled="true"])',
-        ),
-      );
-    }, []);
-
-    const focusItem = useCallback((items: HTMLElement[], index: number) => {
-      const clamped = Math.max(0, Math.min(index, items.length - 1));
-      items[clamped]?.focus();
-    }, []);
-
-    const handleKeyDown = useCallback(
-      (e: React.KeyboardEvent<HTMLDivElement>) => {
-        const items = getMenuItems();
-        if (items.length === 0) return;
-
-        const current = document.activeElement as HTMLElement;
-        const currentIndex = items.indexOf(current);
-
-        switch (e.key) {
-          case 'ArrowDown': {
-            e.preventDefault();
-            const next = currentIndex < 0 ? 0 : (currentIndex + 1) % items.length;
-            focusItem(items, next);
-            break;
-          }
-          case 'ArrowUp': {
-            e.preventDefault();
-            const prev =
-              currentIndex < 0
-                ? items.length - 1
-                : (currentIndex - 1 + items.length) % items.length;
-            focusItem(items, prev);
-            break;
-          }
-          case 'Home': {
-            e.preventDefault();
-            focusItem(items, 0);
-            break;
-          }
-          case 'End': {
-            e.preventDefault();
-            focusItem(items, items.length - 1);
-            break;
-          }
-          case 'Escape': {
-            e.preventDefault();
-            onClose?.();
-            break;
-          }
-          default:
-            break;
-        }
-
-        onKeyDown?.(e);
-      },
-      [getMenuItems, focusItem, onClose, onKeyDown],
+    const getItems = useCallback(
+      (): HTMLElement[] => Array.from(menuRef.current?.querySelectorAll<HTMLElement>(ITEM_SELECTOR) ?? []),
+      [],
     );
 
-    /* ── Context value ── */
-    const ctxValue = useMemo(() => ({ size }), [size]);
+    const focusAt = useCallback(
+      (index: number) => {
+        const items = getItems();
+        if (items.length === 0) return;
+        items[(index + items.length) % items.length]?.focus();
+      },
+      [getItems],
+    );
 
-    const isLarge = size === 'large';
+    /* Only on mount — later `autoFocus` changes must not steal focus */
+    const initialAutoFocus = useRef(autoFocus);
+    useEffect(() => {
+      const mode = initialAutoFocus.current;
+      if (mode) focusAt(mode === 'last' ? -1 : 0);
+    }, [focusAt]);
+
+    const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+      onKeyDown?.(event);
+      if (event.defaultPrevented) return;
+      const items = getItems();
+      const current = items.indexOf(document.activeElement as HTMLElement);
+
+      switch (event.key) {
+        case 'ArrowDown':
+          event.preventDefault();
+          focusAt(current < 0 ? 0 : current + 1);
+          break;
+        case 'ArrowUp':
+          event.preventDefault();
+          focusAt(current < 0 ? -1 : current - 1);
+          break;
+        case 'Home':
+          event.preventDefault();
+          focusAt(0);
+          break;
+        case 'End':
+          event.preventDefault();
+          focusAt(-1);
+          break;
+        case 'Escape':
+          if (onClose) {
+            event.preventDefault();
+            onClose();
+          }
+          break;
+        default:
+          break;
+      }
+    };
+
+    const handleFocus = (event: FocusEvent<HTMLDivElement>) => {
+      onFocus?.(event);
+      setFocusWithin(true);
+      /* Tabbing onto the container forwards focus to the first item */
+      if (event.target === event.currentTarget) focusAt(0);
+    };
+
+    const handleBlur = (event: FocusEvent<HTMLDivElement>) => {
+      onBlur?.(event);
+      if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocusWithin(false);
+    };
+
+    const ctxValue = useMemo(() => ({ size, inMenu: true }), [size]);
 
     return (
       <MenuContext.Provider value={ctxValue}>
         <div
           ref={setRef}
           role="menu"
-          tabIndex={-1}
+          aria-orientation="vertical"
+          tabIndex={focusWithin ? -1 : 0}
+          data-size={size}
           onKeyDown={handleKeyDown}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          style={maxHeight !== undefined ? { maxHeight, ...style } : style}
           className={cn(
-            /* Layout */
-            'relative flex flex-col items-start',
-            'min-w-[120px] max-w-[288px]',
-            'p-[var(--scanner-spacing-2)]',
-            'rounded-[var(--scanner-radius-md)]',
-
-            /* Background + elevation */
-            'bg-[var(--scanner-bg-elevated)]',
-            'shadow-[var(--scanner-shadow-depth-01)]',
-
-            /* Border — large only */
-            isLarge && 'border border-[var(--scanner-border-subtle)]',
-
+            'relative flex flex-col items-stretch outline-none',
+            'w-[var(--scanner-menu-width)] min-w-[var(--scanner-menu-min-width)] max-w-[var(--scanner-menu-max-width)]',
+            'p-[var(--scanner-spacing-2)] rounded-[var(--scanner-radius-md)]',
+            'bg-[var(--scanner-bg-elevated)] shadow-[var(--scanner-shadow-depth-01)]',
+            size === 'large' && 'ring-1 ring-inset ring-[var(--scanner-border-subtle)]',
+            scroll && 'overflow-y-auto [scrollbar-color:var(--scanner-border-subtle)_transparent] [scrollbar-width:thin]',
             className,
           )}
           {...rest}
         >
           {children}
-
-          {/* Decorative scroll indicator */}
-          {scroll && (
-            <div
-              aria-hidden="true"
-              className={cn(
-                'absolute w-1 rounded-[var(--scanner-radius-sm)]',
-                'bg-[var(--scanner-border-subtle)]',
-                isLarge
-                  ? 'right-[3px] top-[11px] h-[116px]'
-                  : 'right-1 top-3 h-[116px]',
-              )}
-            />
-          )}
         </div>
       </MenuContext.Provider>
     );

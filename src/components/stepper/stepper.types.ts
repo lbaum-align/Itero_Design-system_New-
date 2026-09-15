@@ -1,31 +1,43 @@
+import type { OlHTMLAttributes } from 'react';
+import type { StepperItemState } from '../_step-counter';
+
 export type StepperOrientation = 'horizontal' | 'vertical';
 
-export type StepState = 'not-started' | 'in-progress' | 'completed' | 'error' | 'skeleton';
+/** Figma "Position" values, as React literals. */
+export type StepperPosition = StepperOrientation;
+
+/** Figma stepper item "State". */
+export type StepState = StepperItemState;
 
 export interface StepItem {
-  /** Label text for this step */
+  /** "Step name" */
   label: string;
+  /** Explicit state for this step; overrides the state derived from `currentStep` / `error` / `skeleton`. */
+  state?: StepState;
 }
 
-export interface StepperProps {
-  /** Array of steps to display (max 8) */
+export interface StepperProps extends OlHTMLAttributes<HTMLOListElement> {
+  /** Steps to display (Figma supports up to 8; extra steps are not rendered). */
   steps: StepItem[];
   /**
-   * Zero-based index of the current (active) step.
-   * Steps before this are "completed", this step is "in-progress",
-   * and steps after are "not-started".
+   * Zero-based index of the current step: earlier steps are Completed, this one In progress,
+   * later ones Not started. Use `steps.length` for "all completed".
    * @default 0
    */
   currentStep?: number;
-  /** Layout orientation */
+  /** Layout (Figma "Position": Horizontal stepper / Vertical). @default 'horizontal' */
   orientation?: StepperOrientation;
-  /**
-   * When true, the current step shows an error state
-   * instead of the in-progress state.
-   */
+  /** Alias of `orientation` using the Figma property name. Takes precedence. */
+  position?: StepperPosition;
+  /** The current step shows the Error state instead of In progress. */
   error?: boolean;
-  /** When true, all steps render in skeleton loading state. */
+  /** Every step renders the Skeleton state. */
   skeleton?: boolean;
+  /**
+   * Visually hidden status announced after each label.
+   * @default { 'not-started': 'not started', 'in-progress': 'current step', completed: 'completed', error: 'error' }
+   */
+  statusLabels?: Partial<Record<Exclude<StepState, 'skeleton'>, string>>;
   /** Additional CSS class names */
   className?: string;
 }

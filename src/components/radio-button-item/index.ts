@@ -1,2 +1,2 @@
 export { RadioButtonItem } from './RadioButtonItem';
-export type { RadioButtonItemProps } from './radio-button-item.types';
+export type { RadioButtonItemProps, RadioButtonItemForcedState } from './radio-button-item.types';

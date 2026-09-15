@@ -1,14 +1,27 @@
-import type { ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
+import type { TooltipAlignment } from '../tooltip';
 
+/** Figma "Position" — definition tooltips open above or below the text only. */
 export type TextTriggerTooltipPosition = 'top' | 'bottom';
 
-export interface TextTriggerTooltipProps {
-  /** Trigger text — rendered with dotted underline */
+export interface TextTriggerTooltipProps
+  extends Omit<HTMLAttributes<HTMLDivElement>, 'content' | 'children'> {
+  /** Trigger text (Figma "Text value") — rendered with a dotted underline */
   children: ReactNode;
-  /** Tooltip content — text string */
+  /** Tooltip message */
   content: string;
-  /** Tooltip placement relative to the text trigger (top or bottom only) */
+  /** Figma "Position". @default 'bottom' */
   position?: TextTriggerTooltipPosition;
+  /** Figma "Alignment". @default 'middle' */
+  alignment?: TooltipAlignment;
+  /** Controlled visibility (Figma "Show tooltip"). */
+  open?: boolean;
+  /** Called when hover / focus / blur / Escape request a visibility change. */
+  onOpenChange?: (open: boolean) => void;
+  /** Hover delay in ms. @default 300 */
+  delay?: number;
+  /** Force the trigger's focus stroke for screenshots / Storybook. */
+  'data-state'?: 'focused';
   /** Additional CSS class names on the wrapper */
   className?: string;
 }

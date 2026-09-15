@@ -1,68 +1,67 @@
 import { forwardRef } from 'react';
+import type { KeyboardEvent, MouseEvent } from 'react';
 import { cn } from '../../utils/cn';
-import type { LinkProps, LinkType } from './link.types';
+import { Icon } from '../../icons';
+import type { IconSize } from '../../icons';
+import type { LinkProps, LinkSize, LinkType } from './link.types';
 
-const typeStyles: Record<LinkType, { base: string; hover: string; focusRing: string; disabled: string }> = {
+/*
+ * Source: Figma "06. Scanner core 1.0.0 full" → Link (node 36407:17744)
+ * Type (Primary, Secondary, Inversed, On color) × State (Enabled, Hovered, Focused, Disabled) × Size (Medium, Small) = 32 variants.
+ *
+ * Both sizes use Body/$tp-body-02 (18/28); hover adds an underline (Link/$tp-link-02) without changing colour.
+ * Focus is a 1px stroke, radius 4, extending 2px left/right of the content.
+ */
+
+type Colours = { text: string; icon: string; ring: string; disabledText: string; disabledIcon: string };
+
+const colours: Record<LinkType, Colours> = {
   primary: {
-    base: 'text-[var(--scanner-text-link)]',
-    hover: 'hover:underline hover:text-[var(--scanner-text-link)]',
-    focusRing: 'focus-visible:outline-[var(--scanner-focus-ring)]',
-    disabled: 'text-[var(--scanner-text-tertiary)]',
+    text: 'text-[color:var(--scanner-text-link)]',
+    icon: 'text-[color:var(--scanner-icon-link)]',
+    ring: 'shadow-[inset_0_0_0_1px_var(--scanner-border-focus)]',
+    disabledText: 'text-[color:var(--scanner-text-disabled)]',
+    disabledIcon: 'text-[color:var(--scanner-icon-disabled)]',
   },
   secondary: {
-    base: 'text-[var(--scanner-text-primary)]',
-    hover: 'hover:underline hover:text-[var(--scanner-text-primary)]',
-    focusRing: 'focus-visible:outline-[var(--scanner-focus-ring)]',
-    disabled: 'text-[var(--scanner-text-tertiary)]',
+    text: 'text-[color:var(--scanner-text-primary)]',
+    icon: 'text-[color:var(--scanner-icon-primary)]',
+    ring: 'shadow-[inset_0_0_0_1px_var(--scanner-border-focus)]',
+    disabledText: 'text-[color:var(--scanner-text-disabled)]',
+    disabledIcon: 'text-[color:var(--scanner-icon-disabled)]',
   },
   inversed: {
-    base: 'text-[var(--scanner-text-inverse-secondary)]',
-    hover: 'hover:underline hover:text-[var(--scanner-text-inverse-secondary)]',
-    focusRing: 'focus-visible:outline-[var(--scanner-blue-300)]',
-    disabled: 'text-[var(--scanner-white-alpha-25)]',
+    text: 'text-[color:var(--scanner-text-inverse-secondary)]',
+    icon: 'text-[color:var(--scanner-icon-inverse-secondary)]',
+    ring: 'shadow-[inset_0_0_0_1px_var(--scanner-border-inverse-focus)]',
+    disabledText: 'text-[color:var(--scanner-text-inverse-disabled)]',
+    disabledIcon: 'text-[color:var(--scanner-icon-inverse-disabled)]',
   },
   'on-color': {
-    base: 'text-[var(--scanner-text-on-color-secondary)]',
-    hover: 'hover:underline hover:text-[var(--scanner-text-on-color)]',
-    focusRing: 'focus-visible:outline-white',
-    disabled: 'text-[var(--scanner-white-alpha-25)]',
+    text: 'text-[color:var(--scanner-text-on-color-secondary)]',
+    icon: 'text-[color:var(--scanner-icon-on-color-secondary)]',
+    ring: 'shadow-[inset_0_0_0_1px_var(--scanner-border-on-color-focus)]',
+    disabledText: 'text-[color:var(--scanner-text-on-color-disabled)]',
+    disabledIcon: 'text-[color:var(--scanner-icon-on-color-disabled)]',
   },
 };
 
-const ExternalIcon = ({ size }: { size: number }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 20 20"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    aria-hidden="true"
-    className="shrink-0"
-  >
-    <path
-      d="M11 3h6v6m0-6L9 11"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M17 11v5a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h5"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+const sizeConfig: Record<LinkSize, { gap: string; icon: IconSize }> = {
+  medium: { gap: 'gap-[var(--scanner-spacing-3)]', icon: 20 }, // gap 8, icon 20
+  small: { gap: 'gap-[var(--scanner-spacing-2)]', icon: 16 }, // gap 4, icon 16
+};
 
 /**
- * Scanner Link — an anchor element with semantic color types.
+ * Scanner Link — navigates to another page, section or external resource. Use `Button` for actions.
+ *
+ * Figma props → React: Type → `type`, Size → `size`, External → `external`, Text value → `children`,
+ * State → `:hover` / `:focus-visible` (forceable via `data-state`), `disabled`.
+ * Keyboard: Tab to focus, Enter or Space to open.
  *
  * @example
- * <Link href="/home">Home</Link>
- * <Link href="https://example.com" external type="primary">Docs</Link>
- * <Link type="secondary" size="small">Settings</Link>
+ * <Link href="/patients">Patients</Link>
+ * <Link href="https://example.com" external>Documentation</Link>
+ * <Link type="inversed" href="#">Learn more</Link>
  */
 export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
   (
@@ -70,46 +69,97 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(
       type = 'primary',
       size = 'medium',
       external = false,
+      disabled = false,
       children,
       className,
       href,
+      target,
+      rel,
+      tabIndex,
+      onClick,
+      onKeyDown,
       'aria-disabled': ariaDisabled,
       ...rest
     },
-    ref
+    ref,
   ) => {
-    const isDisabled = ariaDisabled === true || ariaDisabled === 'true';
-    const styles = typeStyles[type];
-    const iconSize = size === 'small' ? 16 : 20;
+    const isDisabled = disabled || ariaDisabled === true || ariaDisabled === 'true';
+    const c = colours[type];
+    const cfg = sizeConfig[size];
+
+    const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
+      if (isDisabled) {
+        event.preventDefault();
+        return;
+      }
+      onClick?.(event);
+    };
+
+    /* An <a> without href has no link role and isn't focusable — restore both for click-only links. */
+    const hasHref = href !== undefined;
+
+    /* Figma keyboard spec: Enter/Space open the link (native anchors only react to Enter, and only with href). */
+    const handleKeyDown = (event: KeyboardEvent<HTMLAnchorElement>) => {
+      onKeyDown?.(event);
+      if (event.defaultPrevented || isDisabled) return;
+      if (event.key === ' ' || (event.key === 'Enter' && !hasHref)) {
+        event.preventDefault();
+        event.currentTarget.click();
+      }
+    };
 
     return (
       <a
         ref={ref}
         href={isDisabled ? undefined : href}
+        role={isDisabled || !hasHref ? 'link' : undefined}
         aria-disabled={isDisabled || undefined}
-        tabIndex={isDisabled ? -1 : undefined}
-        rel={external ? 'noopener noreferrer' : undefined}
-        target={external ? '_blank' : undefined}
+        tabIndex={isDisabled ? -1 : (tabIndex ?? (hasHref ? undefined : 0))}
+        target={external ? (target ?? '_blank') : target}
+        rel={external ? (rel ?? 'noopener noreferrer') : rel}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
         className={cn(
-          'inline-flex items-center gap-1 font-[family-name:var(--scanner-font-sans)] no-underline',
-          'transition-colors duration-150',
-          'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:rounded-[var(--scanner-radius-sm)]',
-          size === 'small'
-            ? 'text-[length:var(--scanner-text-xs)] leading-[var(--scanner-leading-xs)]'
-            : 'text-[length:var(--scanner-text-sm)] leading-[var(--scanner-leading-sm)]',
-          'font-[var(--scanner-font-regular)]',
-          isDisabled
-            ? [styles.disabled, 'pointer-events-none cursor-not-allowed']
-            : [styles.base, styles.hover, styles.focusRing, 'cursor-pointer'],
-          className
+          'group relative inline-flex items-center align-middle no-underline outline-none',
+          'font-[family-name:var(--scanner-font-sans)] font-[number:var(--scanner-font-regular)]',
+          'text-[length:var(--scanner-text-scanner-md)] leading-[var(--scanner-leading-lg)]',
+          cfg.gap,
+          isDisabled ? cn(c.disabledText, 'cursor-not-allowed') : cn(c.text, 'cursor-pointer'),
+          className,
         )}
         {...rest}
       >
-        <span>{children}</span>
-        {external && <ExternalIcon size={iconSize} />}
+        <span className={cn(!isDisabled && 'group-hover:underline group-data-[state=hovered]:underline')}>
+          {children}
+        </span>
+        {external && (
+          <>
+            {/* Figma "Launch" */}
+            <Icon
+              name="launch"
+              size={cfg.icon}
+              data-part="external-icon"
+              className={isDisabled ? c.disabledIcon : c.icon}
+            />
+            <span className="sr-only">(opens in a new tab)</span>
+          </>
+        )}
+
+        {/* Focus ring — 1px stroke, radius 4, 2px outside the content horizontally */}
+        {!isDisabled && (
+          <span
+            aria-hidden="true"
+            className={cn(
+              'pointer-events-none absolute inset-y-0 hidden rounded-[var(--scanner-radius-sm)]',
+              'inset-x-[calc(var(--scanner-spacing-1)*-1)]',
+              c.ring,
+              'group-focus-visible:block group-data-[state=focused]:block',
+            )}
+          />
+        )}
       </a>
     );
-  }
+  },
 );
 
 Link.displayName = 'Link';

@@ -1,42 +1,38 @@
-import type { HTMLAttributes } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 
 /**
- * Size variants for _SelectMenuItem.
- * Maps to Figma "Size" variant property.
- *
- * Figma spells X-Large as "X- Large" — we normalise to `x-large`.
+ * Figma "Size". Figma spells X-Large as "X- Large" — normalised to `x-large`.
  */
 export type SelectMenuItemSize = 'small' | 'medium' | 'large' | 'x-large';
 
-export interface SelectMenuItemProps
-  extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
-  /** Primary option label text. */
-  optionText?: string;
+/** Interactive states that can be forced via `data-state` (Storybook / visual tests). Disabled has its own prop. */
+export type SelectMenuItemForcedState = 'hovered' | 'focused';
 
-  /** Optional headline displayed above the option text. Visible when `showHeadline` is true. */
-  headlineText?: string;
-
-  /** Optional secondary text below the option text. Visible when `showSubtext` is true. */
-  subheadText?: string;
-
-  /** Show the headline section above the item. */
+export interface SelectMenuItemProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children'> {
+  /** Figma "Option text". */
+  optionText?: ReactNode;
+  /** Figma "Headline text" — shown when `showHeadline`. */
+  headlineText?: ReactNode;
+  /** Figma "Subhead text" — shown when `showSubtext`. */
+  subheadText?: ReactNode;
+  /** Figma "Show headline" — group headline above the option. */
   showHeadline?: boolean;
-
-  /** Show the secondary subtext below the option text. */
+  /** Figma "Show subtext". */
   showSubtext?: boolean;
-
-  /** Show a divider line below the item. */
+  /** Figma "Show divider" — divider below the option. */
   showDivider?: boolean;
-
-  /** Whether this item is the currently selected option. */
+  /**
+   * Option value. Inside a `SelectMenu` it drives selection (`value`/`onChange`) and keyboard navigation.
+   */
+  value?: string;
+  /** Figma "Selected". Overrides the selection derived from the parent `SelectMenu` value. */
   selected?: boolean;
-
-  /** Whether this item is disabled. */
+  /** Figma State=Disabled. */
   disabled?: boolean;
-
-  /** Size variant. */
+  /** Figma "Size". Defaults to the parent `SelectMenu` size, else `x-large`. */
   size?: SelectMenuItemSize;
-
-  /** Additional CSS class names. */
+  /** Force a visual state for screenshots / Storybook. */
+  'data-state'?: SelectMenuItemForcedState;
+  /** Class names for the outer wrapper (headline + option + divider). */
   className?: string;
 }

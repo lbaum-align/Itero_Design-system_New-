@@ -1,2 +1,6 @@
 export { RadioButtonsVerticalGroup } from './RadioButtonsVerticalGroup';
-export type { RadioButtonsVerticalGroupProps, RadioOption } from './radio-buttons-vertical-group.types';
+export type {
+  RadioButtonsVerticalGroupProps,
+  RadioGroupSharedProps,
+  RadioOption,
+} from './radio-buttons-vertical-group.types';

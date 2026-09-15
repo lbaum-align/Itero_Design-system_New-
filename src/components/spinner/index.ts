@@ -1,2 +1,2 @@
 export { Spinner } from './Spinner';
-export type { SpinnerProps, SpinnerSize } from './spinner.types';
+export type { SpinnerProps, SpinnerSize, SpinnerPhase } from './spinner.types';

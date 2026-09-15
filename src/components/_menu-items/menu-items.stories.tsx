@@ -1,25 +1,94 @@
+import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { fn } from '@storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 import { MenuItems } from './MenuItems';
+import type { MenuItemSize, MenuItemsProps, MenuItemType } from './menu-items.types';
+
+/*
+ * Figma: "06. Scanner core 1.0.0 full" → _Menu items (node 30413:41882, page "Menu").
+ * Size × Type × State = 24 variants (rendered in `FigmaMatrix`), plus boolean properties
+ * Show divider / Show headline / Show subtext / Indented / Selected / Show trailing element.
+ */
+
+const SIZES: MenuItemSize[] = ['large', 'medium', 'small'];
+const TYPES: MenuItemType[] = ['neutral', 'destructive'];
+const STATES = ['enabled', 'hovered', 'focused', 'disabled'] as const;
+type State = (typeof STATES)[number];
+
+const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+function variantProps(size: MenuItemSize, type: MenuItemType, state: State, extra: Partial<MenuItemsProps> = {}): MenuItemsProps {
+  return {
+    size,
+    type,
+    label: 'Option',
+    disabled: state === 'disabled',
+    'data-state': state === 'hovered' || state === 'focused' ? state : undefined,
+    ...extra,
+  };
+}
+
+/* ── Layout helpers (story-only) ── */
+
+const ITEM_WIDTH = 288; // Figma variant width
+const table: React.CSSProperties = { borderCollapse: 'collapse', width: 'max-content' };
+const cell: React.CSSProperties = { padding: 8, verticalAlign: 'top' };
+const headCell: React.CSSProperties = {
+  ...cell,
+  font: '500 12px/16px var(--scanner-font-sans)',
+  color: 'var(--scanner-text-secondary)',
+  textAlign: 'left',
+  whiteSpace: 'nowrap',
+};
+const itemBox: React.CSSProperties = { width: ITEM_WIDTH, background: 'var(--scanner-bg-elevated)' };
+const sectionTitle: React.CSSProperties = {
+  font: '500 16px/24px var(--scanner-font-sans)',
+  color: 'var(--scanner-text-primary)',
+  margin: '24px 0 8px',
+};
+
+/* ------------------------------------------------------------------ */
 
 const meta: Meta<typeof MenuItems> = {
-  title: 'Private/MenuItems',
+  title: 'Private/_MenuItems',
   component: MenuItems,
-  argTypes: {
-    size: { control: 'select', options: ['large', 'medium', 'small'] },
-    type: { control: 'select', options: ['neutral', 'destructive'] },
-    disabled: { control: 'boolean' },
-    showDivider: { control: 'boolean' },
-    showHeadline: { control: 'boolean' },
-    showSubtext: { control: 'boolean' },
-    indented: { control: 'boolean' },
-    selected: { control: 'boolean' },
-    showTrailingElement: { control: 'boolean' },
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'One row of a Menu. Neutral for standard actions, Destructive for risky ones (delete, remove). ' +
+          'Labels truncate with an ellipsis (Figma: avoid multi-line items). Enter/Space activate; ArrowRight opens a submenu item.',
+      },
+    },
   },
-  args: { onClick: fn() },
+  argTypes: {
+    size: { name: 'Size', control: 'inline-radio', options: SIZES },
+    type: { name: 'Type', control: 'inline-radio', options: TYPES },
+    disabled: { control: 'boolean' },
+    'data-state': { name: 'Forced state', control: 'inline-radio', options: [undefined, 'hovered', 'focused'] },
+    label: { name: 'Option text value', control: 'text' },
+    showHeadline: { name: 'Show headline', control: 'boolean' },
+    headline: { name: 'Headline text value', control: 'text' },
+    showSubtext: { name: 'Show subtext', control: 'boolean' },
+    subtext: { name: 'Subhead text value', control: 'text' },
+    showDivider: { name: 'Show divider', control: 'boolean' },
+    indented: { name: 'Indented', control: 'boolean' },
+    selected: { name: 'Selected', control: 'boolean' },
+    showTrailingElement: { name: 'Show trailing element', control: 'boolean' },
+    trailingElementProps: { control: 'object' },
+  },
+  args: {
+    size: 'large',
+    type: 'neutral',
+    label: 'Option',
+    headline: 'Headline',
+    subtext: 'Subhead',
+    trailingElementProps: { shortcutKeys: ['⌘', 'X'] },
+    onClick: fn(),
+  },
   decorators: [
     (Story) => (
-      <div style={{ width: 288, background: 'var(--scanner-bg-elevated, white)', padding: 4 }}>
+      <div style={{ padding: 16 }}>
         <Story />
       </div>
     ),
@@ -29,177 +98,263 @@ export default meta;
 
 type Story = StoryObj<typeof MenuItems>;
 
+const Boxed = (props: MenuItemsProps) => (
+  <div style={itemBox}>
+    <MenuItems {...props} />
+  </div>
+);
+
 /* ── Default ── */
 
-export const Default: Story = {
-  args: { label: 'Option' },
-};
+export const Default: Story = { render: (args) => <Boxed {...args} /> };
 
-/* ── With icons (selected checkmark) ── */
+/* ── Type ── */
 
-export const Selected: Story = {
-  args: { label: 'Selected option', selected: true },
-};
-
-export const SelectedDisabled: Story = {
-  args: { label: 'Selected disabled', selected: true, disabled: true },
-};
-
-/* ── With keyboard shortcuts ── */
-
-export const WithShortcut: Story = {
-  args: {
-    label: 'Copy',
-    showTrailingElement: true,
-    trailingElementProps: { shortcutKeys: ['⌘', 'C'] },
-  },
-};
-
-/* ── With toggle items ── */
-
-export const WithToggle: Story = {
-  args: {
-    label: 'Dark mode',
-    showTrailingElement: true,
-    trailingElementProps: { toggle: true, toggleSelected: false },
-  },
-};
-
-export const WithToggleOn: Story = {
-  args: {
-    label: 'Dark mode',
-    showTrailingElement: true,
-    trailingElementProps: { toggle: true, toggleSelected: true },
-  },
-};
-
-/* ── With submenu indicator ── */
-
-export const WithSubmenu: Story = {
-  args: {
-    label: 'More options',
-    showTrailingElement: true,
-    trailingElementProps: { icon: 'chevron-right' },
-  },
-};
-
-export const WithSubmenuAndLabel: Story = {
-  args: {
-    label: 'Theme',
-    showTrailingElement: true,
-    trailingElementProps: { icon: 'chevron-right', label: 'Light', showLabel: true },
-  },
-};
-
-/* ── With headline ── */
-
-export const WithHeadline: Story = {
-  args: { label: 'Option', showHeadline: true, headline: 'Section Title' },
-};
-
-/* ── With subtext ── */
-
-export const WithSubtext: Story = {
-  args: { label: 'Option', showSubtext: true, subtext: 'Description text' },
-};
-
-/* ── With divider ── */
-
-export const WithDivider: Story = {
-  args: { label: 'Option', showDivider: true },
-};
-
-/* ── Indented ── */
-
-export const Indented: Story = {
-  args: { label: 'Indented option', indented: true },
-};
-
-/* ── Destructive ── */
-
+export const Neutral: Story = { name: 'Type: Neutral', render: (args) => <Boxed {...args} type="neutral" /> };
 export const Destructive: Story = {
-  args: { label: 'Delete', type: 'destructive' },
+  name: 'Type: Destructive',
+  render: (args) => <Boxed {...args} type="destructive" label="Delete" />,
 };
 
-export const DestructiveDisabled: Story = {
-  args: { label: 'Delete', type: 'destructive', disabled: true },
-};
+/* ── Boolean properties ── */
 
-/* ── Disabled ── */
+export const Selected: Story = { render: (args) => <Boxed {...args} selected /> };
+export const Indented: Story = { render: (args) => <Boxed {...args} indented /> };
+export const WithHeadline: Story = { name: 'Show headline', render: (args) => <Boxed {...args} showHeadline /> };
+export const WithSubtext: Story = { name: 'Show subtext', render: (args) => <Boxed {...args} showSubtext /> };
+export const WithDivider: Story = { name: 'Show divider', render: (args) => <Boxed {...args} showDivider /> };
 
-export const Disabled: Story = {
-  args: { label: 'Disabled option', disabled: true },
+export const TrailingElements: Story = {
+  name: 'Show trailing element (all types)',
+  render: (args) => (
+    <div style={itemBox}>
+      <MenuItems {...args} label="Cut" showTrailingElement trailingElementProps={{ shortcutKeys: ['⌘', 'X'] }} />
+      <MenuItems {...args} label="Auto-save" showTrailingElement trailingElementProps={{ toggle: true, toggleSelected: true }} />
+      <MenuItems {...args} label="Export as" showTrailingElement trailingElementProps={{ type: 'submenu', label: 'PNG', showLabel: true }} />
+      <MenuItems {...args} label="Share" showTrailingElement trailingElementProps={{ type: 'submenu' }} />
+    </div>
+  ),
 };
 
 /* ── All sizes ── */
 
 export const AllSizes: Story = {
-  render: () => (
-    <div style={{ display: 'flex', gap: 24, alignItems: 'start' }}>
-      {(['large', 'medium', 'small'] as const).map((s) => (
-        <div key={s} style={{ width: 288 }}>
-          <div style={{ fontWeight: 600, marginBottom: 8, textTransform: 'capitalize' }}>{s}</div>
-          <MenuItems size={s} label={`${s} option`} />
-        </div>
-      ))}
+  render: (args) => (
+    <table style={table}>
+      <tbody>
+        {SIZES.map((s) => (
+          <tr key={s}>
+            <th style={headCell}>{label(s)}</th>
+            <td style={cell}>
+              <Boxed {...args} size={s} />
+            </td>
+            <td style={cell}>
+              <Boxed
+                {...args}
+                size={s}
+                selected
+                showSubtext
+                showTrailingElement
+                trailingElementProps={{ shortcutKeys: ['⌘', 'X'] }}
+              />
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  ),
+};
+
+/* ── All states — type rows × state columns (size from controls) ── */
+
+export const AllStates: Story = {
+  render: ({ size = 'large' }) => (
+    <table style={table}>
+      <thead>
+        <tr>
+          <th style={headCell} />
+          {STATES.map((st) => (
+            <th key={st} style={headCell}>{label(st)}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {TYPES.map((t) => (
+          <tr key={t}>
+            <th style={headCell}>{label(t)}</th>
+            {STATES.map((st) => (
+              <td key={st} style={cell}>
+                <Boxed
+                  {...variantProps(size, t, st, {
+                    selected: t === 'neutral' ? true : undefined,
+                    showTrailingElement: true,
+                    trailingElementProps: { shortcutKeys: ['⌘', 'X'] },
+                  })}
+                />
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  ),
+};
+
+export const Hovered: Story = { render: (args) => <Boxed {...args} data-state="hovered" /> };
+export const Focused: Story = { render: (args) => <Boxed {...args} data-state="focused" /> };
+export const Disabled: Story = {
+  render: (args) => (
+    <div style={itemBox}>
+      <MenuItems {...args} disabled selected showSubtext showTrailingElement />
+      <MenuItems {...args} disabled label="Auto-save" showTrailingElement trailingElementProps={{ toggle: true, toggleSelected: true }} />
+      <MenuItems {...args} disabled type="destructive" label="Delete" />
     </div>
   ),
 };
 
-/* ── All States × Types matrix ── */
+/* ── Figma matrix: all 24 variants + boolean properties ── */
 
-export const AllStates: Story = {
-  render: () => {
-    const types = ['neutral', 'destructive'] as const;
-    const states: Array<{
-      label: string;
-      props: Record<string, unknown>;
-    }> = [
-      { label: 'Enabled', props: {} },
-      { label: 'Hovered', props: { 'data-state': 'hovered' } },
-      { label: 'Focused', props: { 'data-state': 'focused' } },
-      { label: 'Disabled', props: { disabled: true } },
-    ];
+export const FigmaMatrix: Story = {
+  name: 'Figma matrix (all 24 variants)',
+  parameters: { layout: 'fullscreen' },
+  render: () => (
+    <div style={{ padding: 24 }}>
+      {SIZES.map((s) => (
+        <section key={s}>
+          <h3 style={sectionTitle}>{`Size=${label(s)}`}</h3>
+          <table style={table}>
+            <thead>
+              <tr>
+                <th style={headCell} />
+                {STATES.map((st) => (
+                  <th key={st} style={headCell}>{`State=${label(st)}`}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {TYPES.map((t) => (
+                <tr key={t}>
+                  <th style={headCell}>{`Type=${label(t)}`}</th>
+                  {STATES.map((st) => (
+                    <td key={st} style={cell}>
+                      <Boxed {...variantProps(s, t, st)} />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      ))}
 
-    return (
-      <div style={{ display: 'grid', gridTemplateColumns: `120px repeat(${states.length}, 288px)`, gap: '12px 16px', alignItems: 'start' }}>
-        {/* Header */}
-        <div />
-        {states.map(({ label }) => (
-          <div key={label} style={{ fontWeight: 600 }}>{label}</div>
-        ))}
-
-        {/* Rows */}
-        {types.map((t) => (
-          <>
-            <div key={`label-${t}`} style={{ fontWeight: 600, textTransform: 'capitalize', paddingTop: 8 }}>{t}</div>
-            {states.map(({ label, props }) => (
-              <MenuItems
-                key={`${t}-${label}`}
-                type={t}
-                label={`${t} ${label.toLowerCase()}`}
-                {...props}
-              />
+      <h3 style={sectionTitle}>Boolean properties (Neutral, per size)</h3>
+      <table style={table}>
+        <thead>
+          <tr>
+            <th style={headCell} />
+            {SIZES.map((s) => (
+              <th key={s} style={headCell}>{`Size=${label(s)}`}</th>
             ))}
-          </>
-        ))}
-      </div>
-    );
+          </tr>
+        </thead>
+        <tbody>
+          {(
+            [
+              ['Show divider', { showDivider: true }],
+              ['Show headline', { showHeadline: true }],
+              ['Show subtext', { showSubtext: true }],
+              ['Indented', { indented: true }],
+              ['Selected', { selected: true }],
+              ['Trailing: Keyboard shortcut', { showTrailingElement: true, trailingElementProps: { shortcutKeys: ['⌘', 'X'] } }],
+              ['Trailing: Toggle', { showTrailingElement: true, trailingElementProps: { toggle: true } }],
+              ['Trailing: Submenu + label', { showTrailingElement: true, trailingElementProps: { type: 'submenu', label: 'Label', showLabel: true } }],
+              ['All on', { showDivider: true, showHeadline: true, showSubtext: true, selected: true, showTrailingElement: true, trailingElementProps: { shortcutKeys: ['⌘', 'X'] } }],
+            ] as Array<[string, Partial<MenuItemsProps>]>
+          ).map(([name, extra]) => (
+            <tr key={name}>
+              <th style={headCell}>{name}</th>
+              {SIZES.map((s) => (
+                <td key={s} style={cell}>
+                  <Boxed {...variantProps(s, 'neutral', 'enabled', extra)} />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  ),
+};
+
+/* ── Overflow: long labels truncate with an ellipsis ── */
+
+export const LongLabelTruncates: Story = {
+  render: (args) => (
+    <Boxed
+      {...args}
+      label="Export the full-arch scan with all annotations and notes"
+      showTrailingElement
+      trailingElementProps={{ shortcutKeys: ['⇧', '⌘', 'E'] }}
+    />
+  ),
+};
+
+/* ------------------------------------------------------------------ */
+/*  Interaction tests                                                 */
+/* ------------------------------------------------------------------ */
+
+export const ClickActivates: Story = {
+  tags: ['test'],
+  render: (args) => <Boxed {...args} />,
+  play: async ({ args, canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole('menuitem', { name: 'Option' }));
+    await expect(args.onClick).toHaveBeenCalledTimes(1);
   },
 };
 
-/* ── Full-featured item ── */
+export const KeyboardActivation: Story = {
+  tags: ['test'],
+  render: (args) => <Boxed {...args} />,
+  play: async ({ args, canvasElement }) => {
+    const item = within(canvasElement).getByRole('menuitem', { name: 'Option' });
+    await userEvent.tab();
+    await expect(item).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+    await userEvent.keyboard(' ');
+    await expect(args.onClick).toHaveBeenCalledTimes(2);
+  },
+};
 
-export const FullFeatured: Story = {
-  args: {
-    label: 'Full featured',
-    showHeadline: true,
-    headline: 'Actions',
-    showSubtext: true,
-    subtext: 'Performs an action',
-    selected: true,
-    showTrailingElement: true,
-    trailingElementProps: { shortcutKeys: ['⌘', 'A'] },
-    showDivider: true,
+export const DisabledIgnoresClick: Story = {
+  tags: ['test'],
+  render: (args) => <Boxed {...args} disabled />,
+  play: async ({ args, canvasElement }) => {
+    const item = within(canvasElement).getByRole('menuitem', { name: 'Option' });
+    await expect(item).toHaveAttribute('aria-disabled', 'true');
+    await userEvent.click(item, { pointerEventsCheck: 0 });
+    await expect(args.onClick).not.toHaveBeenCalled();
+  },
+};
+
+const ToggleItem = (args: MenuItemsProps) => {
+  const [on, setOn] = useState(false);
+  return (
+    <Boxed
+      {...args}
+      label="Auto-save"
+      showTrailingElement
+      trailingElementProps={{ toggle: true, toggleSelected: on, onToggleChange: setOn }}
+    />
+  );
+};
+
+export const ToggleItemChecks: Story = {
+  tags: ['test'],
+  render: (args) => <ToggleItem {...args} />,
+  play: async ({ canvasElement }) => {
+    const item = within(canvasElement).getByRole('menuitemcheckbox', { name: 'Auto-save' });
+    await expect(item).toHaveAttribute('aria-checked', 'false');
+    await userEvent.click(item);
+    await expect(item).toHaveAttribute('aria-checked', 'true');
   },
 };

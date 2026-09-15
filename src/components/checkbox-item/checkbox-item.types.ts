@@ -1,24 +1,32 @@
+import type { InputHTMLAttributes } from 'react';
+
+/** Figma "Selected": Unselected · Selected · Indeterminate */
 export type CheckboxSelection = 'unselected' | 'selected' | 'indeterminate';
 
-export interface CheckboxItemProps {
-  /** The checked/selection state. Boolean true maps to 'selected', false maps to 'unselected'. */
+export interface CheckboxItemProps
+  extends Omit<
+    InputHTMLAttributes<HTMLInputElement>,
+    'type' | 'checked' | 'defaultChecked' | 'onChange' | 'size' | 'children'
+  > {
+  /**
+   * Figma "Selected". Boolean `true` maps to `selected`, `false` to `unselected`.
+   * Omit to let the checkbox manage its own state (see `defaultChecked`).
+   */
   checked?: CheckboxSelection | boolean;
-  /** Visible label text */
+  /** Initial state when `checked` is not controlled */
+  defaultChecked?: CheckboxSelection | boolean;
+  /** Figma "Text value" — the value text next to the checkbox */
   label?: string;
-  /** Show or hide the label */
+  /** Figma "Show value" — show or hide the value text (default `true`) */
   showLabel?: boolean;
-  /** Disables the checkbox */
+  /** Figma State=Disabled. Also inherited from a disabled checkbox group. */
   disabled?: boolean;
-  /** Shows skeleton loading state */
+  /** Figma State=Skeleton — loading placeholder */
   skeleton?: boolean;
-  /** Controlled change handler */
+  /** Called with the next checked value. Toggling an indeterminate checkbox selects it. */
   onChange?: (checked: boolean) => void;
-  /** Name for form submission */
-  name?: string;
-  /** Value for form submission */
-  value?: string;
-  /** Additional CSS class names */
-  className?: string;
-  /** Accessible label (used when label is hidden or absent) */
+  /** Accessible label (used when the value text is hidden or absent) */
   'aria-label'?: string;
+  /** Force a visual state for Storybook/screenshots (Figma State=Focused) */
+  'data-state'?: 'focused';
 }
