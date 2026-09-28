@@ -1,3 +1,19 @@
 /* Component tokens — Figma page "popover" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
 :root {
+  /* Popover (node 33048:29710) — container "Tooltip" frame hugs content between 44px and 320px
+     (Bottom/Start has 528px in Figma; the other 11 variants and the "four columns" sizing rule use 320px) */
+  --scanner-popover-min-width: 44px;
+  --scanner-popover-max-width: 320px;
+
+  /* "Carret": 8×4 triangle centred in a 52px frame with 12px (spacing-03) side padding → 22px from the container edge */
+  --scanner-popover-caret-width: 8px;
+  --scanner-popover-caret-height: 4px;
+  --scanner-popover-caret-inset: 22px;
+  /* Start/End alignment: container edge sits 26px (half the caret frame) before/after the trigger centre,
+     so the caret points at the trigger centre (Figma docs "Alignment" examples) */
+  --scanner-popover-anchor-offset: 26px;
+
+  /* Figma draws the container with no shadow or stroke. Override point for surfaces where
+     background-elevated doesn't contrast with the page (e.g. var(--scanner-shadow-depth-01)). */
+  --scanner-popover-shadow: none;
 }

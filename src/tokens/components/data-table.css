@@ -1,3 +1,38 @@
 /* Component tokens — Figma page "data-table" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
 :root {
+  /* Row heights — "Rows / Data table content row" Size=Large (1 line) / X-large (2 lines) / 2X-large (3 lines).
+   * Figma fixes min = max = height on every row, item and cell. */
+  --scanner-data-table-row-height-lg: 52px;
+  --scanner-data-table-row-height-xl: 72px;
+  --scanner-data-table-row-height-2xl: 92px;
+
+  /* Leading control columns — drag handle / expansion / checkbox items are 24px wide
+   * ("Items / Data table drag item", "… expansion item", "… checkbox item"). */
+  --scanner-data-table-control-width: 24px;
+
+  /* Header item trailing divider — 1px × 28px "Borders main/border-subtle" rule */
+  --scanner-data-table-divider-width: 1px;
+  --scanner-data-table-divider-height: 28px;
+
+  /* Row separator — 1px "Borders main/border-subtle" bottom rule on every row */
+  --scanner-data-table-row-border-width: 1px;
+
+  /* Content item "Content=Progress" — 3 × "Patch" rectangles, 36 × 4, 2px stroke, radius small */
+  --scanner-data-table-progress-segment-width: 36px;
+  --scanner-data-table-progress-segment-height: 4px;
+  --scanner-data-table-progress-segment-stroke: 2px;
+
+  /* Content item "Content=Buttons" — icon-only action buttons are 40 × 40 in the cell
+   * (the Button component's own Medium size is 48 in this library version). */
+  --scanner-data-table-action-size: 40px;
+
+  /* "Data table" → "Show vertical scroll": Figma keeps the 52px header row plus 10 content rows
+   * visible (table frame 572 / 772 / 972 tall) and overflows everything below. */
+  --scanner-data-table-viewport-height-lg: calc(var(--scanner-data-table-row-height-lg) * 11);
+  --scanner-data-table-viewport-height-xl: calc(
+    var(--scanner-data-table-row-height-lg) + var(--scanner-data-table-row-height-xl) * 10
+  );
+  --scanner-data-table-viewport-height-2xl: calc(
+    var(--scanner-data-table-row-height-lg) + var(--scanner-data-table-row-height-2xl) * 10
+  );
 }

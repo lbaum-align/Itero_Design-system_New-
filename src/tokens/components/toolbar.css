@@ -1,0 +1,11 @@
+/* Component tokens — Toolbar.
+ * Not a Figma component: sizes come from the product spec (60px buttons, 48px icons,
+ * 8px radius, 4px gaps). Colours all resolve to semantic tokens. */
+:root {
+  --scanner-toolbar-button-size: 60px;
+  --scanner-toolbar-icon-size: 48px;
+  --scanner-toolbar-collapse-icon-size: 24px;
+  --scanner-toolbar-divider-inset: 8px;  /* divider is shorter than the bar by this on each side */
+  --scanner-toolbar-focus-offset: 4px;   /* focus ring sits this far outside the button */
+  --scanner-toolbar-focus-width: 2px;
+}

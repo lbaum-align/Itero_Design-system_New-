@@ -1,5 +1,9 @@
 # Scanner Design System — Component Build Order
 
+> **Status (2026-09-28): complete.** Every component in this plan is built and verified against Figma
+> "06. Scanner core 1.0.0 full" (`TCdFM9Hy78GHyifCSlkedx`); per-component reports are in [signoff/](signoff/).
+> Plus one non-Figma addition: [Toolbar](signoff/toolbar.md).
+
 **Source**: Figma "06. Scanner core 1.0.0" (76 published components)  
 **Strategy**: Dependency-driven tiers — each tier only depends on lower tiers.
 

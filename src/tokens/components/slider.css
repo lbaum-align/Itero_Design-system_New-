@@ -1,3 +1,20 @@
 /* Component tokens — Figma page "slider" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
 :root {
+  /* _Slider control (node 18362:19166) — 32×32 handle, 28px ring (2px stroke), 16px pressed dot */
+  --scanner-slider-handle-size: 32px;
+  --scanner-slider-handle-ring-size: 28px;
+  --scanner-slider-handle-ring-width: 2px;
+  --scanner-slider-handle-dot-size: 16px;
+  /* Pressed value tooltip: bottom edge 1px above the handle box */
+  --scanner-slider-tooltip-offset: 1px;
+
+  /* Slider (node 17867:9913) — "Indication" row and "Line" track segments */
+  --scanner-slider-indication-height: 60px;
+  --scanner-slider-track-height: 4px;
+  /* Ranged inputs: 16px "Subtract empty" separator column */
+  --scanner-slider-separator-width: 16px;
+  --scanner-slider-separator-icon-size: 16px;
+  /* Skeleton "Label box" / "Min value box" / "Max value box" */
+  --scanner-slider-skeleton-bar-width: 40px;
+  --scanner-slider-skeleton-bar-height: 8px;
 }

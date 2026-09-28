@@ -2,4 +2,14 @@
 :root {
   /* _Keyboard shortcut (node 30412:28270) */
   --scanner-keyboard-shortcut-glyph-size: 16px;   /* Command / Option / Shift / Erase glyph frames */
+
+  /* _Decoration (node 32583:26851) — fixed 44×44 tile, 24px icon */
+  --scanner-decoration-size: 44px;
+
+  /* Scroll (node 34025:182957) — 4px bar; track min length 84px, thumb 52px in the component set.
+     Inset: Select menu places its scroll bar 4px from the container's right edge. */
+  --scanner-scroll-thickness: 4px;
+  --scanner-scroll-min-length: 84px;
+  --scanner-scroll-thumb-length: 52px;
+  --scanner-scroll-inset: 4px;
 }

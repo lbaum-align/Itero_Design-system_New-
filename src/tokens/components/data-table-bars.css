@@ -1,0 +1,16 @@
+/* Component tokens — Figma page "Data table" (06. Scanner core 1.0.0 full), bars only:
+ * Bars / Data table toolbars (34038:306507) and Bars / Data table pagination (33899:18446).
+ * Only values with no semantic/spacing equivalent. */
+:root {
+  /* Toolbar "Search input" instance — fixed width 288 */
+  --scanner-data-table-toolbar-search-width: 288px;
+
+  /* Dashed 1px dividers (stroke border-subtle, dash pattern 4 / 4) — pagination Control / Pages
+   * right edge, toolbar bulk-actions "Cancel" left edge */
+  --scanner-data-table-bars-divider-width: 1px;
+  --scanner-data-table-bars-divider-dash: 4px;
+  --scanner-data-table-bars-divider-period: 8px; /* dash + gap */
+
+  /* Code-only: max height of the pagination dropdown menus (they scroll beyond it) */
+  --scanner-data-table-pagination-menu-max-height: 240px;
+}

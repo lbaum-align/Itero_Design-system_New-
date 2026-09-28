@@ -1,6 +1,6 @@
 import type { SVGAttributes } from 'react';
 
-export type IconSize = 12 | 16 | 20 | 24 | 28 | 32;
+export type IconSize = 12 | 16 | 20 | 24 | 28 | 32 | 40 | 48;
 
 export interface IconProps extends Omit<SVGAttributes<SVGSVGElement>, 'children'> {
   /** Icon name — must match a key in the icon registry */

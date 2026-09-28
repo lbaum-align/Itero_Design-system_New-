@@ -1,3 +1,13 @@
 /* Component tokens — Figma page "modal-window" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
 :root {
+  /* Modal window (node 13483:13690) — window widths per Figma "Size" */
+  --scanner-modal-window-width-sm: 432px;
+  --scanner-modal-window-width-md: 656px;
+  --scanner-modal-window-width-lg: 880px;
+  --scanner-modal-window-width-xl: 1104px;
+  /* Figma "spacing-06" resolved in the "Scanner" spacing mode (28px; Desktop mode = 24px):
+     overlay padding, window side/bottom padding, Content ↔ Slot ↔ Actions gaps */
+  --scanner-modal-window-spacing: 28px;
+  --scanner-modal-window-close-size: 36px;     /* "Close empty" instance resized to 36×36 (18px glyph) */
+  --scanner-modal-window-close-focus-width: 2px; /* Close button focus ring (no Figma state — matches Button focus width) */
 }

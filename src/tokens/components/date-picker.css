@@ -1,3 +1,25 @@
 /* Component tokens — Figma page "date-picker" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
 :root {
+  /* _Days (node 6607:12895) — 52px cell holding a 50px "Picker" square */
+  --scanner-days-cell-height: 52px;
+  --scanner-days-picker-size: 50px;
+  /* "Today indicator": 24×2 pill, 6px above the picker's bottom edge (Figma top 42 in a 50px picker) */
+  --scanner-days-today-width: 24px;
+  --scanner-days-today-height: 2px;
+  --scanner-days-today-offset: 6px;
+
+  /* 02 Calendar (node 20628:32152) */
+  --scanner-calendar-width: 375px;
+  --scanner-calendar-min-width: 324px;
+  --scanner-calendar-min-height: 308px;
+  --scanner-calendar-max-height: 350px; /* Content=Month / Content=Year height; Year scrolls inside */
+  --scanner-calendar-period-cell-height: 90px; /* Month / Year view cells (4 columns) */
+  --scanner-calendar-scrollbar-width: 4px; /* "Scroll / Position=Vertical" */
+
+  /* 01 Date picker (node 7014:14260) */
+  --scanner-date-picker-field-height: 60px;
+  --scanner-date-picker-skeleton-bar-width: 143px; /* "Label box" / "Helper box" */
+  --scanner-date-picker-skeleton-bar-height: 12px;
+  --scanner-date-picker-panel-offset: 4px; /* gap between field and calendar panel (not specified in Figma) */
+  --scanner-date-picker-panel-z: 20;
 }

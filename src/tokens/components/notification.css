@@ -1,3 +1,8 @@
 /* Component tokens — Figma page "notification" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
 :root {
+  /* Toast (node 34305:10008) */
+  --scanner-toast-min-width: 296px;            /* Type=Toast / Inline min width (Information toast says 288 — outlier) */
+  --scanner-toast-max-width: 400px;            /* Type=Toast max width (Warning toast says 900 — outlier) */
+  --scanner-toast-icon-size: 28px;             /* Status icon + close icon instances (Figma size "Small") */
+  --scanner-toast-close-focus-width: 2px;      /* Close button focus ring (no Figma state — matches Button focus width) */
 }

@@ -8,4 +8,24 @@
   --scanner-select-menu-item-check-size-xl: 24px;  /* "Checkmark empty" 24×24 (X-Large) */
   --scanner-select-menu-item-check-size: 20px;     /* "Checkmark empty" 20×20 (Large / Medium / Small) */
   --scanner-select-menu-divider-offset: 3px;       /* 1px line sits 3px from the top of the 8px divider frame */
+
+  /* Dropdowm (node 20:610) — field min-heights (padding + one line of text) */
+  --scanner-dropdown-height-xl: 60px;
+  --scanner-dropdown-height-lg: 48px;
+  --scanner-dropdown-height-md: 36px;
+  --scanner-dropdown-height-sm: 28px;
+  --scanner-dropdown-padding-y-lg: 10px;        /* Large field vertical padding (10 + 28 + 10) */
+  --scanner-dropdown-multi-padding-y-xl: 14px;  /* X-Large field with tags (14 + 32 + 14) */
+  /* Skeleton "Label box" / helper box (shared by Dropdown and Combobox) */
+  --scanner-dropdown-skeleton-bar-width: 40px;
+  --scanner-dropdown-skeleton-bar-height-xl: 16px;
+  --scanner-dropdown-skeleton-bar-height: 8px;
+
+  /* Combobox (node 34220:8533) — field min-heights */
+  --scanner-combobox-height-xl: 52px;
+  --scanner-combobox-height-lg: 44px;
+  --scanner-combobox-height-md: 36px;
+  --scanner-combobox-height-sm: 28px;
+  --scanner-combobox-skeleton-height-xl: 60px;  /* Figma X-Large "Field box" is 60 while the field is 52 */
+  --scanner-combobox-input-min-width: 40px;     /* code-only: minimum width of the text input next to tags */
 }

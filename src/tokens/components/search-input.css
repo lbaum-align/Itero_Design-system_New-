@@ -1,3 +1,9 @@
 /* Component tokens — Figma page "search-input" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
 :root {
+  /* Search input (node 849:95) — field heights (padding + 24px icon / text line) */
+  --scanner-search-input-height-lg: 60px;
+  --scanner-search-input-height-md: 40px;
+  --scanner-search-input-height-sm: 32px;
+  /* Search / Close empty icons — 24×24 at every size */
+  --scanner-search-input-icon-size: 24px;
 }

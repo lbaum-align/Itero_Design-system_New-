@@ -36,3 +36,5 @@
 @import "./components/text-input.css";
 @import "./components/toggle.css";
 @import "./components/tooltip.css";
+@import "./components/data-table-bars.css";
+@import "./components/toolbar.css";

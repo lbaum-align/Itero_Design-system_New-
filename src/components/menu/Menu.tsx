@@ -1,6 +1,7 @@
 import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { FocusEvent, KeyboardEvent } from 'react';
 import { cn } from '../../utils/cn';
+import { scrollbarClassName } from '../scroll';
 import { MenuContext } from './menu-context';
 import type { MenuDividerProps, MenuProps } from './menu.types';
 
@@ -161,7 +162,7 @@ export const Menu = forwardRef<HTMLDivElement, MenuProps>(
             'p-[var(--scanner-spacing-2)] rounded-[var(--scanner-radius-md)]',
             'bg-[var(--scanner-bg-elevated)] shadow-[var(--scanner-shadow-depth-01)]',
             size === 'large' && 'ring-1 ring-inset ring-[var(--scanner-border-subtle)]',
-            scroll && 'overflow-y-auto [scrollbar-color:var(--scanner-border-subtle)_transparent] [scrollbar-width:thin]',
+            scroll && ['overflow-y-auto', scrollbarClassName],
             className,
           )}
           {...rest}

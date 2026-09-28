@@ -1,3 +1,12 @@
 /* Component tokens — Figma page "header" (06. Scanner core 1.0.0 full). Only values with no semantic/spacing equivalent. */
 :root {
+  /* Header (node 34193:2652) */
+  /* Background: Figma "background-subtle-01" (#ffffff / #1b1b1b) has no semantic token; it holds the same value
+     as "background-layer-01", so the component uses --scanner-bg-layer-01 directly (aliasing it here would
+     freeze the light value, because a :root alias is substituted before a nested [data-theme] scope applies). */
+  --scanner-header-padding-y: 6px;                  /* 6px vertical padding, not on the spacing scale → 72px total height */
+  --scanner-header-row-height: 60px;                /* Inner row height (logo / nav / action buttons) */
+  --scanner-header-action-icon-size: 32px;          /* Icon instances inside the header's icon-only buttons (Figma size "Large") */
+  --scanner-header-menu-icon-size: 24px;            /* Hamburger "Menu" icon (Figma size "Medium", 24x24) */
+  --scanner-header-logo-inset: 2px;                 /* Horizontal padding of the logo slot (75px frame around a 70.18px logo) */
 }

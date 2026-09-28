@@ -12,7 +12,13 @@ export default defineConfig(({ mode }) => ({
     react(),
     tailwindcss(),
     ...(mode === 'lib'
-      ? [dts({ rollupTypes: true, tsconfigPath: './tsconfig.app.json' })]
+      ? [dts({
+          tsconfigPath: './tsconfig.app.json',
+          include: ['src'],
+          // rollupTypes (api-extractor) and insertTypesEntry both emit an EMPTY
+          // dist/index.d.ts for this entry, so declarations are emitted per file
+          // under dist/src and package.json "types" points at dist/src/index.d.ts.
+        })]
       : []),
   ],
   build:

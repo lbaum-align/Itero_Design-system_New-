@@ -1,6 +1,7 @@
 import { forwardRef, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { FocusEvent, KeyboardEvent } from 'react';
 import { cn } from '../../utils/cn';
+import { scrollbarClassName } from '../scroll';
 import { SelectMenuContext, selectMenuOptionId } from './select-menu-context';
 import type { SelectMenuProps } from './select-menu.types';
 
@@ -219,7 +220,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
             'w-[var(--scanner-select-menu-width)] min-w-[var(--scanner-select-menu-min-width)]',
             'p-[var(--scanner-spacing-2)] rounded-[var(--scanner-radius-md)]',
             'bg-[var(--scanner-bg-elevated)] shadow-[var(--scanner-shadow-depth-01)]',
-            scroll && 'overflow-y-auto [scrollbar-color:var(--scanner-border-subtle)_transparent] [scrollbar-width:thin]',
+            scroll && ['overflow-y-auto', scrollbarClassName],
             className,
           )}
           {...rest}

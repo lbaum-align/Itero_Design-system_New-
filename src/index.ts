@@ -164,12 +164,110 @@ export type { PaginationProps, PaginationSize } from './components/pagination';
 export { SelectMenu, selectMenuOptionId } from './components/select-menu';
 export type { SelectMenuProps, SelectMenuSize, SelectMenuFocusMode } from './components/select-menu';
 
+export { SearchInput } from './components/search-input';
+export type { SearchInputProps, SearchInputSize } from './components/search-input';
+
+export { Dropdown } from './components/dropdown';
+export type {
+  DropdownProps,
+  DropdownSize,
+  DropdownType,
+  DropdownOption,
+  DropdownForcedState,
+} from './components/dropdown';
+
+export { Combobox } from './components/combobox';
+export type {
+  ComboboxProps,
+  ComboboxSize,
+  ComboboxType,
+  ComboboxOption,
+  ComboboxForcedState,
+} from './components/combobox';
+
 // --- Components (Tier 8: Menu) ---
 
 export { Menu, MenuDivider } from './components/menu';
 export type { MenuProps, MenuDividerProps } from './components/menu';
 
 // --- Components (Tier 9: Advanced composites) ---
+
+export { Toolbar, ToolbarButton, ToolbarDivider } from './components/toolbar';
+export type {
+  ToolbarProps,
+  ToolbarButtonProps,
+  ToolbarDividerProps,
+  ToolbarOrientation,
+  ToolbarForcedState,
+} from './components/toolbar';
+
+export { Popover, PopoverBubble } from './components/popover';
+export type {
+  PopoverProps,
+  PopoverBubbleProps,
+  PopoverPlacement,
+  PopoverAlignment,
+  PopoverTriggerMode,
+} from './components/popover';
+
+export { SlotContent } from './components/slot-content';
+export type { SlotContentProps } from './components/slot-content';
+
+export { Logo, logoLabels } from './components/logo';
+export type { LogoProps, LogoVariation } from './components/logo';
+
+export { Cursor, cursorValue, cursorStyle, cursorAssets } from './components/cursor';
+export type { CursorProps, CursorType } from './components/cursor';
+
+export { Scroll, ScrollArea, scrollbarClassName } from './components/scroll';
+export type {
+  ScrollProps,
+  ScrollPosition,
+  ScrollAreaProps,
+  ScrollAreaOrientation,
+} from './components/scroll';
+
+export { Calendar } from './components/calendar';
+export type {
+  CalendarProps,
+  CalendarSingleProps,
+  CalendarRangeProps,
+  CalendarView,
+  CalendarMode,
+  DateRange,
+  WeekDay,
+} from './components/calendar';
+
+export { DatePicker } from './components/date-picker';
+export type {
+  DatePickerProps,
+  DatePickerSingleProps,
+  DatePickerRangedProps,
+  DatePickerType,
+  DatePickerForcedState,
+} from './components/date-picker';
+
+export { ModalWindow } from './components/modal-window';
+export type {
+  ModalWindowProps,
+  ModalWindowSize,
+  ModalWindowCloseReason,
+  ModalWindowActionProps,
+} from './components/modal-window';
+
+export { Toast, ToastProvider, useToast } from './components/toast';
+export type {
+  ToastProps,
+  ToastType,
+  ToastStatus,
+  ToastPlacement,
+  ToastOptions,
+  ToastProviderProps,
+  ToastContextValue,
+} from './components/toast';
+
+export { Slider } from './components/slider';
+export type { SliderProps, SliderSingleProps, SliderRangeProps, SliderRange } from './components/slider';
 
 export { ProgressBar } from './components/progress-bar';
 export type { ProgressBarProps, ProgressBarStatus } from './components/progress-bar';
@@ -190,6 +288,28 @@ export type {
 } from './components/accordion-group';
 
 // --- Components (Tier 10: Page-level) ---
+
+export { DataTable } from './components/data-table';
+export type {
+  DataTableProps,
+  DataTableColumn,
+  DataTableSize,
+  DataTableSortState,
+  DataTableSortValue,
+  DataTableRowReorder,
+  DataTableTitleElement,
+} from './components/data-table';
+
+export { Header, HeaderAction, HeaderDivider } from './components/header';
+export type {
+  HeaderProps,
+  HeaderMenu,
+  HeaderNavItemData,
+  HeaderNavItemProps,
+  HeaderActionProps,
+  HeaderDividerProps,
+  HeaderForcedState,
+} from './components/header';
 
 export { PageHeader } from './components/page-header';
 export type { PageHeaderProps } from './components/page-header';
